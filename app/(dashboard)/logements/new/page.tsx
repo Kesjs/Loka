@@ -47,7 +47,7 @@ function NewLogementForm() {
   const [immeubleId, setImmeubleId] = useState("");
   const [statut, setStatut] = useState<Statut>("vacant");
   const [chambres, setChambres] = useState("1");
-  const [sallesBain, setSallesBain] = useState("1");
+  const [sallesBain, setSallesBain] = useState("0");
   const [surface, setSurface] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -92,7 +92,6 @@ function NewLogementForm() {
     if (!loyer || Number(loyer) <= 0) nextFieldErrors.loyer = "Indiquez un loyer valide.";
     if (surface && Number(surface) <= 0) nextFieldErrors.surface = "La surface doit être positive.";
     if (Number(chambres) <= 0) nextFieldErrors.chambres = "Nombre de chambres invalide.";
-    if (Number(sallesBain) <= 0) nextFieldErrors.sallesBain = "Nombre de salles de bain invalide.";
 
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
@@ -314,17 +313,11 @@ function NewLogementForm() {
             </FormField>
 
             <FormField label="Type de bien" icon={Tag}>
-              <select
+              <Select
                 value={typeLogement}
-                onChange={(event) => setTypeLogement(event.target.value)}
-                className={fieldInputClass}
-              >
-                {logementTypes.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setTypeLogement(value as string)}
+                options={logementTypes}
+              />
             </FormField>
           </div>
 

@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { CheckCircle, House, ArrowLeft, Tag, Buildings, CurrencyCircleDollar, ToggleLeft, Ruler, TextAa } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { CheckCircle, House, ArrowLeft, Tag, Buildings, CurrencyCircleDollar, ToggleLeft, TextAa, Ruler } from "@phosphor-icons/react/dist/ssr";
 import { FormField, fieldInputClass, fieldInputErrorClass } from "@/components/ui/form-field";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { PhotoUploadZone } from "@/components/logements/PhotoUploadZone";
+import { PhotoManager } from "@/components/logements/PhotoManager";
 import { AmenitiesSelect } from "@/components/logements/AmenitiesSelect";
+import { PhotoUploadZone } from "@/components/logements/PhotoUploadZone";
 import { mapDbError } from "@/lib/db-errors";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,6 @@ const logementTypes = [
   { value: "autre", label: "Autre" },
 ];
 const statutOptions = ["vacant", "occupe"] as const;
-
 type Statut = (typeof statutOptions)[number];
 
 interface FieldErrors {
@@ -33,9 +33,9 @@ interface FieldErrors {
   sallesBain?: string;
 }
 
-function NewLogementForm() {
+export default function EditLogementPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [immeubles, setImmeubles] = useState<any[]>([]);
@@ -49,37 +49,56 @@ function NewLogementForm() {
   const [sallesBain, setSallesBain] = useState("1");
   const [surface, setSurface] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [primaryPhotoUrl, setPrimaryPhotoUrl] = useState<string>();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [primaryPhotoIndex, setPrimaryPhotoIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    async function loadImmeubles() {
-      const { data, error: fetchError } = await supabase
-        .from("immeubles")
-        .select("id, nom")
-        .order("nom", { ascending: true });
+    async function loadData() {
+      const [{ data: immeublesData }, { data: logement, error: fetchError }] = await Promise.all([
+        supabase.from("immeubles").select("id, nom").order("nom", { ascending: true }),
+        supabase
+          .from("logements")
+          .select("*")
+          .eq("id", params.id)
+          .maybeSingle(),
+      ]);
 
-      if (fetchError) {
-        setError("Impossible de charger les immeubles. Réessayez plus tard.");
+      setImmeubles(immeublesData ?? []);
+
+      if (fetchError || !logement) {
+        setError("Logement introuvable.");
+        setInitialLoading(false);
         return;
       }
 
-      setImmeubles(data ?? []);
-      const preselected = searchParams.get("immeuble");
-      if (preselected && data?.some((i) => i.id === preselected)) {
-        setImmeubleId(preselected);
-      } else if (data?.length) {
-        setImmeubleId(data[0].id);
-      }
+      setNom(logement.nom ?? "");
+      setTypeLogement(logement.type ?? logementTypes[0].value);
+      setDescription(logement.description ?? "");
+      setLoyer(String(logement.loyer_mensuel ?? ""));
+      setImmeubleId(logement.immeuble_id ?? "");
+      setStatut((logement.statut as Statut) ?? "vacant");
+      setChambres(String(logement.chambres ?? 1));
+      setSallesBain(String(logement.salles_bain ?? 1));
+      setSurface(String(logement.surface_m2 ?? ""));
+      setAmenities(logement.amenities ?? []);
+      const allPhotos = [
+        logement.photo_principale,
+        ...(logement.photos_additionnelles || []),
+      ].filter(Boolean);
+      setPhotos(allPhotos);
+      setPrimaryPhotoUrl(logement.photo_principale);
+      setInitialLoading(false);
     }
 
-    loadImmeubles();
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [params.id]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -101,26 +120,32 @@ function NewLogementForm() {
     setLoading(true);
 
     try {
-      // 1. Upload photos if selected
-      let photoPrincipale = null;
-      let photosAdditionnelles: string[] = [];
-
+      // 1. Upload new photos if any
       if (selectedFiles.length > 0) {
-        const formData = new FormData();
-        selectedFiles.forEach((file) => {
-          formData.append("files", file);
-        });
-        // Set first file as primary if no explicit primary selected
-        formData.append("setAsPrimary", primaryPhotoIndex >= 0 ? "false" : "true");
+        try {
+          const uploadFormData = new FormData();
+          selectedFiles.forEach((file) => {
+            uploadFormData.append("files", file);
+          });
+          uploadFormData.append("setAsPrimary", "false");
 
-        // First create logement, then upload photos
-        // For now, we'll create logement first and get its ID
+          const uploadResponse = await fetch(`/api/logements/${params.id}/upload-photo`, {
+            method: "POST",
+            body: uploadFormData,
+          });
+
+          if (!uploadResponse.ok) {
+            console.error("Photo upload failed during edit");
+          }
+        } catch (photoError) {
+          console.error("Photo upload error:", photoError);
+        }
       }
 
-      // 2. Create logement
-      const { data: logement, error: insertError } = await supabase
+      // 2. Update logement metadata
+      const { error: updateError } = await supabase
         .from("logements")
-        .insert({
+        .update({
           nom: nom.trim(),
           immeuble_id: immeubleId,
           type: typeLogement || null,
@@ -131,61 +156,51 @@ function NewLogementForm() {
           salles_bain: Number(sallesBain),
           surface_m2: surface ? Number(surface) : null,
           amenities: amenities,
-          photo_principale: photoPrincipale,
-          photos_additionnelles: photosAdditionnelles,
+          photo_principale: primaryPhotoUrl || null,
+          photos_additionnelles: photos.filter((p) => p !== primaryPhotoUrl),
         })
-        .select()
-        .single();
+        .eq("id", params.id);
 
-      if (insertError) {
-        setError(mapDbError(insertError));
+      if (updateError) {
+        setError(mapDbError(updateError));
         setLoading(false);
         return;
       }
 
-      // 3. Upload photos after logement is created
-      if (selectedFiles.length > 0 && logement) {
-        try {
-          const uploadFormData = new FormData();
-          selectedFiles.forEach((file) => {
-            uploadFormData.append("files", file);
-          });
-          // Set primary if explicitly selected
-          uploadFormData.append("setAsPrimary", primaryPhotoIndex === 0 ? "true" : "false");
-
-          const uploadResponse = await fetch(`/api/logements/${logement.id}/upload-photo`, {
-            method: "POST",
-            body: uploadFormData,
-          });
-
-          if (!uploadResponse.ok) {
-            console.error("Photo upload failed, but logement created successfully");
-          }
-        } catch (photoError) {
-          console.error("Photo upload error:", photoError);
-          // Don't fail the entire form if photos fail
-        }
-      }
-
       setSaved(true);
       setLoading(false);
-      setTimeout(() => router.push("/logements"), 500);
+      setTimeout(() => router.push(`/logements/${params.id}`), 500);
     } catch (err) {
-      setError("Une erreur est survenue lors de la création du logement.");
+      setError("Une erreur est survenue lors de la mise à jour du logement.");
       setLoading(false);
     }
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm animate-pulse">
+          <div className="h-6 w-1/3 rounded bg-neutral-100" />
+          <div className="mt-6 space-y-4">
+            <div className="h-12 rounded-2xl bg-neutral-100" />
+            <div className="h-12 rounded-2xl bg-neutral-100" />
+            <div className="h-12 rounded-2xl bg-neutral-100" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-5 animate-[fadeIn_0.3s_ease-out]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary-600">Ajout de logement</p>
-          <h1 className="text-2xl font-semibold text-neutral-900">Créer un nouveau logement</h1>
-          <p className="mt-1 text-sm text-neutral-500">Associez un logement à un immeuble pour suivre l'occupation et les loyers.</p>
+          <p className="text-sm font-medium text-primary-600">Modification</p>
+          <h1 className="text-2xl font-semibold text-neutral-900">Modifier le logement</h1>
+          <p className="mt-1 text-sm text-neutral-500">Mettez à jour les informations de ce logement.</p>
         </div>
-        <Link href="/logements" className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-800">
-          <ArrowLeft size={15} /> Retour à la liste
+        <Link href={`/logements/${params.id}`} className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-800">
+          <ArrowLeft size={15} /> Annuler
         </Link>
       </div>
 
@@ -194,7 +209,7 @@ function NewLogementForm() {
         {saved && (
           <div className="mb-5 flex items-center gap-3 rounded-2xl bg-success-50 px-4 py-3 text-sm text-success-700">
             <CheckCircle size={18} />
-            Logement enregistré avec succès.
+            Logement mis à jour avec succès.
           </div>
         )}
 
@@ -207,7 +222,7 @@ function NewLogementForm() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-neutral-900">Informations principales</p>
-                <p className="text-sm text-neutral-500">Renseignez les éléments essentiels du logement.</p>
+                <p className="text-sm text-neutral-500">Modifiez les éléments essentiels du logement.</p>
               </div>
             </div>
           </div>
@@ -284,7 +299,7 @@ function NewLogementForm() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-neutral-900">Caractéristiques</p>
-                <p className="text-sm text-neutral-500">Décrivez les détails physiques du logement.</p>
+                <p className="text-sm text-neutral-500">Modifiez les détails physiques du logement.</p>
               </div>
             </div>
           </div>
@@ -323,20 +338,6 @@ function NewLogementForm() {
                 placeholder="0"
               />
             </FormField>
-
-            <FormField label="Type de bien" icon={Tag}>
-              <select
-                value={typeLogement}
-                onChange={(event) => setTypeLogement(event.target.value)}
-                className={fieldInputClass}
-              >
-                {logementTypes.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </FormField>
           </div>
 
           {/* Description */}
@@ -359,7 +360,7 @@ function NewLogementForm() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-neutral-900">Équipements</p>
-                <p className="text-sm text-neutral-500">Sélectionnez les équipements disponibles.</p>
+                <p className="text-sm text-neutral-500">Modifiez les équipements disponibles.</p>
               </div>
             </div>
           </div>
@@ -379,46 +380,52 @@ function NewLogementForm() {
                 <House size={18} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-neutral-900">Photos du logement</p>
-                <p className="text-sm text-neutral-500">Ajoutez des photos pour améliorer l'attrait du logement.</p>
+                <p className="text-sm font-semibold text-neutral-900">Gestion des photos</p>
+                <p className="text-sm text-neutral-500">Réorganisez, supprimez ou ajoutez des photos.</p>
               </div>
             </div>
           </div>
 
-          <PhotoUploadZone
-            onFilesSelected={setSelectedFiles}
-            onSetAsPrimary={setPrimaryPhotoIndex}
-            primaryIndex={primaryPhotoIndex}
-            maxFiles={10}
-            className="mt-4"
-          />
+          {/* Existing Photos */}
+          {photos.length > 0 && (
+            <div className="space-y-4">
+              <p className="text-sm font-medium text-neutral-900">Photos actuelles</p>
+              <PhotoManager
+                photos={photos}
+                primaryPhotoUrl={primaryPhotoUrl}
+                onPhotoDelete={(url) => {
+                  setPhotos((prev) => prev.filter((p) => p !== url));
+                  if (primaryPhotoUrl === url) {
+                    const remaining = photos.filter((p) => p !== url);
+                    setPrimaryPhotoUrl(remaining[0]);
+                  }
+                }}
+                onPhotoOrderChange={setPhotos}
+                onSetPrimary={setPrimaryPhotoUrl}
+              />
+            </div>
+          )}
 
-          {!immeubles.length && (
-            <p className="text-sm text-warning-600">
-              Vous devez d'abord{" "}
-              <Link href="/immeubles/new" className="font-medium underline">
-                créer un immeuble
-              </Link>{" "}
-              avant de pouvoir ajouter un logement.
-            </p>
+          {/* Upload New Photos */}
+          {photos.length < 10 && (
+            <div className="space-y-4">
+              <p className="text-sm font-medium text-neutral-900">Ajouter des photos</p>
+              <PhotoUploadZone
+                onFilesSelected={setSelectedFiles}
+                maxFiles={10 - photos.length}
+                className="mt-4"
+              />
+            </div>
           )}
 
           <div className="flex flex-col gap-3 border-t border-neutral-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-neutral-500">Les informations seront visibles dans la liste et sur la fiche du logement.</p>
-            <Button type="submit" className="min-w-[220px]" disabled={loading || !immeubles.length}>
-              {loading ? "Enregistrement..." : "Enregistrer le logement"}
+            <p className="text-sm text-neutral-500">Les modifications sont visibles immédiatement.</p>
+            <Button type="submit" className="min-w-[220px]" disabled={loading}>
+              {loading ? "Enregistrement..." : "Enregistrer les modifications"}
             </Button>
           </div>
         </form>
       </div>
     </div>
-  );
-}
-
-export default function NewLogementPage() {
-  return (
-    <Suspense fallback={null}>
-      <NewLogementForm />
-    </Suspense>
   );
 }

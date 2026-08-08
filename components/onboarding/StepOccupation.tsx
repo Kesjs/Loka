@@ -39,11 +39,15 @@ export default function StepOccupation({ logements, onChange, onNext }: StepOccu
             key={i}
             className="border border-neutral-200 rounded-md overflow-hidden"
           >
-            <div className="flex items-center justify-between px-3 py-2.5">
-              <span className="text-sm font-medium text-neutral-800">
-                {logement.nom}
-              </span>
-              <div className="flex items-center rounded-md bg-neutral-100 p-0.5 text-xs font-medium">
+            <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+              <input
+                type="text"
+                value={logement.nom}
+                onChange={(e) => updateLogement(i, { nom: e.target.value })}
+                className="flex-1 min-w-0 rounded-md border border-transparent bg-transparent px-1 text-sm font-medium text-neutral-800 outline-none transition hover:border-neutral-200 focus:border-primary-400 focus:bg-white"
+                aria-label="Nom du logement"
+              />
+              <div className="flex items-center rounded-md bg-neutral-100 p-0.5 text-xs font-medium shrink-0">
                 <button
                   type="button"
                   onClick={() => toggleOccupe(i, false)}
@@ -68,6 +72,23 @@ export default function StepOccupation({ logements, onChange, onNext }: StepOccu
                 </button>
               </div>
             </div>
+
+            {/* Loyer demandé pour tous les logements, occupés ou vacants,
+                pour que le "revenu potentiel" du dashboard soit fiable dès le départ */}
+            {!logement.occupe && (
+              <div className="border-t border-neutral-100 bg-neutral-50 px-3 py-3">
+                <label className="text-xs font-medium text-neutral-600 flex items-center gap-1">
+                  <CurrencyCircleDollar size={13} /> Loyer visé (mensuel)
+                </label>
+                <input
+                  type="text"
+                  value={logement.loyer ?? ""}
+                  onChange={(e) => updateLogement(i, { loyer: e.target.value })}
+                  className="mt-1 w-full h-9 px-2.5 rounded-md border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Ex : 50 000"
+                />
+              </div>
+            )}
 
             {logement.occupe && (
               <div className="border-t border-neutral-100 bg-neutral-50 px-3 py-3 space-y-2.5">

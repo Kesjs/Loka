@@ -129,11 +129,29 @@ export const ImmeubleSchema = z.object({
 export type CreateImmeubleDTO = z.infer<typeof ImmeubleSchema>
 
 export const LogementSchema = z.object({
-  nom: z.string().min(2),
-  immeuble_id: z.string().uuid(),
+  nom: z.string().min(2, "Nom doit avoir au moins 2 caractères"),
+  immeuble_id: z.string().uuid("ID immeuble invalide"),
   type: z.string().optional(),
-  loyer_mensuel: z.number().positive(),
+  description: z.string().optional(),
+  loyer_mensuel: z.number().positive("Loyer doit être positif"),
   statut: z.enum(["occupe", "vacant"]),
+  
+  // Characteristics
+  chambres: z.number().int().positive("Nombre de chambres invalide").optional().default(1),
+  salles_bain: z.number().int().positive("Nombre de salles de bain invalide").optional().default(1),
+  surface_m2: z.number().positive("Surface doit être positive").optional(),
+  
+  // Amenities
+  amenities: z.array(z.string()).optional().default([]),
+  
+  // Photos (URLs stored after upload)
+  photo_principale: z.string().url().optional(),
+  photos_additionnelles: z.array(z.string().url()).optional().default([]),
 })
 
 export type CreateLogementDTO = z.infer<typeof LogementSchema>
+
+// Schema for updating logement (all fields optional)
+export const UpdateLogementSchema = LogementSchema.partial().omit({ immeuble_id: true })
+
+export type UpdateLogementDTO = z.infer<typeof UpdateLogementSchema>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Buildings, CheckCircle, MapPin, Tag } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,8 @@ interface FieldErrors {
   nom?: string;
 }
 
-export default function NewImmeublePage() {
+export default function EditImmeublePage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const supabase = createClient();
 
@@ -32,7 +33,33 @@ export default function NewImmeublePage() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    async function loadImmeuble() {
+      const { data, error: fetchError } = await supabase
+        .from("immeubles")
+        .select("nom, adresse, ville, type")
+        .eq("id", params.id)
+        .maybeSingle();
+
+      if (fetchError || !data) {
+        setError("Immeuble introuvable.");
+        setInitialLoading(false);
+        return;
+      }
+
+      setNom(data.nom ?? "");
+      setAdresse(data.adresse ?? "");
+      setVille(data.ville ?? "");
+      setTypeImmeuble(data.type ?? "");
+      setInitialLoading(false);
+    }
+
+    loadImmeuble();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,44 +72,51 @@ export default function NewImmeublePage() {
     setFieldErrors({});
     setLoading(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { error: updateError } = await supabase
+      .from("immeubles")
+      .update({
+        nom: nom.trim(),
+        adresse: adresse || null,
+        ville: ville || null,
+        type: typeImmeuble || null,
+      })
+      .eq("id", params.id);
 
-    if (!user) {
-      setError("Session expirée, merci de vous reconnecter.");
-      setLoading(false);
-      return;
-    }
-
-    const { error: insertError } = await supabase.from("immeubles").insert({
-      proprietaire_id: user.id,
-      nom: nom.trim(),
-      adresse: adresse || null,
-      ville: ville || null,
-      type: typeImmeuble || null,
-    });
-
-    if (insertError) {
-      setError(mapDbError(insertError));
+    if (updateError) {
+      setError(mapDbError(updateError));
       setLoading(false);
       return;
     }
 
     setSaved(true);
     setLoading(false);
-    setTimeout(() => router.push("/immeubles"), 500);
+    setTimeout(() => router.push(`/immeubles/${params.id}`), 500);
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm animate-pulse">
+          <div className="h-6 w-1/3 rounded bg-neutral-100" />
+          <div className="mt-6 space-y-4">
+            <div className="h-12 rounded-2xl bg-neutral-100" />
+            <div className="h-12 rounded-2xl bg-neutral-100" />
+            <div className="h-12 rounded-2xl bg-neutral-100" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-5 animate-[fadeIn_0.3s_ease-out]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary-600">Ajout d'immeuble</p>
-          <h1 className="text-2xl font-semibold text-neutral-900">Créer un nouveau bien</h1>
-          <p className="mt-1 text-sm text-neutral-500">Enregistrez un nouveau bien immobilier et préparez son suivi.</p>
+          <p className="text-sm font-medium text-primary-600">Modification</p>
+          <h1 className="text-2xl font-semibold text-neutral-900">Modifier l'immeuble</h1>
+          <p className="mt-1 text-sm text-neutral-500">Mettez à jour les informations de ce bien.</p>
         </div>
-        <Link href="/immeubles" className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-800">
+        <Link href={`/immeubles/${params.id}`} className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-800">
           <ArrowLeft size={15} /> Annuler
         </Link>
       </div>
@@ -91,7 +125,7 @@ export default function NewImmeublePage() {
         {error && <div className="mb-5 rounded-2xl bg-danger-50 px-4 py-3 text-sm text-danger-700">{error}</div>}
         {saved && (
           <div className="mb-5 flex items-center gap-3 rounded-2xl bg-success-50 px-4 py-3 text-sm text-success-700">
-            <CheckCircle size={18} /> Immeuble enregistré avec succès.
+            <CheckCircle size={18} /> Immeuble mis à jour avec succès.
           </div>
         )}
 
@@ -152,9 +186,9 @@ export default function NewImmeublePage() {
           </FormField>
 
           <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-neutral-500">Ces informations permettront un meilleur suivi de votre patrimoine.</p>
+            <p className="text-sm text-neutral-500">Les modifications sont visibles immédiatement.</p>
             <Button type="submit" className="min-w-[220px]" disabled={loading}>
-              {loading ? "Sauvegarde..." : "Enregistrer l'immeuble"}
+              {loading ? "Sauvegarde..." : "Enregistrer les modifications"}
             </Button>
           </div>
         </form>

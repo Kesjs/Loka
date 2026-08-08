@@ -39,7 +39,7 @@ export default function StepHousingCount({
           Combien de logements possède ce bien ?
         </h2>
         <p className="text-sm text-neutral-500">
-          On les nomme automatiquement, vous pourrez les renommer ensuite.
+          On les nomme automatiquement — vous pourrez modifier chaque nom et loyer à l'étape suivante.
         </p>
       </div>
 

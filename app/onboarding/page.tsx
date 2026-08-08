@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AnimatePresence, motion, Variants } from "framer-motion";
+import { ArrowLeft } from "@phosphor-icons/react";
 import ProgressDots from "@/components/onboarding/ProgressDots";
 import StepWelcome from "@/components/onboarding/StepWelcome";
 import StepObjective from "@/components/onboarding/StepObjective";
@@ -23,21 +24,46 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { saveOnboarding } from "@/lib/onboarding-save";
 
+const DRAFT_KEY = "loka_onboarding_draft";
+
 const variants: Variants = {
   enter: { opacity: 0, x: 24 },
   center: { opacity: 1, x: 0 },
   exit: { opacity: 0, x: -24 },
 };
 
+function loadDraft(): { step: number; data: OnboardingData } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [data, setData] = useState<OnboardingData>(initialOnboardingData);
+  const [step, setStep] = useState(() => loadDraft()?.step ?? 0);
+  const [data, setData] = useState<OnboardingData>(() => loadDraft()?.data ?? initialOnboardingData);
   const [finishing, setFinishing] = useState(false);
   const [finishError, setFinishError] = useState("");
 
+  // Sauvegarde locale à chaque étape : évite de tout perdre si l'app
+  // se ferme ou plante avant l'écran final (seul moment où saveOnboarding
+  // écrit en base).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, data }));
+  }, [step, data]);
+
   function next() {
     setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
+  }
+
+  function prev() {
+    setStep((s) => Math.max(s - 1, 0));
   }
 
   async function handleFinish() {
@@ -51,6 +77,10 @@ export default function OnboardingPage() {
       setFinishError(error);
       setFinishing(false);
       return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(DRAFT_KEY);
     }
 
     router.push("/home");
@@ -220,6 +250,15 @@ export default function OnboardingPage() {
           />
         </div>
         <div className="bg-white border border-neutral-200 rounded-lg shadow-sm p-6 overflow-hidden">
+          {step > 0 && (
+            <button
+              type="button"
+              onClick={prev}
+              className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-800"
+            >
+              <ArrowLeft size={14} /> Retour
+            </button>
+          )}
           {step > 0 && step < TOTAL_STEPS - 1 && (
             <ProgressDots current={step} total={TOTAL_STEPS} />
           )}

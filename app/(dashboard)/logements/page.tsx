@@ -1,82 +1,114 @@
-﻿import Link from "next/link";
-import { Plus, Buildings, House, TrendUp, UsersThree } from "@phosphor-icons/react/dist/ssr";
-import { formatMontant } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/server";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+﻿'use client';
 
-interface LogementsPageProps {
-  searchParams: Promise<{ immeuble?: string; statut?: string }>;
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Plus, Buildings, House, TrendUp, UsersThree, List, GridFour, MagnifyingGlass, X } from '@phosphor-icons/react/dist/ssr';
+import { formatMontant } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { PropertyCard } from '@/components/logements/PropertyCard';
+import { PropertyRow } from '@/components/logements/PropertyRow';
+import { cn } from '@/lib/utils';
+import { Logement } from '@/lib/types';
+
+type ViewMode = 'grid' | 'list';
+type SortBy = 'nom' | 'loyer' | 'surface';
+
+interface FiltersState {
+  search: string;
+  immeuble: string;
+  statut: '' | 'occupe' | 'vacant';
+  amenities: string[];
 }
 
-export default async function LogementsPage({ searchParams }: LogementsPageProps) {
-  const { immeuble: filtreImmeuble, statut: filtreStatut } = await searchParams;
-  const supabase = await createClient();
+export default function LogementsPage() {
+  const [logements, setLogements] = useState<Logement[]>([]);
+  const [immeubles, setImmeubles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [sortBy, setSortBy] = useState<SortBy>('nom');
+  const [filters, setFilters] = useState<FiltersState>({
+    search: '',
+    immeuble: '',
+    statut: '',
+    amenities: [],
+  });
+  const [error, setError] = useState('');
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Fetch data on mount
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
 
-  if (!user) {
-    return (
-      <div className="space-y-4">
-        <Card className="border-neutral-200 shadow-sm">
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-neutral-500">Connectez-vous pour voir vos logements.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+        // Fetch immeubles
+        const immeublesRes = await fetch('/api/immeubles?limit=100');
+        if (immeublesRes.ok) {
+          const immeublesData = await immeublesRes.json();
+          setImmeubles(immeublesData.immeubles || []);
+        }
 
-  const { data: immeubles } = await supabase
-    .from("immeubles")
-    .select("id, nom")
-    .eq("proprietaire_id", user.id)
-    .order("nom", { ascending: true });
+        // Fetch logements with filters
+        const params = new URLSearchParams();
+        if (filters.immeuble) params.append('immeuble_id', filters.immeuble);
+        if (filters.statut) params.append('statut', filters.statut);
+        if (filters.amenities.length > 0) {
+          params.append('amenities', JSON.stringify(filters.amenities));
+        }
 
-  const immeubleIds = (immeubles ?? []).map((i) => i.id);
+        const logementsRes = await fetch(`/api/logements?${params.toString()}`);
+        if (logementsRes.ok) {
+          const logementsData = await logementsRes.json();
+          setLogements(logementsData.logements || []);
+        }
 
-  let query = immeubleIds.length
-    ? supabase
-        .from("logements")
-        .select("id, nom, type, loyer_mensuel, statut, immeuble_id")
-        .in("immeuble_id", immeubleIds)
-        .order("nom", { ascending: true })
-    : null;
+        setLoading(false);
+      } catch (err) {
+        setError('Erreur lors du chargement des logements');
+        setLoading(false);
+      }
+    }
 
-  if (query && filtreImmeuble) {
-    query = query.eq("immeuble_id", filtreImmeuble);
-  }
-  if (query && filtreStatut) {
-    query = query.eq("statut", filtreStatut);
-  }
+    fetchData();
+  }, [filters]);
 
-  const { data: logementsRaw } = query ? await query : { data: [] };
+  // Filter and sort logements
+  const filteredLogements = logements
+    .filter((l) => {
+      // Search filter
+      if (
+        filters.search &&
+        !l.nom?.toLowerCase().includes(filters.search.toLowerCase())
+      ) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'nom') {
+        return (a.nom || '').localeCompare(b.nom || '');
+      }
+      if (sortBy === 'loyer') {
+        return a.loyer_mensuel - b.loyer_mensuel;
+      }
+      if (sortBy === 'surface') {
+        return (a.surface_m2 || 0) - (b.surface_m2 || 0);
+      }
+      return 0;
+    });
 
-  const logements = (logementsRaw ?? []).map((l) => ({
-    id: l.id,
-    nom: l.nom,
-    type: l.type,
-    loyer: Number(l.loyer_mensuel) || 0,
-    statut: l.statut as "occupe" | "vacant",
-    immeuble_id: l.immeuble_id,
-    immeuble_nom: (immeubles ?? []).find((i) => i.id === l.immeuble_id)?.nom ?? "",
-  }));
-
-  const nbOccupes = logements.filter((item) => item.statut === "occupe").length;
-  const loyerTotal = logements.reduce((sum, item) => sum + item.loyer, 0);
+  const nbOccupes = filteredLogements.filter((l) => l.statut === 'occupe').length;
+  const loyerTotal = filteredLogements.reduce((sum, l) => sum + l.loyer_mensuel, 0);
 
   return (
     <div className="space-y-5 animate-[fadeIn_0.3s_ease-out]">
+      {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-medium text-primary-600">Gestion des logements</p>
           <h1 className="text-2xl font-semibold text-neutral-900">Votre portefeuille immobilier</h1>
           <p className="mt-1 text-sm text-neutral-500">
-            {logements.length} logement{logements.length > 1 ? "s" : ""} • {nbOccupes} occupé{nbOccupes > 1 ? "s" : ""}
+            {filteredLogements.length} logement{filteredLogements.length > 1 ? 's' : ''} • {nbOccupes} occupé{nbOccupes > 1 ? 's' : ''}
           </p>
         </div>
         <Button asChild className="w-full lg:w-auto">
@@ -87,6 +119,7 @@ export default async function LogementsPage({ searchParams }: LogementsPageProps
         </Button>
       </div>
 
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-neutral-200 shadow-sm">
           <CardContent className="flex items-center gap-3 p-4">
@@ -95,7 +128,7 @@ export default async function LogementsPage({ searchParams }: LogementsPageProps
             </div>
             <div>
               <p className="text-sm text-neutral-500">Total logements</p>
-              <p className="text-lg font-semibold text-neutral-900">{logements.length}</p>
+              <p className="text-lg font-semibold text-neutral-900">{filteredLogements.length}</p>
             </div>
           </CardContent>
         </Card>
@@ -123,14 +156,62 @@ export default async function LogementsPage({ searchParams }: LogementsPageProps
         </Card>
       </div>
 
-      {immeubles && immeubles.length > 0 && (
-        <Card className="border-neutral-200 shadow-sm">
-          <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center">
-            <form className="flex flex-1 flex-wrap gap-2">
+      {/* Filters & Controls */}
+      <Card className="border-neutral-200 shadow-sm">
+        <CardContent className="p-4 space-y-4">
+          {/* Search & View Toggle */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative flex-1 max-w-xs">
+              <MagnifyingGlass size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                className="w-full pl-9 pr-3 py-2 rounded-2xl border border-neutral-300 bg-white text-sm placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
+              />
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-2 bg-neutral-100 rounded-2xl p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={cn(
+                  'flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium transition-all',
+                  viewMode === 'grid'
+                    ? 'bg-white text-primary-600 shadow-sm'
+                    : 'text-neutral-600 hover:text-neutral-900'
+                )}
+                title="Vue grille"
+              >
+                <GridFour size={16} />
+                <span className="hidden sm:inline">Grille</span>
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium transition-all',
+                  viewMode === 'list'
+                    ? 'bg-white text-primary-600 shadow-sm'
+                    : 'text-neutral-600 hover:text-neutral-900'
+                )}
+                title="Vue liste"
+              >
+                <List size={16} />
+                <span className="hidden sm:inline">Liste</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Filter Dropdowns */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end flex-wrap">
+            {/* Immeuble Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="text-xs font-semibold text-neutral-600 block mb-1">Immeuble</label>
               <select
-                name="immeuble"
-                defaultValue={filtreImmeuble ?? ""}
-                className="h-10 flex-1 rounded-2xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                value={filters.immeuble}
+                onChange={(e) => setFilters({ ...filters, immeuble: e.target.value })}
+                className="w-full h-10 px-3 rounded-2xl border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
               >
                 <option value="">Tous les immeubles</option>
                 {immeubles.map((i) => (
@@ -139,74 +220,105 @@ export default async function LogementsPage({ searchParams }: LogementsPageProps
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="text-xs font-semibold text-neutral-600 block mb-1">Statut</label>
               <select
-                name="statut"
-                defaultValue={filtreStatut ?? ""}
-                className="h-10 flex-1 rounded-2xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                value={filters.statut}
+                onChange={(e) => setFilters({ ...filters, statut: e.target.value as any })}
+                className="w-full h-10 px-3 rounded-2xl border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
               >
                 <option value="">Tous les statuts</option>
                 <option value="occupe">Occupé</option>
                 <option value="vacant">Vacant</option>
               </select>
-              <Button type="submit" variant="outline" size="sm" className="h-10">
-                Filtrer
-              </Button>
-            </form>
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="text-xs font-semibold text-neutral-600 block mb-1">Trier par</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortBy)}
+                className="w-full h-10 px-3 rounded-2xl border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
+              >
+                <option value="nom">Nom</option>
+                <option value="loyer">Loyer</option>
+                <option value="surface">Surface</option>
+              </select>
+            </div>
+
+            {/* Reset Filters */}
+            {(filters.search || filters.immeuble || filters.statut) && (
+              <button
+                onClick={() => setFilters({ search: '', immeuble: '', statut: '', amenities: [] })}
+                className="flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition"
+                title="Réinitialiser"
+              >
+                <X size={16} />
+                <span className="hidden sm:inline">Réinitialiser</span>
+              </button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <p className="text-neutral-500">Chargement...</p>
+        </div>
+      ) : error ? (
+        <Card className="border-danger-200 bg-danger-50">
+          <CardContent className="py-6 text-center">
+            <p className="text-sm text-danger-700">{error}</p>
           </CardContent>
         </Card>
-      )}
-
-      {logements.length === 0 ? (
+      ) : filteredLogements.length === 0 ? (
         <Card className="border-neutral-200 shadow-sm">
-          <CardContent className="py-12 text-center space-y-3">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
-              <Buildings size={24} />
-            </div>
+          <CardContent className="py-10 text-center">
             <p className="text-sm text-neutral-500">
-              {filtreImmeuble || filtreStatut
-                ? "Aucun logement ne correspond à ce filtre."
-                : "Aucun logement enregistré pour le moment."}
+              {filters.search || filters.immeuble || filters.statut
+                ? 'Aucun logement ne correspond à vos critères.'
+                : 'Aucun logement enregistré pour le moment.'}
             </p>
-            {!filtreImmeuble && !filtreStatut && (
-              <Link href="/immeubles" className="text-sm font-medium text-primary-600 hover:text-primary-700">
-                Ajouter un immeuble →
+            {!filters.search && !filters.immeuble && !filters.statut && (
+              <Link
+                href="/logements/new"
+                className="text-sm font-medium text-primary-600 hover:text-primary-700 mt-2 inline-block"
+              >
+                Ajouter votre premier logement →
               </Link>
             )}
           </CardContent>
         </Card>
+      ) : viewMode === 'grid' ? (
+        // Grid View
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {filteredLogements.map((logement) => (
+            <PropertyCard
+              key={logement.id}
+              logement={logement}
+              immeubleName={immeubles.find((i) => i.id === logement.immeuble_id)?.nom}
+            />
+          ))}
+        </div>
       ) : (
-        <Card className="overflow-hidden border-neutral-200 shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Immeuble</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Loyer</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {logements.map((l) => (
-                <TableRow key={l.id} className="transition-colors duration-200 hover:bg-neutral-50">
-                  <TableCell>
-                    <Link href={`/logements/${l.id}`} className="font-medium text-neutral-900 transition-colors hover:text-primary-600 hover:underline">
-                      {l.nom ?? "—"}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-neutral-600">{l.immeuble_nom}</TableCell>
-                  <TableCell className="text-neutral-500 capitalize">{l.type ?? "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant={l.statut === "occupe" ? "success" : "neutral"}>
-                      {l.statut === "occupe" ? "Occupé" : "Vacant"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">{formatMontant(l.loyer)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
+        // List View
+        <div className="space-y-3">
+          {filteredLogements.map((logement) => (
+            <PropertyRow
+              key={logement.id}
+              logement={logement}
+              immeubleName={immeubles.find((i) => i.id === logement.immeuble_id)?.nom}
+              onEdit={(id) => {
+                // Handle edit if needed
+              }}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

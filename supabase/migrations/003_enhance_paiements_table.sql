@@ -21,10 +21,9 @@ WHERE proprietaire_id IS NULL;
 ALTER TABLE paiements 
 ALTER COLUMN proprietaire_id SET NOT NULL;
 
--- Add unique constraint to prevent duplicate payments for same contract/month
-ALTER TABLE paiements 
-ADD CONSTRAINT unique_payment_per_month 
-UNIQUE (contrat_id, date_trunc('month', periode_debut));
+-- Add unique index to prevent duplicate payments for same contract/month
+CREATE UNIQUE INDEX idx_unique_payment_per_month 
+ON paiements(contrat_id, date_trunc('month', periode_debut));
 
 -- Create indexes for performance
 CREATE INDEX idx_paiements_proprietaire ON paiements(proprietaire_id);

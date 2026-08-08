@@ -37,10 +37,25 @@ export interface Immeuble {
 export interface Logement {
   id: string;
   immeuble_id: string;
+  proprietaire_id: string;
   nom: string | null;
   type: string | null;
+  description: string | null;
   loyer_mensuel: number;
   statut: StatutLogement;
+  
+  // Characteristics
+  chambres: number;
+  salles_bain: number;
+  surface_m2: number | null;
+  
+  // Photos & Media
+  photo_principale: string | null;
+  photos_additionnelles: string[];
+  
+  // Amenities
+  amenities: string[];
+  
   created_at: string;
   updated_at: string;
 }

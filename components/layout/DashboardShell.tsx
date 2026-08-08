@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
 import NavigationDrawer from "@/components/layout/NavigationDrawer";
-import { NAV_TITLES } from "@/components/layout/nav-items";
 
 interface DashboardShellProps {
   children: ReactNode;
@@ -15,10 +14,6 @@ interface DashboardShellProps {
 export default function DashboardShell({ children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
-
-  const title = Object.entries(NAV_TITLES).find(([href]) =>
-    pathname?.startsWith(href)
-  )?.[1];
 
   const handleHamburgerClick = () => {
     setSidebarOpen((prev) => !prev);
@@ -38,7 +33,6 @@ export default function DashboardShell({ children }: DashboardShellProps) {
         sidebarOpen ? "lg:ml-64" : "lg:ml-24"
       )}>
         <Navbar 
-          title={title} 
           onMenuClick={handleHamburgerClick}
           sidebarOpen={sidebarOpen}
         />

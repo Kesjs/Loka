@@ -10,12 +10,11 @@ import { AlertBell } from "@/components/alerts";
 import { allNavItems } from "@/components/layout/nav-items";
 
 interface NavbarProps {
-  title?: string;
   onMenuClick?: () => void;
   sidebarOpen?: boolean;
 }
 
-export default function Navbar({ title, onMenuClick, sidebarOpen = true }: NavbarProps) {
+export default function Navbar({ onMenuClick, sidebarOpen = true }: NavbarProps) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -59,8 +58,9 @@ export default function Navbar({ title, onMenuClick, sidebarOpen = true }: Navba
 
         {/* Page Title */}
         <div className="hidden sm:block">
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-neutral-400">Tableau de bord</p>
-          <h1 className="text-lg font-semibold text-neutral-900">{title ?? "Vue d'ensemble"}</h1>
+          <h1 className="text-lg font-semibold text-neutral-900">
+            Tableau de bord
+          </h1>
         </div>
       </div>
 

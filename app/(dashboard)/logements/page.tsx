@@ -102,13 +102,14 @@ export default function LogementsPage() {
   const loyerTotal = filteredLogements.reduce((sum, l) => sum + l.loyer_mensuel, 0);
 
   return (
-    <div className="space-y-5 animate-[fadeIn_0.3s_ease-out]">
-      {/* Action Button Only */}
-      <div className="flex justify-end">
+    <div className="space-y-6 animate-[fadeIn_0.3s_ease-out]">
+      {/* Page Title */}
+      <div className="flex items-end justify-between gap-4">
+        <h2 className="text-2xl font-semibold text-neutral-900">Mes logements</h2>
         <Button asChild>
           <Link href="/logements/new">
             <Plus size={16} weight="bold" />
-            Ajouter un logement
+            Ajouter
           </Link>
         </Button>
       </div>

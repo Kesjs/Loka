@@ -103,15 +103,9 @@ export default function LogementsPage() {
 
   return (
     <div className="space-y-5 animate-[fadeIn_0.3s_ease-out]">
-      {/* Header - Titre + Action */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">Mes logements</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {filteredLogements.length} logement{filteredLogements.length > 1 ? 's' : ''} • {nbOccupes} occupé{nbOccupes > 1 ? 's' : ''}
-          </p>
-        </div>
-        <Button asChild className="w-full lg:w-auto">
+      {/* Action Button Only */}
+      <div className="flex justify-end">
+        <Button asChild>
           <Link href="/logements/new">
             <Plus size={16} weight="bold" />
             Ajouter un logement

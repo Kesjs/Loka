@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { FormField, fieldInputClass, fieldInputErrorClass } from "@/components/ui/form-field";
 import { CurrencyInput } from "@/components/ui/currency-input";
+import { Select } from "@/components/ui/select";
 import { PhotoManager } from "@/components/logements/PhotoManager";
 import { AmenitiesSelect } from "@/components/logements/AmenitiesSelect";
 import { PhotoUploadZone } from "@/components/logements/PhotoUploadZone";
@@ -369,7 +370,6 @@ export default function EditLogementPage() {
             <AmenitiesSelect
               selected={amenities}
               onChange={setAmenities}
-              placeholder="Cliquez pour sélectionner les équipements..."
             />
           </FormField>
 

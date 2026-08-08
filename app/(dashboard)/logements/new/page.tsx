@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CheckCircle, House, ArrowLeft, Tag, Buildings, CurrencyCircleDollar, ToggleLeft, TextAa, Ruler } from "@phosphor-icons/react/dist/ssr";
 import { FormField, fieldInputClass, fieldInputErrorClass } from "@/components/ui/form-field";
 import { CurrencyInput } from "@/components/ui/currency-input";
+import { Select } from "@/components/ui/select";
 import { PhotoUploadZone } from "@/components/logements/PhotoUploadZone";
 import { AmenitiesSelect } from "@/components/logements/AmenitiesSelect";
 import { mapDbError } from "@/lib/db-errors";
@@ -234,45 +235,33 @@ function NewLogementForm() {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <FormField label="Immeuble" icon={Buildings} required error={fieldErrors.immeubleId}>
-              <select
+              <Select
                 value={immeubleId}
-                onChange={(event) => setImmeubleId(event.target.value)}
-                className={fieldErrors.immeubleId ? fieldInputErrorClass : fieldInputClass}
-              >
-                <option value="" disabled>
-                  Sélectionner un immeuble
-                </option>
-                {immeubles.map((immeuble) => (
-                  <option key={immeuble.id} value={immeuble.id}>
-                    {immeuble.nom}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setImmeubleId(value as string)}
+                options={[
+                  { value: '', label: 'Sélectionner un immeuble' },
+                  ...immeubles.map((i) => ({ value: i.id, label: i.nom }))
+                ]}
+              />
             </FormField>
 
             <FormField label="Type de logement" icon={Tag}>
-              <select
+              <Select
                 value={typeLogement}
-                onChange={(event) => setTypeLogement(event.target.value)}
-                className={fieldInputClass}
-              >
-                {logementTypes.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setTypeLogement(value as string)}
+                options={logementTypes}
+              />
             </FormField>
 
             <FormField label="Statut" icon={ToggleLeft}>
-              <select
+              <Select
                 value={statut}
-                onChange={(event) => setStatut(event.target.value as Statut)}
-                className={fieldInputClass}
-              >
-                <option value="vacant">Vacant</option>
-                <option value="occupe">Occupé</option>
-              </select>
+                onChange={(value) => setStatut(value as Statut)}
+                options={[
+                  { value: 'vacant', label: 'Vacant' },
+                  { value: 'occupe', label: 'Occupé' }
+                ]}
+              />
             </FormField>
           </div>
 
@@ -368,7 +357,6 @@ function NewLogementForm() {
             <AmenitiesSelect
               selected={amenities}
               onChange={setAmenities}
-              placeholder="Cliquez pour sélectionner les équipements..."
             />
           </FormField>
 

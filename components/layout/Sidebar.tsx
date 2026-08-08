@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
-import { navigationStructure } from "./nav-items";
+import { flatNavItems } from "./nav-items";
 
 interface SidebarProps {
   open: boolean;
@@ -26,16 +26,6 @@ export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
       width: 72,
       transition: { duration: 0.3, ease: "easeInOut" },
     },
-  };
-
-  const logoVariants = {
-    open: { opacity: 1, x: 0 },
-    collapsed: { opacity: 0, x: -10 },
-  };
-
-  const labelVariants = {
-    open: { opacity: 1, x: 0 },
-    collapsed: { opacity: 0, x: -10 },
   };
 
   return (
@@ -109,80 +99,69 @@ export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
         )}
       </div>
 
-      {/* Navigation Sections */}
-      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-        {navigationStructure.map(({ section, items }) => (
-          <motion.div
-            key={section}
-            className="space-y-1"
-            animate={collapsed ? "collapsed" : "open"}
-          >
-            {!collapsed && (
-              <motion.h3
-                variants={labelVariants}
-                className="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider"
+      {/* Navigation Items */}
+      <nav className="flex-1 px-3 py-4 space-y-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+        {flatNavItems.map(({ href, label, icon: Icon, divider }, index) => {
+          const isActive = pathname?.startsWith(href);
+          return (
+            <div key={href}>
+              <motion.div
+                whileHover={{ x: collapsed ? 0 : 4 }}
+                transition={{ duration: 0.2 }}
               >
-                {section}
-              </motion.h3>
-            )}
-            <div className="space-y-1">
-              {items.map(({ href, label, icon: Icon }) => {
-                const isActive = pathname?.startsWith(href);
-                return (
+                <Link
+                  href={href}
+                  title={collapsed ? label : undefined}
+                  className={`group relative flex items-center gap-3 rounded-md text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-gradient-to-r from-primary-500/20 to-primary-500/10 text-primary-400 shadow-lg shadow-primary-500/20"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
+                  } ${
+                    collapsed 
+                      ? "justify-center px-2 py-2.5 w-full" 
+                      : "px-3 py-2.5"
+                  }`}
+                >
                   <motion.div
-                    key={href}
-                    whileHover={{ x: collapsed ? 0 : 4 }}
+                    animate={{ scale: isActive ? 1.1 : 1 }}
                     transition={{ duration: 0.2 }}
+                    className="shrink-0"
                   >
-                    <Link
-                      href={href}
-                      title={collapsed ? label : undefined}
-                      className={`group relative flex items-center gap-3 rounded-md text-sm font-medium transition-all duration-200 ${
-                        isActive
-                          ? "bg-gradient-to-r from-primary-500/20 to-primary-500/10 text-primary-400 shadow-lg shadow-primary-500/20"
-                          : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
-                      } ${
-                        collapsed 
-                          ? "justify-center px-2 py-2.5 w-full" 
-                          : "px-3 py-2.5"
-                      }`}
-                    >
-                      <motion.div
-                        animate={{ scale: isActive ? 1.1 : 1 }}
-                        transition={{ duration: 0.2 }}
-                        className="shrink-0"
-                      >
-                        <Icon
-                          size={18}
-                          weight={isActive ? "fill" : "regular"}
-                        />
-                      </motion.div>
-                      {!collapsed && (
-                        <motion.span
-                          variants={labelVariants}
-                          className="truncate"
-                        >
-                          {label}
-                        </motion.span>
-                      )}
-
-                      {/* Tooltip on collapse */}
-                      {collapsed && (
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          whileHover={{ opacity: 1 }}
-                          className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-950 px-2 py-1 text-xs text-slate-100 shadow-lg z-10 border border-slate-700"
-                        >
-                          {label}
-                        </motion.span>
-                      )}
-                    </Link>
+                    <Icon
+                      size={18}
+                      weight={isActive ? "fill" : "regular"}
+                    />
                   </motion.div>
-                );
-              })}
+                  {!collapsed && (
+                    <motion.span
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="truncate"
+                    >
+                      {label}
+                    </motion.span>
+                  )}
+
+                  {/* Tooltip on collapse */}
+                  {collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 1 }}
+                      className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-slate-950 px-2 py-1 text-xs text-slate-100 shadow-lg z-10 border border-slate-700"
+                    >
+                      {label}
+                    </motion.span>
+                  )}
+                </Link>
+              </motion.div>
+
+              {/* Divider */}
+              {divider && !collapsed && (
+                <div className="my-1 h-px bg-gradient-to-r from-slate-700 via-slate-600 to-transparent" />
+              )}
             </div>
-          </motion.div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Bouton pour ré-ouvrir quand collapsed */}

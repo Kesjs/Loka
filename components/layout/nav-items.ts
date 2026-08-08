@@ -15,6 +15,7 @@ export interface NavItem {
   href: string;
   label: string;
   icon: Icon;
+  divider?: boolean; // Séparateur après cet item
 }
 
 export interface NavSection {
@@ -22,7 +23,22 @@ export interface NavSection {
   items: NavItem[];
 }
 
-// Structure hiérarchique de la navigation
+// Structure plate sans sections - items divisés visuellement par des traits
+export const flatNavItems: NavItem[] = [
+  { href: "/home", label: "Accueil", icon: House },
+  { href: "/logements", label: "Logements", icon: DoorOpen },
+  { href: "/locataires", label: "Locataires", icon: Users },
+  { href: "/immeubles", label: "Immeubles", icon: Buildings, divider: true },
+  
+  { href: "/paiements", label: "Paiements", icon: Wallet },
+  { href: "/contrats", label: "Contrats", icon: FileText },
+  { href: "/rapports", label: "Rapports", icon: ChartBar, divider: true },
+  
+  { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/parametres", label: "Paramètres", icon: Gear },
+];
+
+// Structure hiérarchique (compatibilité)
 export const navigationStructure: NavSection[] = [
   {
     section: "Gestion",

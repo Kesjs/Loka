@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { House, TrendUp, UsersThree, List, GridFour, MagnifyingGlass, X, FolderOpen, CheckCircle, CircleHalf } from '@phosphor-icons/react/dist/ssr';
+import { Plus, House, TrendUp, UsersThree, List, GridFour, MagnifyingGlass, X, FolderOpen, CheckCircle, CircleHalf } from '@phosphor-icons/react/dist/ssr';
 import { formatMontant } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Select, SelectOption } from '@/components/ui/select';
 import { PropertyCard } from '@/components/logements/PropertyCard';
 import { PropertyRow } from '@/components/logements/PropertyRow';
@@ -102,12 +103,20 @@ export default function LogementsPage() {
 
   return (
     <div className="space-y-5 animate-[fadeIn_0.3s_ease-out]">
-      {/* Header - Titre seulement, pas de redondance */}
-      <div>
-        <h1 className="text-2xl font-semibold text-neutral-900">Mes logements</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          {filteredLogements.length} logement{filteredLogements.length > 1 ? 's' : ''} • {nbOccupes} occupé{nbOccupes > 1 ? 's' : ''}
-        </p>
+      {/* Header - Titre + Action */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-neutral-900">Mes logements</h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            {filteredLogements.length} logement{filteredLogements.length > 1 ? 's' : ''} • {nbOccupes} occupé{nbOccupes > 1 ? 's' : ''}
+          </p>
+        </div>
+        <Button asChild className="w-full lg:w-auto">
+          <Link href="/logements/new">
+            <Plus size={16} weight="bold" />
+            Ajouter un logement
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Cards */}

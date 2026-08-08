@@ -21,16 +21,6 @@ export default function Navbar({ title, onMenuClick, sidebarOpen = true }: Navba
   const [searchOpen, setSearchOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
-  const quickAction = pathname?.startsWith("/locataires")
-    ? { href: "/locataires/new", label: "Nouveau locataire", icon: Users }
-    : pathname?.startsWith("/contrats")
-      ? { href: "/contrats/new", label: "Nouveau contrat", icon: FileText }
-      : pathname?.startsWith("/logements")
-        ? { href: "/logements/new", label: "Nouveau logement", icon: House }
-        : { href: "/immeubles/new", label: "Nouvel immeuble", icon: Buildings };
-
-  const QuickIcon = quickAction.icon;
-
   const suggestions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
@@ -151,15 +141,6 @@ export default function Navbar({ title, onMenuClick, sidebarOpen = true }: Navba
             </div>
           ) : null}
         </div>
-
-        {/* Quick Action Button */}
-        <Link
-          href={quickAction.href}
-          className="hidden items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-100 md:inline-flex"
-        >
-          <QuickIcon size={16} />
-          {quickAction.label}
-        </Link>
         
         {/* Alert Bell */}
         <AlertBell />

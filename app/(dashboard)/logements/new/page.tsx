@@ -177,7 +177,7 @@ function NewLogementForm() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5 animate-[fadeIn_0.3s_ease-out]">
+    <div className="mx-auto w-full space-y-5 animate-[fadeIn_0.3s_ease-out] lg:px-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary-600">Ajout de logement</p>

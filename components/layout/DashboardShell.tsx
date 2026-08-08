@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
 import NavigationDrawer from "@/components/layout/NavigationDrawer";
@@ -25,14 +26,17 @@ export default function DashboardShell({ children }: DashboardShellProps) {
 
   return (
     <div className="min-h-screen flex bg-neutral-50">
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar - Fixed */}
       <Sidebar 
         open={sidebarOpen} 
         onToggleOpen={() => setSidebarOpen((o) => !o)} 
       />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Main Content - Adjusted for fixed sidebar */}
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0 transition-all duration-300",
+        sidebarOpen ? "lg:ml-64" : "lg:ml-24"
+      )}>
         <Navbar 
           title={title} 
           onMenuClick={handleHamburgerClick}

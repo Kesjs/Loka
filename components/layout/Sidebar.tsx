@@ -43,7 +43,7 @@ export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
       initial={false}
       animate={collapsed ? "collapsed" : "open"}
       variants={sidebarVariants}
-      className={`relative hidden lg:flex flex-col shrink-0 h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700 shadow-xl`}
+      className={`fixed hidden lg:flex flex-col shrink-0 h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700 shadow-xl z-30`}
     >
       {/* Header with logo + toggle */}
       <div

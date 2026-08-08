@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Buildings, House, TrendUp, UsersThree, List, GridFour, MagnifyingGlass, X } from '@phosphor-icons/react/dist/ssr';
+import { Plus, House, TrendUp, UsersThree, List, GridFour, MagnifyingGlass, X, FolderOpen, CheckCircle, CircleHalf } from '@phosphor-icons/react/dist/ssr';
 import { formatMontant } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectOption } from '@/components/ui/select';
 import { PropertyCard } from '@/components/logements/PropertyCard';
 import { PropertyRow } from '@/components/logements/PropertyRow';
 import { cn } from '@/lib/utils';
@@ -156,110 +157,105 @@ export default function LogementsPage() {
         </Card>
       </div>
 
-      {/* Filters & Controls */}
+      {/* Filters & Controls - Redesigned */}
       <Card className="border-neutral-200 shadow-sm">
-        <CardContent className="p-4 space-y-4">
-          {/* Search & View Toggle */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative flex-1 max-w-xs">
-              <MagnifyingGlass size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+        <CardContent className="p-5 space-y-4">
+          {/* Search Bar - Clean design */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center sm:justify-between">
+            <div className="relative flex-1 max-w-sm w-full">
+              <MagnifyingGlass size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Rechercher..."
+                placeholder="Chercher par nom..."
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="w-full pl-9 pr-3 py-2 rounded-2xl border border-neutral-300 bg-white text-sm placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
+                className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-neutral-200 bg-white text-sm placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500 transition-all"
               />
             </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-2 bg-neutral-100 rounded-2xl p-1">
+            {/* View Mode Toggle - Redesigned */}
+            <div className="flex items-center gap-1.5 bg-neutral-100 rounded-lg p-1.5 border border-neutral-200">
               <button
                 onClick={() => setViewMode('grid')}
+                title="Vue grille"
                 className={cn(
-                  'flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium transition-all',
+                  'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
                   viewMode === 'grid'
-                    ? 'bg-white text-primary-600 shadow-sm'
+                    ? 'bg-white text-primary-600 shadow-sm border border-neutral-200'
                     : 'text-neutral-600 hover:text-neutral-900'
                 )}
-                title="Vue grille"
               >
-                <GridFour size={16} />
+                <GridFour size={16} weight={viewMode === 'grid' ? 'fill' : 'regular'} />
                 <span className="hidden sm:inline">Grille</span>
               </button>
               <button
                 onClick={() => setViewMode('list')}
+                title="Vue liste"
                 className={cn(
-                  'flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium transition-all',
+                  'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
                   viewMode === 'list'
-                    ? 'bg-white text-primary-600 shadow-sm'
+                    ? 'bg-white text-primary-600 shadow-sm border border-neutral-200'
                     : 'text-neutral-600 hover:text-neutral-900'
                 )}
-                title="Vue liste"
               >
-                <List size={16} />
+                <List size={16} weight={viewMode === 'list' ? 'fill' : 'regular'} />
                 <span className="hidden sm:inline">Liste</span>
               </button>
             </div>
           </div>
 
-          {/* Filter Dropdowns */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end flex-wrap">
+          {/* Advanced Filters - Custom Selects */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* Immeuble Filter */}
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-semibold text-neutral-600 block mb-1">Immeuble</label>
-              <select
-                value={filters.immeuble}
-                onChange={(e) => setFilters({ ...filters, immeuble: e.target.value })}
-                className="w-full h-10 px-3 rounded-2xl border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
-              >
-                <option value="">Tous les immeubles</option>
-                {immeubles.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.nom}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              value={filters.immeuble}
+              onChange={(value) => setFilters({ ...filters, immeuble: value as string })}
+              options={[
+                { value: '', label: 'Tous les immeubles' },
+                ...immeubles.map((i) => ({ value: i.id, label: i.nom, icon: <FolderOpen size={16} weight="fill" /> })),
+              ]}
+              label="Immeuble"
+              clearable={Boolean(filters.immeuble)}
+              icon={<FolderOpen size={16} />}
+            />
 
             {/* Status Filter */}
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-semibold text-neutral-600 block mb-1">Statut</label>
-              <select
-                value={filters.statut}
-                onChange={(e) => setFilters({ ...filters, statut: e.target.value as any })}
-                className="w-full h-10 px-3 rounded-2xl border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
-              >
-                <option value="">Tous les statuts</option>
-                <option value="occupe">Occupé</option>
-                <option value="vacant">Vacant</option>
-              </select>
-            </div>
+            <Select
+              value={filters.statut}
+              onChange={(value) => setFilters({ ...filters, statut: value as any })}
+              options={[
+                { value: '', label: 'Tous les statuts' },
+                { value: 'occupe', label: 'Occupé', icon: <CheckCircle size={16} weight="fill" /> },
+                { value: 'vacant', label: 'Vacant', icon: <CircleHalf size={16} /> },
+              ]}
+              label="Statut"
+              clearable={Boolean(filters.statut)}
+            />
 
             {/* Sort Dropdown */}
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-semibold text-neutral-600 block mb-1">Trier par</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortBy)}
-                className="w-full h-10 px-3 rounded-2xl border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500"
-              >
-                <option value="nom">Nom</option>
-                <option value="loyer">Loyer</option>
-                <option value="surface">Surface</option>
-              </select>
-            </div>
+            <Select
+              value={sortBy}
+              onChange={(value) => setSortBy(value as SortBy)}
+              options={[
+                { value: 'nom', label: 'Trier par nom' },
+                { value: 'loyer', label: 'Loyer (croissant)' },
+                { value: 'surface', label: 'Surface (croissante)' },
+              ]}
+              label="Trier par"
+            />
 
-            {/* Reset Filters */}
+            {/* Reset Button */}
             {(filters.search || filters.immeuble || filters.statut) && (
-              <button
-                onClick={() => setFilters({ search: '', immeuble: '', statut: '', amenities: [] })}
-                className="flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition"
-                title="Réinitialiser"
-              >
-                <X size={16} />
-                <span className="hidden sm:inline">Réinitialiser</span>
-              </button>
+              <div className="flex flex-col justify-end">
+                <button
+                  onClick={() => setFilters({ search: '', immeuble: '', statut: '', amenities: [] })}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all duration-200"
+                  title="Réinitialiser les filtres"
+                >
+                  <X size={16} weight="bold" />
+                  <span className="hidden sm:inline">Réinitialiser</span>
+                </button>
+              </div>
             )}
           </div>
         </CardContent>

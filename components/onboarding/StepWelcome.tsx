@@ -1,11 +1,17 @@
 import { HandWaving } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
 
 interface StepWelcomeProps {
   onNext: () => void;
 }
 
 export default function StepWelcome({ onNext }: StepWelcomeProps) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onNext();
+    }
+  };
+
   return (
     <div className="text-center space-y-6">
       <HandWaving size={40} weight="duotone" className="mx-auto text-accent-500" />
@@ -17,9 +23,13 @@ export default function StepWelcome({ onNext }: StepWelcomeProps) {
           Configurons votre espace ensemble, ça prend 5 minutes.
         </p>
       </div>
-      <Button onClick={onNext} className="w-full">
+      <button
+        onClick={onNext}
+        onKeyDown={handleKeyDown}
+        className="w-full h-10 px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 transition-colors cursor-pointer"
+      >
         Commencer
-      </Button>
+      </button>
     </div>
   );
 }

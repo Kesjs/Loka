@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import OnboardingLayout from "@/components/onboarding/OnboardingLayout";
-import ProgressDots from "@/components/onboarding/ProgressDots";
 import StepWelcome from "@/components/onboarding/StepWelcome";
 import StepProfile from "@/components/onboarding/StepProfile";
 import StepRole from "@/components/onboarding/StepRole";
@@ -16,7 +15,6 @@ import StepHousingCount from "@/components/onboarding/StepHousingCount";
 import StepOccupation from "@/components/onboarding/StepOccupation";
 import StepPaiement from "@/components/onboarding/StepPaiement";
 import StepComplete from "@/components/onboarding/StepComplete";
-import { getStepConfig } from "@/components/onboarding/stepConfig";
 import {
   OnboardingData,
   initialOnboardingData,
@@ -25,29 +23,42 @@ import {
 } from "@/components/onboarding/types";
 import { createClient } from "@/lib/supabase/client";
 import { saveOnboarding } from "@/lib/onboarding-save";
-
-const DRAFT_KEY = "loka_onboarding_draft";
-
-function loadDraft(): { step: number; data: OnboardingData } | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(DRAFT_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
+import {
+  loadOnboardingDraft,
+  saveDraftLocally,
+  saveDraftToDatabase,
+  deleteDraft,
+  createAutoSaveFunction,
+} from "@/lib/onboarding-draft";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState(() => loadDraft()?.step ?? 0);
-  const [data, setData] = useState<OnboardingData>(() => loadDraft()?.data ?? initialOnboardingData);
+  const [step, setStep] = useState(0);
+  const [data, setData] = useState<OnboardingData>(initialOnboardingData);
   const [finishing, setFinishing] = useState(false);
   const [finishError, setFinishError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const autoSaveFunctionRef = useRef<((step: number, data: OnboardingData) => Promise<void>) | null>(null);
 
   const totalSteps = calculateTotalSteps(data.role, data.situation);
-  const stepConfig = getStepConfig(step, data.role, data.situation);
+
+  // Charger le brouillon au montage
+  useEffect(() => {
+    (async () => {
+      const supabase = createClient();
+      const draft = await loadOnboardingDraft(supabase);
+      
+      if (draft) {
+        setStep(draft.step);
+        setData(draft.data);
+      }
+      
+      setIsLoading(false);
+      
+      // Initialiser auto-save
+      autoSaveFunctionRef.current = createAutoSaveFunction(supabase, 30000);
+    })();
+  }, []);
 
   // Auto-skip steps that don't apply to this path
   useEffect(() => {
@@ -56,10 +67,11 @@ export default function OnboardingPage() {
     }
   }, [data.role, step]);
 
+  // Auto-save avec débounce
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, data }));
-  }, [step, data]);
+    if (isLoading) return;
+    autoSaveFunctionRef.current?.(step, data);
+  }, [step, data, isLoading]);
 
   function next() {
     setStep((s) => Math.min(s + 1, totalSteps - 1));
@@ -82,12 +94,22 @@ export default function OnboardingPage() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(DRAFT_KEY);
-    }
+    // Supprimer le brouillon après complétion réussie
+    await deleteDraft(supabase);
 
     router.push("/home");
     router.refresh();
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="space-y-4 text-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-neutral-200 border-t-primary-600 mx-auto" />
+          <p className="text-neutral-600">Chargement de votre onboarding...</p>
+        </div>
+      </div>
+    );
   }
 
   function renderStep() {
@@ -309,11 +331,9 @@ export default function OnboardingPage() {
     <OnboardingLayout
       step={step}
       totalSteps={totalSteps}
+      role={data.role}
+      situation={data.situation}
       onPrev={prev}
-      illustration={stepConfig.illustration}
-      title={stepConfig.title}
-      subtitle={stepConfig.subtitle}
-      iconName={stepConfig.icon as any}
     >
       <AnimatePresence mode="wait">
         <motion.div

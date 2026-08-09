@@ -1,4 +1,4 @@
-import { DoorOpen, Minus, Plus } from "@phosphor-icons/react";
+import { Minus, Plus } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { LogementOccupation, TypeBien } from "./types";
 
@@ -33,16 +33,6 @@ export default function StepHousingCount({
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <DoorOpen size={32} weight="duotone" className="mx-auto text-primary-500" />
-        <h2 className="text-lg font-semibold text-neutral-900">
-          Combien de logements possède ce bien ?
-        </h2>
-        <p className="text-sm text-neutral-500">
-          On les nomme automatiquement — vous pourrez modifier chaque nom et loyer à l'étape suivante.
-        </p>
-      </div>
-
       <div className="flex items-center justify-center gap-6">
         <button
           type="button"

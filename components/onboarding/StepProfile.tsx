@@ -12,20 +12,10 @@ export default function StepProfile({ value, onChange, onNext }: StepProfileProp
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold text-neutral-900">
-          Parlez-nous de vous
-        </h2>
-        <p className="text-sm text-neutral-500 mt-1">
-          Ces informations apparaîtront sur vos quittances.
-        </p>
-      </div>
-
       <div className="space-y-3">
-        {/* Nom */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-            <User size={15} /> 
+          <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-900">
+            <User size={15} />
             Nom
             <span className="text-danger-600">*</span>
           </label>
@@ -40,14 +30,13 @@ export default function StepProfile({ value, onChange, onNext }: StepProfileProp
               }
             }}
             placeholder="Ex : Marie Dossou"
-            className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="h-10 w-full rounded-md border border-neutral-300 px-3 text-sm placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
-        {/* Téléphone */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-            <Phone size={15} /> 
+          <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-900">
+            <Phone size={15} />
             Téléphone
             <span className="text-danger-600">*</span>
           </label>
@@ -62,14 +51,13 @@ export default function StepProfile({ value, onChange, onNext }: StepProfileProp
               }
             }}
             placeholder="+229 97 00 00 00"
-            className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="h-10 w-full rounded-md border border-neutral-300 px-3 text-sm placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
-        {/* Email */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-            <EnvelopeSimple size={15} /> 
+          <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-900">
+            <EnvelopeSimple size={15} />
             Email
           </label>
           <input
@@ -83,12 +71,11 @@ export default function StepProfile({ value, onChange, onNext }: StepProfileProp
               }
             }}
             placeholder="marie@exemple.com"
-            className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="h-10 w-full rounded-md border border-neutral-300 px-3 text-sm placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
       </div>
 
-      {/* Légende des champs obligatoires */}
       <p className="text-xs text-neutral-500">
         <span className="text-danger-600">*</span> Champs obligatoires
       </p>

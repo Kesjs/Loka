@@ -50,15 +50,6 @@ export default function StepProperty({ value, onChange, onNext }: StepPropertyPr
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold text-neutral-900">
-          Ajoutez votre premier bien
-        </h2>
-        <p className="text-sm text-neutral-500 mt-1">
-          Vous pourrez tout modifier plus tard.
-        </p>
-      </div>
-
       <div className="space-y-3">
         {/* Nom */}
         <div className="space-y-1.5">

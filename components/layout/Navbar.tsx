@@ -7,7 +7,7 @@ import { Buildings, FileText, House, List, MagnifyingGlass, Sparkle, Users } fro
 import { motion } from "framer-motion";
 import UserMenu from "@/components/layout/UserMenu";
 import { AlertBell } from "@/components/alerts";
-import { allNavItems } from "@/components/layout/nav-items";
+import { flatNavItems } from "@/components/layout/nav-items";
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -24,10 +24,10 @@ export default function Navbar({ onMenuClick, sidebarOpen = true }: NavbarProps)
     const normalized = query.trim().toLowerCase();
 
     if (!normalized) {
-      return allNavItems.slice(0, 4);
+      return flatNavItems.slice(0, 4);
     }
 
-    return allNavItems
+    return flatNavItems
       .filter((item) => item.label.toLowerCase().includes(normalized) || item.href.toLowerCase().includes(normalized))
       .slice(0, 5);
   }, [query]);

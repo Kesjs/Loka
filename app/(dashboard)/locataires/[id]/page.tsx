@@ -4,6 +4,8 @@ import { ArrowLeft, EnvelopeSimple, Phone, UsersThree, CalendarBlank } from "@ph
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
+import { TenantPortalCard } from "@/components/locataires/TenantPortalCard";
+import { ContratDetailCard } from "@/components/locataires/ContratDetailCard";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -20,14 +22,19 @@ export default async function LocatairePage({ params }: Props) {
 
   const { data: locataire } = await supabase
     .from("locataires")
-    .select("*, contrats(id, statut, date_debut, date_fin, logement:logements(nom))")
+    .select("*, contrats(id, statut, date_debut, date_fin, loyer_mensuel, logement:logements(nom))")
     .eq("id", id)
     .eq("proprietaire_id", user.id)
     .maybeSingle();
 
   if (!locataire) return notFound();
 
-  const contratsActifs = (locataire.contrats ?? []).filter((contrat: any) => contrat.statut === "actif").length;
+  const contratsActifs = (locataire.contrats ?? []).filter((contrat: any) => contrat.statut === "actif");
+  const contratActuelCount = contratsActifs.length;
+  
+  // Récupérer le logement du premier contrat actif pour la card
+  const logementActuel = contratsActifs[0]?.logement?.nom ?? "Logement";
+  const devise = locataire.devise ?? "FCFA";
 
   return (
     <div className="space-y-5 animate-[fadeIn_0.3s_ease-out]">
@@ -77,29 +84,51 @@ export default async function LocatairePage({ params }: Props) {
         </Card>
       </div>
 
-      <Card className="border-neutral-200 shadow-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UsersThree size={18} /> Contrats associés
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          {locataire.contrats?.length ? (
-            <div className="space-y-3">
-              <p className="text-sm text-neutral-500">{contratsActifs} contrat{contratsActifs > 1 ? "s" : ""} actif{contratsActifs > 1 ? "s" : ""}</p>
-              {locataire.contrats.map((contrat: any) => (
-                <div key={contrat.id} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-                  <div className="text-sm font-semibold text-neutral-900">{contrat.logement?.nom ?? "Logement"}</div>
-                  <div className="mt-1 text-sm text-neutral-500">Statut: {contrat.statut}</div>
-                  <div className="text-sm text-neutral-500">{formatDate(contrat.date_debut)} — {contrat.date_fin ? formatDate(contrat.date_fin) : "—"}</div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-neutral-500">Aucun contrat trouvé pour ce locataire.</p>
-          )}
-        </CardContent>
-      </Card>
+      {/* Espace Locataire - Visible si au moins un contrat actif */}
+      {contratsActifs.length > 0 && (
+        <TenantPortalCard
+          locataireName={locataire.nom}
+          logementName={logementActuel}
+          isActive={false}
+        />
+      )}
+
+      <div>
+        <Card className="border-neutral-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UsersThree size={18} /> Contrats associés
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {locataire.contrats?.length ? (
+              <div className="space-y-3">
+                <p className="text-sm text-neutral-500">{contratActuelCount} contrat{contratActuelCount > 1 ? "s" : ""} actif{contratActuelCount > 1 ? "s" : ""}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-500">Aucun contrat trouvé pour ce locataire.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Liste des contrats avec détails */}
+        {locataire.contrats && locataire.contrats.length > 0 && (
+          <div className="space-y-3 mt-4">
+            {locataire.contrats.map((contrat: any) => (
+              <ContratDetailCard
+                key={contrat.id}
+                logementName={contrat.logement?.nom ?? "Logement"}
+                statut={contrat.statut}
+                dateDebut={contrat.date_debut}
+                dateFin={contrat.date_fin}
+                loyerMensuel={contrat.loyer_mensuel ? Number(contrat.loyer_mensuel) : undefined}
+                devise={devise}
+                locataireName={locataire.nom}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

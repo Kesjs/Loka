@@ -23,6 +23,12 @@ export async function saveOnboarding(
   }
 
   // 1. Profil propriétaire + préférences
+  // Déterminer le type d'organisation pour le stockage
+  const orgType = 
+    data.role === "agence" ? "agence" :
+    data.role === "gestionnaire" ? "gestionnaire" :
+    "proprietaire";
+
   const { error: propError } = await supabase.from("proprietaire").upsert({
     id: user.id,
     nom: data.profil.nom || user.email?.split("@")[0] || "Propriétaire",
@@ -35,6 +41,15 @@ export async function saveOnboarding(
     notif_email: data.preferences.notifEmail,
     widget_priorite: data.preferences.widgetPriorite,
     onboarding_complete: true,
+    // Métadonnées profil pour déterminaction du dashboard
+    profil_type: orgType, // "proprietaire", "gestionnaire", "agence"
+    situation: data.situation, // Contexte (première acquisition, etc.)
+    onboarding_data: {
+      situation: data.situation,
+      role: data.role,
+      bien: data.bien,
+      nombreLogements: data.nombreLogements,
+    },
   });
 
   if (propError) {

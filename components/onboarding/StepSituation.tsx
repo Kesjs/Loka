@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Role, Situation, RoleInterne } from "./types";
 import { CaretDown } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+import { Role, Situation, RoleInterne } from "./types";
 
 interface StepSituationProps {
   role: Role | null;
@@ -58,30 +59,15 @@ export default function StepSituation({
   const options = situationsByRole[role] || [];
   const showRoleInterne = role === "gestionnaire";
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && situation) {
-      e.preventDefault();
-      onNext();
-    }
-  };
-
   return (
-    <div className="text-center space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-xl font-bold text-neutral-900">Votre contexte</h2>
-        <p className="text-sm text-neutral-500">Mieux comprendre votre situation</p>
-      </div>
-
-      {/* Situation Options */}
+    <div className="space-y-6">
       <div className="space-y-2">
         {options.map((option) => (
-          <motion.button
+          <button
             key={option.id}
+            type="button"
             onClick={() => onChange(option.id, roleInterne)}
-            onKeyDown={handleKeyDown}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+            className={`w-full rounded-lg border-2 p-3 text-left transition-all ${
               situation === option.id
                 ? "border-primary-500 bg-primary-50"
                 : "border-neutral-200 bg-white hover:border-neutral-300"
@@ -94,51 +80,47 @@ export default function StepSituation({
             >
               {option.label}
             </p>
-          </motion.button>
+          </button>
         ))}
       </div>
 
-      {/* Role Interne (Gestionnaire only) */}
       {showRoleInterne && situation && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-3 pt-4 border-t border-neutral-200"
+          className="space-y-3 border-t border-neutral-200 pt-4"
         >
-          <label className="text-sm font-medium text-neutral-700 block">
-            Quel est votre rôle dans l'organisation?
+          <label className="block text-sm font-medium text-neutral-700">
+            Quel est votre rôle dans l&apos;organisation ?
           </label>
           <div className="relative">
             <select
               value={roleInterne || ""}
               onChange={(e) => onChange(situation, e.target.value as RoleInterne)}
-              className="w-full h-10 pl-3 pr-10 rounded-lg border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none bg-white"
+              className="h-10 w-full appearance-none rounded-lg border border-neutral-300 bg-white pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Sélectionner un rôle</option>
-              {roleInterneOptions.map((role) => (
-                <option key={role} value={role}>
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
+              {roleInterneOptions.map((r) => (
+                <option key={r} value={r}>
+                  {r.charAt(0).toUpperCase() + r.slice(1)}
                 </option>
               ))}
             </select>
             <CaretDown
               size={16}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400"
             />
           </div>
         </motion.div>
       )}
 
-      {/* Continue Button */}
-      <motion.button
+      <Button
         onClick={onNext}
         disabled={!situation || (showRoleInterne && !roleInterne)}
-        whileHover={situation ? { scale: 1.02 } : {}}
-        whileTap={situation ? { scale: 0.98 } : {}}
-        className="w-full h-10 px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-colors"
+        className="w-full"
       >
         Continuer
-      </motion.button>
+      </Button>
     </div>
   );
 }

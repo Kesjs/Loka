@@ -1,276 +1,268 @@
-import { createClient } from "@/lib/supabase/server";
-import { getOrganisationScope } from "@/lib/organisation-scope";
-import type { Proprietaire } from "@/lib/types";
+/**
+ * lib/dashboard.ts
+ * 
+ * Logique de récupération des données du dashboard adapté par profil.
+ * Détermine le type d'organisation et prépare les données correctes.
+ */
 
-export interface DashboardLogementRow {
-  id: string;
-  nom: string | null;
-  statut: "occupe" | "vacant";
-  loyer_mensuel: number;
-  immeuble_nom: string;
-}
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-export interface DashboardPaiementRow {
-  id: string;
-  montant: number;
-  date_paiement: string;
-  mode: string;
-  locataire_nom: string;
-  logement_nom: string | null;
-}
-
-export interface DashboardContratExpirant {
-  id: string;
-  date_fin: string;
-  locataire_nom: string;
-  logement_nom: string | null;
-  jours_restants: number;
-}
-
+/**
+ * Type propriétaire géré (pour gestionnaire/agence)
+ */
 export interface DashboardProprietaireGere {
   id: string;
   nom: string;
+  email?: string;
+  telephone?: string;
   nbBiens: number;
   nbLogements: number;
   revenuMensuel: number;
 }
 
-export interface DashboardPortefeuille {
-  nbProprietaires: number;
-  parProprietaire: DashboardProprietaireGere[];
+/**
+ * Type de profil organisation
+ */
+export type OrganisationType = "proprietaire" | "gestionnaire" | "agence";
+
+/**
+ * Scope d'organisation - détermine quelles données l'utilisateur peut voir
+ */
+export interface OrganisationScope {
+  organisationType: OrganisationType;
+  organisationId: string | null;
+  userId: string;
+  proprietaireIds: string[]; // IDs des propriétaires dans le scope (user + gérés)
+  roleInterne: string; // "proprietaire", "gestionnaire", "admin"
 }
 
+/**
+ * Données du dashboard
+ */
 export interface DashboardData {
-  proprietaire: Proprietaire | null;
-  organisation: {
-    id: string;
-    nom: string;
-    type: "individuel" | "gestionnaire" | "agence";
+  profile: OrganisationType;
+  userName: string;
+  organisationType: OrganisationType;
+  stats: {
+    revenuMensuel: number;
+    tauxOccupation: number;
+    nombreImmeubles: number;
+    nombreLogements: number;
   };
-  nbImmeubles: number;
-  nbLogements: number;
-  nbLogementsOccupes: number;
-  tauxOccupation: number;
-  revenuMensuelPotentiel: number;
-  revenuMensuelReel: number;
-  logements: DashboardLogementRow[];
-  paiementsRecents: DashboardPaiementRow[];
-  contratsExpirants: DashboardContratExpirant[];
-  portefeuille?: DashboardPortefeuille;
+  situation?: string;
+  recentPayments: any[];
+  expiringContracts: any[];
 }
 
-const EMPTY_DASHBOARD: DashboardData = {
-  proprietaire: null,
-  organisation: {
-    id: "",
-    nom: "",
-    type: "individuel",
-  },
-  nbImmeubles: 0,
-  nbLogements: 0,
-  nbLogementsOccupes: 0,
-  tauxOccupation: 0,
-  revenuMensuelPotentiel: 0,
-  revenuMensuelReel: 0,
-  logements: [],
-  paiementsRecents: [],
-  contratsExpirants: [],
-};
+/**
+ * Récupère le scope d'organisation de l'utilisateur
+ * Détermine : type d'org, org_id, quels propriétaires sont dans le scope
+ */
+export async function getOrganisationScope(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<OrganisationScope | null> {
+  try {
+    // 1. Récupérer le propriétaire pour avoir le type de profil
+    const { data: proprietaire } = await supabase
+      .from("proprietaire")
+      .select("id, profil_type, situation")
+      .eq("id", userId)
+      .maybeSingle();
 
-export async function getDashboardData(): Promise<DashboardData> {
-  const supabase = await createClient();
+    if (!proprietaire) {
+      console.warn("⚠️ Propriétaire non trouvé pour user:", userId);
+      return null;
+    }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const organisationType: OrganisationType = (proprietaire.profil_type || "proprietaire") as OrganisationType;
 
-  if (!user) return EMPTY_DASHBOARD;
-
-  // Récupérer le scope de l'organisation
-  const orgScope = await getOrganisationScope(supabase);
-
-  const { data: proprietaire } = await supabase
-    .from("proprietaire")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  // Récupérer les immeubles de l'organisation
-  let immeublesQuery = supabase
-    .from("immeubles")
-    .select("id, nom, proprietaire_gere_id");
-
-  // Filtrer par organisation_id si dispo, sinon par proprietaire_id
-  if (orgScope.organisationId) {
-    immeublesQuery = immeublesQuery.eq("organisation_id", orgScope.organisationId);
-  } else {
-    immeublesQuery = immeublesQuery.in("proprietaire_id", orgScope.proprietaireIds);
-  }
-
-  const { data: immeubles } = await immeublesQuery;
-
-  const immeubleIds = (immeubles ?? []).map((i) => i.id);
-
-  const { data: logementsRaw } = immeubleIds.length
-    ? await supabase
-        .from("logements")
-        .select("id, nom, statut, loyer_mensuel, immeuble_id")
-        .in("immeuble_id", immeubleIds)
-    : { data: [] as never[] };
-
-  const logements: DashboardLogementRow[] = (logementsRaw ?? []).map((l) => ({
-    id: l.id,
-    nom: l.nom,
-    statut: l.statut,
-    loyer_mensuel: Number(l.loyer_mensuel) || 0,
-    immeuble_nom:
-      (immeubles ?? []).find((i) => i.id === l.immeuble_id)?.nom ?? "",
-  }));
-
-  const nbLogements = logements.length;
-  const logementsOccupes = logements.filter((l) => l.statut === "occupe");
-  const nbLogementsOccupes = logementsOccupes.length;
-  const tauxOccupation = nbLogements > 0 ? Math.round((nbLogementsOccupes / nbLogements) * 100) : 0;
-  const revenuMensuelPotentiel = logements.reduce((sum, l) => sum + l.loyer_mensuel, 0);
-  const revenuMensuelReel = logementsOccupes.reduce((sum, l) => sum + l.loyer_mensuel, 0);
-
-  // Paiements récents (via contrats -> locataires, filtrés par organisation)
-  let locatairesQuery = supabase
-    .from("locataires")
-    .select("id, nom");
-
-  if (orgScope.organisationId) {
-    locatairesQuery = locatairesQuery.eq("organisation_id", orgScope.organisationId);
-  } else {
-    locatairesQuery = locatairesQuery.in("proprietaire_id", orgScope.proprietaireIds);
-  }
-
-  const { data: locataires } = await locatairesQuery;
-
-  const locataireIds = (locataires ?? []).map((l) => l.id);
-
-  const { data: contrats } = locataireIds.length
-    ? await supabase
-        .from("contrats")
-        .select("id, locataire_id, logement_id, date_fin, statut")
-        .in("locataire_id", locataireIds)
-    : { data: [] as never[] };
-
-  const contratIds = (contrats ?? []).map((c) => c.id);
-
-  const { data: paiementsRaw } = contratIds.length
-    ? await supabase
-        .from("paiements")
-        .select("id, montant, date_paiement, mode, contrat_id")
-        .in("contrat_id", contratIds)
-        .order("date_paiement", { ascending: false })
-        .limit(5)
-    : { data: [] as never[] };
-
-  const paiementsRecents: DashboardPaiementRow[] = (paiementsRaw ?? []).map((p) => {
-    const contrat = (contrats ?? []).find((c) => c.id === p.contrat_id);
-    const locataire = (locataires ?? []).find((l) => l.id === contrat?.locataire_id);
-    const logement = logements.find((l) => l.id === contrat?.logement_id);
-    return {
-      id: p.id,
-      montant: Number(p.montant) || 0,
-      date_paiement: p.date_paiement,
-      mode: p.mode,
-      locataire_nom: locataire?.nom ?? "—",
-      logement_nom: logement?.nom ?? null,
-    };
-  });
-
-  // Contrats actifs qui expirent dans les 30 prochains jours
-  const now = new Date();
-  const dans30jours = new Date(now);
-  dans30jours.setDate(now.getDate() + 30);
-
-  const contratsExpirants: DashboardContratExpirant[] = (contrats ?? [])
-    .filter((c) => c.statut === "actif" && c.date_fin)
-    .filter((c) => {
-      const fin = new Date(c.date_fin as string);
-      return fin >= now && fin <= dans30jours;
-    })
-    .map((c) => {
-      const locataire = (locataires ?? []).find((l) => l.id === c.locataire_id);
-      const logement = logements.find((l) => l.id === c.logement_id);
-      const fin = new Date(c.date_fin as string);
-      const joursRestants = Math.ceil((fin.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      return {
-        id: c.id,
-        date_fin: c.date_fin as string,
-        locataire_nom: locataire?.nom ?? "—",
-        logement_nom: logement?.nom ?? null,
-        jours_restants: joursRestants,
-      };
-    })
-    .sort((a, b) => a.jours_restants - b.jours_restants);
-
-  // Construire les données de portefeuille pour gestionnaire/agence
-  let portefeuille: DashboardPortefeuille | undefined;
-
-  if (orgScope.organisationType !== "individuel" && orgScope.proprietairesGeres.length > 0) {
-    const parProprietaire: DashboardProprietaireGere[] = orgScope.proprietairesGeres.map((pg) => {
-      // Compter les biens de ce propriétaire
-      const biensProprietaire = (immeubles ?? []).filter(
-        (imm) => imm.proprietaire_gere_id === pg.id
-      );
-      const nbBiens = biensProprietaire.length;
-      const biensIds = biensProprietaire.map((b) => b.id);
-
-      // Compter les logements de ces biens
-      const logementsProprietaire = (logementsRaw ?? []).filter((log) =>
-        biensIds.includes(log.immeuble_id)
-      );
-
-      // Calculer le revenu mensuel (logements occupés uniquement)
-      const revenuMensuel = logementsProprietaire
-        .filter((l) => l.statut === "occupe")
-        .reduce((sum, l) => sum + (Number(l.loyer_mensuel) || 0), 0);
-
-      return {
-        id: pg.id,
-        nom: pg.nom,
-        nbBiens,
-        nbLogements: logementsProprietaire.length,
-        revenuMensuel,
-      };
-    });
-
-    portefeuille = {
-      nbProprietaires: orgScope.proprietairesGeres.length,
-      parProprietaire,
-    };
-  }
-
-  // Récupérer le nom de l'organisation
-  let organisationNom = proprietaire?.nom || "Mon Organisation";
-  if (orgScope.organisationId) {
+    // 2. Récupérer l'organisation de l'utilisateur
     const { data: org } = await supabase
       .from("organisations")
-      .select("nom")
-      .eq("id", orgScope.organisationId)
+      .select("id, type, owner_user_id")
+      .eq("owner_user_id", userId)
       .maybeSingle();
-    if (org?.nom) organisationNom = org.nom;
-  }
 
-  return {
-    proprietaire: (proprietaire as Proprietaire) ?? null,
-    organisation: {
-      id: orgScope.organisationId || "",
-      nom: organisationNom,
-      type: orgScope.organisationType,
-    },
-    nbImmeubles: immeubles?.length ?? 0,
-    nbLogements,
-    nbLogementsOccupes,
-    tauxOccupation,
-    revenuMensuelPotentiel,
-    revenuMensuelReel,
-    logements,
-    paiementsRecents,
-    contratsExpirants,
-    portefeuille,
-  };
+    if (!org) {
+      console.warn("⚠️ Organisation non trouvée pour user:", userId);
+      // Fallback : organisation personnelle
+      return {
+        organisationType: "proprietaire",
+        organisationId: null,
+        userId,
+        proprietaireIds: [userId],
+        roleInterne: "proprietaire",
+      };
+    }
+
+    // 3. Récupérer le rôle interne de l'utilisateur dans l'organisation
+    const { data: memberRole } = await supabase
+      .from("membres_organisation")
+      .select("role_interne")
+      .eq("organisation_id", org.id)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const roleInterne = memberRole?.role_interne || "proprietaire";
+
+    // 4. Déterminer le scope des propriétaires
+    // Pour "proprietaire" : juste l'utilisateur
+    // Pour "gestionnaire"/"agence" : l'utilisateur + les propriétaires gérés
+    const proprietaireIds = [userId];
+
+    if (organisationType === "gestionnaire" || organisationType === "agence") {
+      // Récupérer les propriétaires gérés
+      const { data: gerés } = await supabase
+        .from("proprietaires_geres")
+        .select("proprietaire_user_id")
+        .eq("organisation_id", org.id);
+
+      if (gerés) {
+        proprietaireIds.push(
+          ...gerés
+            .map((p: any) => p.proprietaire_user_id)
+            .filter(Boolean)
+        );
+      }
+    }
+
+    return {
+      organisationType,
+      organisationId: org.id,
+      userId,
+      proprietaireIds,
+      roleInterne,
+    };
+  } catch (error) {
+    console.error("❌ Erreur getOrganisationScope:", error);
+    return null;
+  }
+}
+
+/**
+ * Récupère les données complètes pour le dashboard
+ * Auto-récupère l'utilisateur depuis le contexte (Server Component)
+ */
+export async function getDashboardData(): Promise<DashboardData | null> {
+  try {
+    // Récupérer l'utilisateur connecté
+    const { getSession } = await import("@/lib/auth");
+    const user = await getSession();
+
+    if (!user) {
+      console.warn("⚠️ Utilisateur non authentifié");
+      return null;
+    }
+
+    // Récupérer le Supabase client serveur
+    const { createClient } = await import("@/lib/supabase/server");
+    const supabase = await createClient();
+
+    // 1. Récupérer propriétaire + info de base
+    const { data: proprietaire } = await supabase
+      .from("proprietaire")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!proprietaire) {
+      console.warn("⚠️ Propriétaire non trouvé");
+      return null;
+    }
+
+    // 2. Récupérer scope d'organisation
+    const scope = await getOrganisationScope(supabase, user.id);
+    if (!scope) {
+      return null;
+    }
+
+    // 3. Récupérer immeubles filtrés par scope
+    const { data: immeubles } = await supabase
+      .from("immeubles")
+      .select("id, nom, proprietaire_id")
+      .in("proprietaire_id", scope.proprietaireIds);
+
+    const immeubleIds = immeubles?.map((i) => i.id) || [];
+
+    // 4. Récupérer logements + calculer stats
+    const { data: logements } = await supabase
+      .from("logements")
+      .select("id, immeuble_id, statut, loyer_mensuel")
+      .in("immeuble_id", immeubleIds);
+
+    let revenuMensuel = 0;
+    let logementOccupes = 0;
+    let totalLogements = logements?.length || 0;
+
+    logements?.forEach((log) => {
+      if (log.statut === "occupe") {
+        logementOccupes++;
+        revenuMensuel += log.loyer_mensuel || 0;
+      }
+    });
+
+    const tauxOccupation = totalLogements > 0
+      ? Math.round((logementOccupes / totalLogements) * 100)
+      : 0;
+
+    // 5. Récupérer paiements récents
+    const { data: recentPayments } = await supabase
+      .from("paiements")
+      .select("id, montant, date_paiement, contrat_id")
+      .in("proprietaire_id", scope.proprietaireIds)
+      .order("date_paiement", { ascending: false })
+      .limit(5);
+
+    // 6. Récupérer contrats expirant bientôt
+    const { data: expiringContracts } = await supabase
+      .from("contrats")
+      .select("id, date_fin, locataire_id")
+      .in("proprietaire_id", scope.proprietaireIds)
+      .filter("date_fin", "gt", new Date().toISOString())
+      .filter(
+        "date_fin",
+        "lt",
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      );
+
+    return {
+      profile: scope.organisationType,
+      userName: proprietaire.nom || "Utilisateur",
+      organisationType: scope.organisationType,
+      stats: {
+        revenuMensuel,
+        tauxOccupation,
+        nombreImmeubles: immeubles?.length || 0,
+        nombreLogements: totalLogements,
+      },
+      situation: proprietaire.situation,
+      recentPayments: recentPayments || [],
+      expiringContracts: expiringContracts || [],
+    };
+  } catch (error) {
+    console.error("❌ Erreur getDashboardData:", error);
+    return null;
+  }
+}
+
+/**
+ * Récupère juste le type de profil de l'utilisateur
+ */
+export async function getOrganisationType(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<OrganisationType | null> {
+  try {
+    const { data: proprietaire } = await supabase
+      .from("proprietaire")
+      .select("profil_type")
+      .eq("id", userId)
+      .maybeSingle();
+
+    return (proprietaire?.profil_type || "proprietaire") as OrganisationType;
+  } catch (error) {
+    console.error("❌ Erreur getOrganisationType:", error);
+    return null;
+  }
 }

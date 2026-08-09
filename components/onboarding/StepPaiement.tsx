@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { MoyenPaiement } from "./types";
-import { Wallet, CheckCircle } from "@phosphor-icons/react";
+import { Wallet } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
 
 interface StepPaiementProps {
   moyenPaiement: MoyenPaiement | null;
@@ -32,32 +32,15 @@ export default function StepPaiement({
 }: StepPaiementProps) {
   const isComplete = moyenPaiement && (!garantie || montantGarantie);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && isComplete) {
-      e.preventDefault();
-      onNext();
-    }
-  };
-
   return (
-    <div className="text-center space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-xl font-bold text-neutral-900">Moyens de paiement</h2>
-        <p className="text-sm text-neutral-500">
-          Comment vos locataires vous paient-ils habituellement?
-        </p>
-      </div>
-
-      {/* Moyens de Paiement */}
+    <div className="space-y-6">
       <div className="space-y-2">
         {moyensPaiement.map((moyen) => (
-          <motion.button
+          <button
             key={moyen.id}
+            type="button"
             onClick={() => onChangeMoyen(moyen.id)}
-            onKeyDown={handleKeyDown}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            className={`w-full p-3 rounded-lg border-2 transition-all text-left flex items-center gap-3 ${
+            className={`flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left transition-all ${
               moyenPaiement === moyen.id
                 ? "border-primary-500 bg-primary-50"
                 : "border-neutral-200 bg-white hover:border-neutral-300"
@@ -75,69 +58,44 @@ export default function StepPaiement({
             >
               {moyen.label}
             </p>
-          </motion.button>
+          </button>
         ))}
       </div>
 
-      {/* Garantie Section */}
       {moyenPaiement && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-3 pt-4 border-t border-neutral-200"
-        >
-          <label className="text-sm font-medium text-neutral-700 block">
-            Demandez-vous une garantie à l'entrée?
+        <div className="space-y-3 border-t border-neutral-200 pt-4">
+          <label className="block text-sm font-medium text-neutral-700">
+            Demandez-vous une garantie à l&apos;entrée ?
           </label>
 
           <div className="grid grid-cols-2 gap-3">
-            <motion.button
+            <button
+              type="button"
               onClick={() => onChangeGarantie(false)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                !garantie
-                  ? "border-primary-500 bg-primary-50"
-                  : "border-neutral-200 bg-white"
+              className={`rounded-lg border-2 p-3 transition-all ${
+                !garantie ? "border-primary-500 bg-primary-50" : "border-neutral-200 bg-white"
               }`}
             >
-              <p
-                className={`text-sm font-medium ${
-                  !garantie ? "text-primary-700" : "text-neutral-700"
-                }`}
-              >
+              <p className={`text-sm font-medium ${!garantie ? "text-primary-700" : "text-neutral-700"}`}>
                 Non
               </p>
-            </motion.button>
-
-            <motion.button
+            </button>
+            <button
+              type="button"
               onClick={() => onChangeGarantie(true)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                garantie
-                  ? "border-primary-500 bg-primary-50"
-                  : "border-neutral-200 bg-white"
+              className={`rounded-lg border-2 p-3 transition-all ${
+                garantie ? "border-primary-500 bg-primary-50" : "border-neutral-200 bg-white"
               }`}
             >
-              <p
-                className={`text-sm font-medium ${
-                  garantie ? "text-primary-700" : "text-neutral-700"
-                }`}
-              >
+              <p className={`text-sm font-medium ${garantie ? "text-primary-700" : "text-neutral-700"}`}>
                 Oui
               </p>
-            </motion.button>
+            </button>
           </div>
 
-          {/* Montant Garantie */}
           {garantie && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-2"
-            >
-              <label className="text-sm font-medium text-neutral-700 block">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-neutral-700">
                 Montant par défaut (FCFA)
               </label>
               <input
@@ -145,25 +103,17 @@ export default function StepPaiement({
                 min="0"
                 value={montantGarantie}
                 onChange={(e) => onChangeMontant(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full h-10 px-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Ex : 500000"
               />
-            </motion.div>
+            </div>
           )}
-        </motion.div>
+        </div>
       )}
 
-      {/* Continue Button */}
-      <motion.button
-        onClick={onNext}
-        disabled={!isComplete}
-        whileHover={isComplete ? { scale: 1.02 } : {}}
-        whileTap={isComplete ? { scale: 0.98 } : {}}
-        className="w-full h-10 px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-colors"
-      >
+      <Button onClick={onNext} disabled={!isComplete} className="w-full">
         Continuer
-      </motion.button>
+      </Button>
     </div>
   );
 }

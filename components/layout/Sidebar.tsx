@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
-import { flatNavItems } from "./nav-items";
+import { getNavItemsByProfile } from "./nav-items";
 import { useOrganisationType } from "@/lib/hooks/useOrganisationType";
 
 interface SidebarProps {
@@ -18,17 +18,8 @@ export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
   const collapsed = !open;
   const orgType = useOrganisationType();
 
-  // Filtrer les items selon le type d'organisation
-  const visibleNavItems = flatNavItems.filter((item) => {
-    if (!item.conditionalShow) return true;
-    
-    // Si l'item doit être visible pour gestionnaire, le montrer aussi pour agence
-    if (item.conditionalShow === "gestionnaire") {
-      return orgType === "gestionnaire" || orgType === "agence";
-    }
-    
-    return item.conditionalShow === orgType;
-  });
+  // Récupérer les items selon le profil de l'utilisateur
+  const visibleNavItems = getNavItemsByProfile(orgType);
 
   // Animation variants
   const sidebarVariants = {

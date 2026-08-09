@@ -24,16 +24,7 @@ export default function StepOccupation({ logements, onChange, onNext }: StepOccu
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold text-neutral-900">
-          Ces logements sont-ils déjà occupés ?
-        </h2>
-        <p className="text-sm text-neutral-500 mt-1">
-          Indiquez pour chacun s&apos;il est vide ou déjà loué.
-        </p>
-      </div>
-
-      <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+      <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
         {logements.map((logement, i) => (
           <div
             key={i}

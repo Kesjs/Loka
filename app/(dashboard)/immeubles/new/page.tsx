@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Buildings, CheckCircle, MapPin, Tag } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft, Buildings, CheckCircle, MapPin, Tag, Users } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { FormField, fieldInputClass, fieldInputErrorClass } from "@/components/ui/form-field";
@@ -22,6 +22,11 @@ interface FieldErrors {
   nom?: string;
 }
 
+interface ProprietaireGere {
+  id: string;
+  nom: string;
+}
+
 export default function NewImmeublePage() {
   const router = useRouter();
   const supabase = createClient();
@@ -30,10 +35,48 @@ export default function NewImmeublePage() {
   const [adresse, setAdresse] = useState("");
   const [ville, setVille] = useState("");
   const [typeImmeuble, setTypeImmeuble] = useState("");
+  const [proprietaireGereId, setProprietaireGereId] = useState("");
+  const [proprietairesGeres, setProprietairesGeres] = useState<ProprietaireGere[]>([]);
+  const [organisationType, setOrganisationType] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Charger les propriétaires gérés à l'initialisation
+  useEffect(() => {
+    async function loadProprietairesGeres() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      // Récupérer l'organisation
+      const { data: org } = await supabase
+        .from("organisations")
+        .select("id, type")
+        .eq("owner_user_id", user.id)
+        .maybeSingle();
+
+      if (org) {
+        setOrganisationType(org.type);
+
+        // Si gestionnaire/agence, charger les propriétaires gérés
+        if (org.type !== "individuel") {
+          const { data: pgs } = await supabase
+            .from("proprietaires_geres")
+            .select("id, nom")
+            .eq("organisation_id", org.id)
+            .order("nom", { ascending: true });
+
+          setProprietairesGeres(pgs ?? []);
+        }
+      }
+    }
+
+    loadProprietairesGeres();
+  }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,8 +99,17 @@ export default function NewImmeublePage() {
       return;
     }
 
+    // Récupérer l'organisation_id si elle existe
+    const { data: org } = await supabase
+      .from("organisations")
+      .select("id")
+      .eq("owner_user_id", user.id)
+      .maybeSingle();
+
     const { error: insertError } = await supabase.from("immeubles").insert({
       proprietaire_id: user.id,
+      organisation_id: org?.id || null,
+      proprietaire_gere_id: proprietaireGereId || null,
       nom: nom.trim(),
       adresse: adresse || null,
       ville: ville || null,
@@ -147,6 +199,20 @@ export default function NewImmeublePage() {
               ]}
             />
           </FormField>
+
+          {/* Champ Propriétaire géré (visible seulement pour gestionnaire/agence) */}
+          {organisationType && organisationType !== "individuel" && proprietairesGeres.length > 0 && (
+            <FormField label="Propriétaire géré (optionnel)" icon={Users}>
+              <Select
+                value={proprietaireGereId}
+                onChange={(value) => setProprietaireGereId(value as string)}
+                options={[
+                  { value: "", label: "Aucun (bien personnel)" },
+                  ...proprietairesGeres.map((pg) => ({ value: pg.id, label: pg.nom })),
+                ]}
+              />
+            </FormField>
+          )}
 
           <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-neutral-500">Ces informations permettront un meilleur suivi de votre patrimoine.</p>

@@ -11,6 +11,7 @@ import { PropertyCard } from '@/components/logements/PropertyCard';
 import { PropertyRow } from '@/components/logements/PropertyRow';
 import { cn } from '@/lib/utils';
 import { Logement } from '@/lib/types';
+import { createClient } from '@/lib/supabase/client';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'nom' | 'loyer' | 'surface';
@@ -41,12 +42,16 @@ export default function LogementsPage() {
     async function fetchData() {
       try {
         setLoading(true);
+        const supabase = createClient();
 
-        // Fetch immeubles
-        const immeublesRes = await fetch('/api/immeubles?limit=100');
-        if (immeublesRes.ok) {
-          const immeublesData = await immeublesRes.json();
-          setImmeubles(immeublesData.immeubles || []);
+        // Fetch immeubles from Supabase
+        const { data: immeublesData, error: immeublesError } = await supabase
+          .from('immeubles')
+          .select('id, nom')
+          .order('nom', { ascending: true });
+
+        if (!immeublesError && immeublesData) {
+          setImmeubles(immeublesData);
         }
 
         // Fetch logements with filters

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 import { flatNavItems } from "./nav-items";
+import { useOrganisationType } from "@/lib/hooks/useOrganisationType";
 
 interface SidebarProps {
   open: boolean;
@@ -15,6 +16,19 @@ interface SidebarProps {
 export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
   const pathname = usePathname();
   const collapsed = !open;
+  const orgType = useOrganisationType();
+
+  // Filtrer les items selon le type d'organisation
+  const visibleNavItems = flatNavItems.filter((item) => {
+    if (!item.conditionalShow) return true;
+    
+    // Si l'item doit être visible pour gestionnaire, le montrer aussi pour agence
+    if (item.conditionalShow === "gestionnaire") {
+      return orgType === "gestionnaire" || orgType === "agence";
+    }
+    
+    return item.conditionalShow === orgType;
+  });
 
   // Animation variants
   const sidebarVariants = {
@@ -101,7 +115,7 @@ export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
 
       {/* Navigation Items */}
       <nav className="flex-1 px-3 py-4 space-y-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-        {flatNavItems.map(({ href, label, icon: Icon, divider }, index) => {
+        {visibleNavItems.map(({ href, label, icon: Icon, divider }, index) => {
           const isActive = pathname?.startsWith(href);
           return (
             <div key={href}>

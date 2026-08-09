@@ -7,6 +7,7 @@ import { ArrowLeft, Buildings, CheckCircle, MapPin, Tag } from "@phosphor-icons/
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { FormField, fieldInputClass, fieldInputErrorClass } from "@/components/ui/form-field";
+import { Select } from "@/components/ui/select";
 import { mapDbError } from "@/lib/db-errors";
 
 const immeubleTypes = [
@@ -137,18 +138,14 @@ export default function NewImmeublePage() {
           </div>
 
           <FormField label="Type d'immeuble" icon={Tag}>
-            <select
+            <Select
               value={typeImmeuble}
-              onChange={(event) => setTypeImmeuble(event.target.value)}
-              className={fieldInputClass}
-            >
-              <option value="">Sélectionner un type</option>
-              {immeubleTypes.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setTypeImmeuble(value as string)}
+              options={[
+                { value: "", label: "Sélectionner un type" },
+                ...immeubleTypes,
+              ]}
+            />
           </FormField>
 
           <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4 sm:flex-row sm:items-center sm:justify-between">

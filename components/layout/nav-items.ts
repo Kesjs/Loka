@@ -3,6 +3,7 @@ import {
   Buildings,
   DoorOpen,
   Users,
+  UsersThree,
   FileText,
   Wallet,
   ChartBar,
@@ -16,6 +17,7 @@ export interface NavItem {
   label: string;
   icon: Icon;
   divider?: boolean; // Séparateur après cet item
+  conditionalShow?: "gestionnaire" | "agence" | "individuel"; // Visible uniquement pour ce type
 }
 
 export interface NavSection {
@@ -26,6 +28,7 @@ export interface NavSection {
 // Structure plate sans sections - items divisés visuellement par des traits
 export const flatNavItems: NavItem[] = [
   { href: "/home", label: "Accueil", icon: House },
+  { href: "/proprietaires", label: "Propriétaires", icon: UsersThree, conditionalShow: "gestionnaire" }, // Visible uniquement pour gestionnaire/agence
   { href: "/logements", label: "Logements", icon: DoorOpen },
   { href: "/locataires", label: "Locataires", icon: Users },
   { href: "/immeubles", label: "Immeubles", icon: Buildings, divider: true },

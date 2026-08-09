@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle, User } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { Select } from "@/components/ui/select";
 
 export default function NewLocatairePage() {
   const router = useRouter();
@@ -140,18 +141,17 @@ export default function NewLocatairePage() {
 
             <label className="space-y-2 text-sm text-neutral-700">
               Immeuble associé
-              <select
+              <Select
                 value={immeubleId}
-                onChange={(event) => setImmeubleId(event.target.value)}
-                className="w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-              >
-                <option value="">Aucun immeuble</option>
-                {immeubles.map((immeuble) => (
-                  <option key={immeuble.id} value={immeuble.id}>
-                    {immeuble.nom}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setImmeubleId(value as string)}
+                options={[
+                  { value: "", label: "Aucun immeuble" },
+                  ...immeubles.map((immeuble) => ({
+                    value: immeuble.id,
+                    label: immeuble.nom,
+                  })),
+                ]}
+              />
             </label>
           </div>
 

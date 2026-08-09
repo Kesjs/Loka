@@ -9,6 +9,7 @@ import React from "react"
 import { motion } from "framer-motion"
 import { CaretLeft, CaretRight } from "@phosphor-icons/react/dist/ssr"
 import { itemVariants } from "@/components/animations"
+import { Select } from "@/components/ui/select"
 
 interface PaginationProps {
   /**
@@ -202,22 +203,18 @@ export function PaginationWithSize({
         variants={itemVariants}
         className="flex items-center gap-3"
       >
-        <label htmlFor="page-size" className="text-sm text-slate-600">
+        <label className="text-sm text-slate-600">
           Items per page:
         </label>
-        <select
-          id="page-size"
-          value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+        <Select
+          value={pageSize.toString()}
+          onChange={(value) => onPageSizeChange(Number(value))}
+          options={availableSizes.map((size) => ({
+            value: size.toString(),
+            label: size.toString(),
+          }))}
           disabled={disabled}
-          className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          {availableSizes.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
+        />
       </motion.div>
     </motion.div>
   )

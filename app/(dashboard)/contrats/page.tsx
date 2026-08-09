@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Handshake, CurrencyCircleDollar, ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
+import { getOrganisationScope } from "@/lib/organisation-scope";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatMontant, formatDate } from "@/lib/utils";
@@ -23,10 +24,14 @@ export default async function ContratsPage() {
     );
   }
 
+  // Récupérer le scope de l'organisation
+  const orgScope = await getOrganisationScope(supabase);
+
+  // Filtrer par organisation_id via locataires
   const { data: locataires } = await supabase
     .from("locataires")
     .select("id")
-    .eq("proprietaire_id", user.id);
+    .eq("organisation_id", orgScope.organisationId);
 
   const locataireIds = (locataires ?? []).map((item: any) => item.id);
 

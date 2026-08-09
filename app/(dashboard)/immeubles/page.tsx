@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Buildings, House, ArrowRight, Plus } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
+import { getOrganisationScope } from "@/lib/organisation-scope";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,10 +35,14 @@ export default async function ImmeublesPage() {
     );
   }
 
+  // Récupérer le scope de l'organisation
+  const orgScope = await getOrganisationScope(supabase);
+
+  // Filtrer par organisation_id au lieu de proprietaire_id
   const { data: immeubles } = await supabase
     .from("immeubles")
     .select("id, nom, adresse, ville, type, created_at")
-    .eq("proprietaire_id", user.id)
+    .eq("organisation_id", orgScope.organisationId)
     .order("nom", { ascending: true });
 
   const immeubleIds = (immeubles ?? []).map((i) => i.id);

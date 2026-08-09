@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { motion } from "framer-motion"
 import { ArrowLeft, CheckCircle, Plus, Trash } from "@phosphor-icons/react"
+import { Select } from "@/components/ui/select"
 
 type FormData = {
   deductions: Array<{
@@ -200,16 +201,11 @@ export function TerminateContractForm({
                     control={form.control}
                     name={`deductions.${index}.reason`}
                     render={({ field }) => (
-                      <select
-                        {...field}
-                        className="rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                      >
-                        {deductionReasons.map((r) => (
-                          <option key={r.value} value={r.value}>
-                            {r.label}
-                          </option>
-                        ))}
-                      </select>
+                      <Select
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={deductionReasons}
+                      />
                     )}
                   />
 

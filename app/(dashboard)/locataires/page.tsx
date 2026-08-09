@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { UsersThree, EnvelopeSimple, Phone, ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
+import { getOrganisationScope } from "@/lib/organisation-scope";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
@@ -23,10 +24,14 @@ export default async function LocatairesPage() {
     );
   }
 
+  // Récupérer le scope de l'organisation
+  const orgScope = await getOrganisationScope(supabase);
+
+  // Filtrer par organisation_id au lieu de proprietaire_id
   const { data: locataires } = await supabase
     .from("locataires")
     .select("id, nom, telephone, email, created_at, contrats(id, statut)")
-    .eq("proprietaire_id", user.id)
+    .eq("organisation_id", orgScope.organisationId)
     .order("nom", { ascending: true });
 
   const totalContratsActifs = (locataires ?? []).reduce((total, locataire: any) => {

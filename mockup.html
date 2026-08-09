@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loka Onboarding - Split Layout Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Animation pour les illustrations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .pulse-animation {
+            animation: pulse-soft 2s ease-in-out infinite;
+        }
+        
+        .slide-in {
+            animation: slide-in 0.5s ease-out;
+        }
+        
+        .fade-in {
+            animation: fade-in 0.3s ease-out;
+        }
+        
+        svg {
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+        }
+        
+        /* Tab navigation */
+        .step-tab {
+            padding: 0.5rem 1rem;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        
+        .step-tab.active {
+            border-bottom-color: #6366F1;
+            color: #6366F1;
+            font-weight: 600;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+            animation: fade-in 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <script>
+        const steps = [
+            {
+                name: 'Welcome',
+                title: 'Bienvenue',
+                subtitle: 'Configurons votre espace ensemble',
+                leftTitle: 'Gérez votre immobilier simplement.',
+                leftSubtitle: 'Une seule plateforme pour vos biens, logements, locataires et paiements.',
+                icon: '🏠'
+            },
+            {
+                name: 'Profile',
+                title: 'Racontons-nous',
+                subtitle: 'Quelques informations pour bien vous connaître',
+                leftTitle: 'Gérez votre immobilier simplement.',
+                leftSubtitle: 'Une seule plateforme pour vos biens, logements, locataires et paiements.',
+                icon: '👤'
+            },
+            {
+                name: 'Role',
+                title: 'Quel est votre rôle?',
+                subtitle: 'Cela nous aide à adapter votre expérience',
+                leftTitle: 'Gérez votre immobilier simplement.',
+                leftSubtitle: 'Une seule plateforme pour vos biens, logements, locataires et paiements.',
+                icon: '👥'
+            },
+            {
+                name: 'Situation',
+                title: 'Votre contexte',
+                subtitle: 'Mieux comprendre votre situation',
+                leftTitle: 'Gérez votre immobilier simplement.',
+                leftSubtitle: 'Une seule plateforme pour vos biens, logements, locataires et paiements.',
+                icon: '📊'
+            },
+            {
+                name: 'Property',
+                title: 'Vos biens',
+                subtitle: 'Décrivez votre premier bien',
+                leftTitle: 'Gérez votre immobilier simplement.',
+                leftSubtitle: 'Une seule plateforme pour vos biens, logements, locataires et paiements.',
+                icon: '🏢'
+            },
+            {
+                name: 'Housing',
+                title: 'Logements',
+                subtitle: 'Combien de logements en total?',
+                leftTitle: 'Gérez votre immobilier simplement.',
+                leftSubtitle: 'Une seule plateforme pour vos biens, logements, locataires et paiements.',
+                icon: '🚪'
+            },
+            {
+                name: 'Complete',
+                title: 'Succès!',
+                subtitle: 'Votre profil a été configuré',
+                leftTitle: 'Bienvenue dans Loka',
+                leftSubtitle: 'Vous êtes prêt à gérer vos biens.',
+                icon: '✅'
+            }
+        ];
+        
+        let currentStep = 0;
+        
+        function showStep(index) {
+            currentStep = Math.max(0, Math.min(index, steps.length - 1));
+            
+            // Update tabs
+            document.querySelectorAll('.step-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === currentStep);
+            });
+            
+            // Update content
+            document.querySelectorAll('.step-content').forEach((content, i) => {
+                content.classList.toggle('active', i === currentStep);
+            });
+        }
+    </script>
+    <!-- Desktop Layout (split 50/50) -->
+    <div class="hidden md:flex min-h-screen">
+        <!-- Left Side: Branding & Illustration -->
+        <div class="w-1/2 bg-gradient-to-br from-indigo-50 via-violet-50 to-indigo-100 flex flex-col items-center justify-center p-12">
+            <div class="text-center space-y-8 max-w-md slide-in">
+                <!-- Logo -->
+                <div class="slide-in">
+                    <img src="/logo.jpg" alt="Saint Pierre Immobilier" class="w-14 h-14 mx-auto" />
+                </div>
+
+                <!-- Illustration (Step 1: Profile) -->
+                <div class="h-64 flex items-center justify-center float-animation">
+                    <svg width="200" height="200" viewBox="0 0 200 200" class="mx-auto">
+                        <defs>
+                            <linearGradient id="personGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6366F1" />
+                                <stop offset="100%" stop-color="#A855F7" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Head -->
+                        <circle cx="100" cy="70" r="30" fill="url(#personGrad)" opacity="0.8" />
+                        <!-- Body -->
+                        <ellipse cx="100" cy="130" rx="35" ry="45" fill="url(#personGrad)" opacity="0.9" />
+                        <!-- Arms -->
+                        <rect x="40" y="110" width="60" height="15" rx="7" fill="url(#personGrad)" opacity="0.7" />
+                        <rect x="100" y="110" width="60" height="15" rx="7" fill="url(#personGrad)" opacity="0.7" />
+                        <!-- Face -->
+                        <circle cx="90" cy="65" r="3" fill="white" />
+                        <circle cx="110" cy="65" r="3" fill="white" />
+                        <path d="M 95 75 Q 100 78 105 75" stroke="white" stroke-width="2" fill="none" />
+                    </svg>
+                </div>
+
+                <!-- Branding Content -->
+                <div class="space-y-4 slide-in" style="animation-delay: 0.1s">
+                    <h1 class="text-3xl font-bold text-neutral-900">
+                        Gérez votre immobilier simplement.
+                    </h1>
+                    <p class="text-neutral-600 leading-relaxed">
+                        Une seule plateforme pour vos biens, logements, locataires et paiements.
+                    </p>
+                </div>
+
+                <!-- Step Context (appears after Welcome) -->
+                <div class="space-y-2 pt-4 border-t border-neutral-200 slide-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-center gap-3">
+                        <!-- Phosphor User Icon -->
+                        <svg class="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M128,128a40,40,0,1,0-40-40A40,40,0,0,0,128,128Zm0-64a24,24,0,1,1-24,24A24,24,0,0,1,128,64Zm88,160H40a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v0a112.11,112.11,0,0,1,224,0v0a8,8,0,0,0,16,0v-8A8,8,0,0,0,216,224Z"/>
+                        </svg>
+                        <h2 class="text-lg font-semibold text-neutral-900">
+                            Racontons-nous
+                        </h2>
+                    </div>
+                    <p class="text-sm text-neutral-500">
+                        Quelques informations pour bien vous connaître
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Forms -->
+        <div class="w-1/2 flex flex-col items-center justify-center p-12">
+            <div class="w-full max-w-md slide-in" style="animation-delay: 0.3s">
+                <!-- Back Button -->
+                <button class="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800 transition-colors cursor-pointer">
+                    ← Retour
+                </button>
+
+                <!-- Progress Dots -->
+                <div class="mb-6 flex gap-2 justify-center">
+                    <div class="w-2 h-2 rounded-full bg-neutral-300"></div>
+                    <div class="w-2 h-2 rounded-full bg-indigo-600"></div>
+                    <div class="w-2 h-2 rounded-full bg-neutral-300"></div>
+                    <div class="w-2 h-2 rounded-full bg-neutral-300"></div>
+                    <div class="w-2 h-2 rounded-full bg-neutral-300"></div>
+                </div>
+
+                <!-- Form Content -->
+                <div class="bg-neutral-50/50 rounded-xl p-8">
+                    <div class="text-center space-y-6">
+                        <!-- Step Header -->
+                        <div class="space-y-2">
+                            <h2 class="text-xl font-bold text-neutral-900">
+                                Racontons-nous
+                            </h2>
+                            <p class="text-sm text-neutral-500">
+                                Quelques informations pour bien vous connaître
+                            </p>
+                        </div>
+
+                        <!-- Form Fields -->
+                        <div class="space-y-4 text-left">
+                            <!-- Nom -->
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 mb-1.5">
+                                    Nom <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" placeholder="Ex : Marie Dossou" class="w-full px-3 py-2.5 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+                            </div>
+
+                            <!-- Téléphone -->
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 mb-1.5">
+                                    Téléphone <span class="text-red-500">*</span>
+                                </label>
+                                <input type="tel" placeholder="+229 97 00 00 00" class="w-full px-3 py-2.5 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 mb-1.5">
+                                    Email
+                                </label>
+                                <input type="email" placeholder="marie@exemple.com" class="w-full px-3 py-2.5 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+                            </div>
+
+                            <!-- Required fields legend -->
+                            <p class="text-xs text-neutral-500 mt-3 pt-3 border-t border-neutral-200">
+                                * Champs obligatoires
+                            </p>
+                        </div>
+
+                        <!-- Button -->
+                        <button class="w-full h-10 px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer">
+                            Suivant
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Layout (stacked) -->
+    <div class="md:hidden min-h-screen flex flex-col bg-white">
+        <!-- Logo -->
+        <div class="text-center py-4">
+            <img src="/logo.jpg" alt="Saint Pierre Immobilier" class="w-10 h-10 mx-auto" />
+        </div>
+
+        <!-- Mobile Illustration -->
+        <div class="flex-1 flex items-center justify-center px-4 py-8">
+            <svg width="160" height="160" viewBox="0 0 200 200" class="float-animation">
+                <defs>
+                    <linearGradient id="personGradMobile" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#6366F1" />
+                        <stop offset="100%" stop-color="#A855F7" />
+                    </linearGradient>
+                </defs>
+                <circle cx="100" cy="70" r="30" fill="url(#personGradMobile)" opacity="0.8" />
+                <ellipse cx="100" cy="130" rx="35" ry="45" fill="url(#personGradMobile)" opacity="0.9" />
+                <rect x="40" y="110" width="60" height="15" rx="7" fill="url(#personGradMobile)" opacity="0.7" />
+                <rect x="100" y="110" width="60" height="15" rx="7" fill="url(#personGradMobile)" opacity="0.7" />
+                <circle cx="90" cy="65" r="3" fill="white" />
+                <circle cx="110" cy="65" r="3" fill="white" />
+                <path d="M 95 75 Q 100 78 105 75" stroke="white" stroke-width="2" fill="none" />
+            </svg>
+        </div>
+
+        <!-- Form Section -->
+        <div class="px-4 pb-8">
+            <div class="space-y-4">
+                <!-- Back Button -->
+                <button class="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800">
+                    ← Retour
+                </button>
+
+                <!-- Progress Dots -->
+                <div class="flex gap-2 justify-center pb-4">
+                    <div class="w-2 h-2 rounded-full bg-neutral-300"></div>
+                    <div class="w-2 h-2 rounded-full bg-indigo-600"></div>
+                    <div class="w-2 h-2 rounded-full bg-neutral-300"></div>
+                    <div class="w-2 h-2 rounded-full bg-neutral-300"></div>
+                    <div class="w-2 h-2 rounded-full bg-neutral-300"></div>
+                </div>
+
+                <!-- Form -->
+                <div class="space-y-4">
+                    <div class="text-center space-y-2 mb-6">
+                        <h2 class="text-lg font-bold text-neutral-900">Racontons-nous</h2>
+                        <p class="text-sm text-neutral-500">Quelques informations pour bien vous connaître</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 mb-1.5">
+                            Nom <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" placeholder="Ex : Marie Dossou" class="w-full px-3 py-2.5 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 mb-1.5">
+                            Téléphone <span class="text-red-500">*</span>
+                        </label>
+                        <input type="tel" placeholder="+229 97 00 00 00" class="w-full px-3 py-2.5 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 mb-1.5">
+                            Email
+                        </label>
+                        <input type="email" placeholder="marie@exemple.com" class="w-full px-3 py-2.5 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+                    </div>
+
+                    <p class="text-xs text-neutral-500 mt-3 pt-3 border-t border-neutral-200">
+                        * Champs obligatoires
+                    </p>
+
+                    <button class="w-full h-10 px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer mt-4">
+                        Suivant
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

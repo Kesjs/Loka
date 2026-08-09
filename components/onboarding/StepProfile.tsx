@@ -12,11 +12,6 @@ export default function StepProfile({ value, onChange, onNext }: StepProfileProp
 
   return (
     <div className="space-y-5">
-      {!isValid && (
-        <p className="text-sm text-neutral-500">
-          Le nom et le téléphone sont requis pour continuer.
-        </p>
-      )}
       <div>
         <h2 className="text-lg font-semibold text-neutral-900">
           Parlez-nous de vous
@@ -27,45 +22,76 @@ export default function StepProfile({ value, onChange, onNext }: StepProfileProp
       </div>
 
       <div className="space-y-3">
+        {/* Nom */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-700 flex items-center gap-1.5">
-            <User size={15} /> Nom
+          <label className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+            <User size={15} /> 
+            Nom
+            <span className="text-danger-600">*</span>
           </label>
           <input
             type="text"
             value={value.nom}
             onChange={(e) => onChange({ ...value, nom: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && isValid) {
+                e.preventDefault();
+                onNext();
+              }
+            }}
             placeholder="Ex : Marie Dossou"
             className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
 
+        {/* Téléphone */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-700 flex items-center gap-1.5">
-            <Phone size={15} /> Téléphone
+          <label className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+            <Phone size={15} /> 
+            Téléphone
+            <span className="text-danger-600">*</span>
           </label>
           <input
             type="tel"
             value={value.telephone}
             onChange={(e) => onChange({ ...value, telephone: e.target.value })}
-            placeholder="Ex : 97 00 00 00"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && isValid) {
+                e.preventDefault();
+                onNext();
+              }
+            }}
+            placeholder="+229 97 00 00 00"
             className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
 
+        {/* Email */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-700 flex items-center gap-1.5">
-            <EnvelopeSimple size={15} /> Email
+          <label className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
+            <EnvelopeSimple size={15} /> 
+            Email
           </label>
           <input
             type="email"
             value={value.email}
             onChange={(e) => onChange({ ...value, email: e.target.value })}
-            placeholder="Ex : marie@exemple.com"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && isValid) {
+                e.preventDefault();
+                onNext();
+              }
+            }}
+            placeholder="marie@exemple.com"
             className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
       </div>
+
+      {/* Légende des champs obligatoires */}
+      <p className="text-xs text-neutral-500">
+        <span className="text-danger-600">*</span> Champs obligatoires
+      </p>
 
       <Button onClick={onNext} disabled={!isValid} className="w-full">
         Continuer

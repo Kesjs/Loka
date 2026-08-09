@@ -6,6 +6,7 @@ import {
   ChartPieSlice,
   WarningCircle,
   HandWaving,
+  UsersThree,
 } from "@phosphor-icons/react/dist/ssr"
 import {
   Card,
@@ -34,10 +35,11 @@ async function DashboardContent() {
   const dashboard = await getDashboardData()
   const devise = dashboard.proprietaire?.devise ?? "FCFA"
   const nom = dashboard.proprietaire?.nom ?? ""
+  const isPortefeuille = dashboard.organisation.type !== "individuel"
 
   const stats = [
     {
-      label: "Revenu mensuel réel",
+      label: isPortefeuille ? "Revenu géré" : "Revenu mensuel réel",
       value: formatMontant(dashboard.revenuMensuelReel, devise),
       sub: `Potentiel : ${formatMontant(dashboard.revenuMensuelPotentiel, devise)}`,
       icon: Wallet,
@@ -49,9 +51,9 @@ async function DashboardContent() {
       icon: ChartPieSlice,
     },
     {
-      label: "Immeubles",
+      label: isPortefeuille ? "Biens gérés" : "Immeubles",
       value: String(dashboard.nbImmeubles),
-      sub: "biens enregistrés",
+      sub: isPortefeuille ? "tous propriétaires confondus" : "biens enregistrés",
       icon: Buildings,
     },
     {
@@ -79,19 +81,67 @@ async function DashboardContent() {
           <Card>
             <CardContent className="py-10 text-center space-y-2">
               <p className="text-sm text-neutral-500">
-                Aucun logement enregistré pour le moment.
+                {isPortefeuille 
+                  ? "Aucun propriétaire enregistré pour le moment."
+                  : "Aucun logement enregistré pour le moment."}
               </p>
               <Link
-                href="/immeubles"
+                href={isPortefeuille ? "/proprietaires/new" : "/immeubles"}
                 className="text-sm font-medium text-primary-600 hover:text-primary-700"
               >
-                Ajouter votre premier bien →
+                {isPortefeuille
+                  ? "Ajouter votre premier propriétaire →"
+                  : "Ajouter votre premier bien →"}
               </Link>
             </CardContent>
           </Card>
         </div>
       ) : (
         <>
+          {/* Bloc Portefeuille pour gestionnaires/agences */}
+          {isPortefeuille && dashboard.portefeuille && dashboard.portefeuille.nbProprietaires > 0 && (
+            <Card className="border-neutral-200 shadow-sm">
+              <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-3">
+                <UsersThree size={18} className="text-primary-600" />
+                <CardTitle className="text-base">Portefeuille</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-500">Propriétaires gérés</span>
+                  <span className="text-lg font-semibold text-neutral-900">
+                    {dashboard.portefeuille.nbProprietaires}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {dashboard.portefeuille.parProprietaire.slice(0, 5).map((pg) => (
+                    <div key={pg.id} className="flex items-center justify-between text-sm">
+                      <Link 
+                        href={`/proprietaires/${pg.id}`}
+                        className="text-neutral-700 hover:text-primary-600 transition-colors"
+                      >
+                        {pg.nom}
+                      </Link>
+                      <div className="flex items-center gap-3 text-neutral-500">
+                        <span>{pg.nbBiens} bien{pg.nbBiens > 1 ? "s" : ""}</span>
+                        <span className="font-medium text-neutral-900">
+                          {formatMontant(pg.revenuMensuel, devise)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {dashboard.portefeuille.nbProprietaires > 5 && (
+                  <Link 
+                    href="/proprietaires"
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium inline-block pt-2"
+                  >
+                    Voir tous les propriétaires →
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map(({ label, value, sub, icon: Icon }) => (
               <div key={label}>

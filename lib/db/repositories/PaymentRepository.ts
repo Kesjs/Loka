@@ -201,4 +201,67 @@ export class PaymentRepository {
       total: count || 0,
     }
   }
+
+  async getPaginatedByOrganisation(
+    organisationId: string,
+    page: number,
+    pageSize: number = 20
+  ): Promise<{ data: any[]; total: number }> {
+    const supabase = await createClient()
+    const offset = (page - 1) * pageSize
+
+    // Récupérer les locataires de l'organisation
+    const { data: locataires } = await supabase
+      .from("locataires")
+      .select("id")
+      .eq("organisation_id", organisationId)
+
+    const locataireIds = (locataires ?? []).map((l) => l.id)
+
+    if (locataireIds.length === 0) {
+      return { data: [], total: 0 }
+    }
+
+    // Récupérer les contrats de ces locataires
+    const { data: contrats } = await supabase
+      .from("contrats")
+      .select("id")
+      .in("locataire_id", locataireIds)
+
+    const contratIds = (contrats ?? []).map((c) => c.id)
+
+    if (contratIds.length === 0) {
+      return { data: [], total: 0 }
+    }
+
+    // Récupérer les paiements avec relations
+    const { data, count, error } = await supabase
+      .from("paiements")
+      .select(`
+        *,
+        contrat:contrats(
+          locataire_id,
+          logement_id,
+          locataire:locataires(nom),
+          logement:logements(nom)
+        )
+      `, { count: "exact" })
+      .in("contrat_id", contratIds)
+      .order("date_paiement", { ascending: false })
+      .range(offset, offset + pageSize - 1)
+
+    if (error) throw new DatabaseError(error.message)
+
+    // Formater les données pour l'UI
+    const formattedData = (data || []).map((p: any) => ({
+      ...p,
+      locataire_nom: p.contrat?.locataire?.nom ?? "—",
+      logement_nom: p.contrat?.logement?.nom ?? null,
+    }))
+
+    return {
+      data: formattedData,
+      total: count || 0,
+    }
+  }
 }

@@ -15,6 +15,7 @@ import {
   itemVariants,
 } from "@/components/animations"
 import { Spinner } from "@/components/animations"
+import { Select } from "@/components/ui/select"
 
 interface RecordPaymentFormProps {
   proprietaireId: string
@@ -228,21 +229,24 @@ export function RecordPaymentForm({
 
       {/* Payment Mode */}
       <motion.div variants={itemVariants} className="space-y-2">
-        <label htmlFor="mode" className="block text-sm font-medium">
+        <label className="block text-sm font-medium">
           Mode de paiement *
         </label>
-        <select
-          id="mode"
-          name="mode"
+        <Select
           value={formData.mode}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        >
-          <option value="cash">Espèces</option>
-          <option value="mobile_money">Mobile Money</option>
-          <option value="virement">Virement bancaire</option>
-          <option value="cheque">Chèque</option>
-        </select>
+          onChange={(value) => {
+            setFormData((prev) => ({ ...prev, mode: value as string }))
+            if (errors.mode) {
+              setErrors((prev) => ({ ...prev, mode: "" }))
+            }
+          }}
+          options={[
+            { value: "cash", label: "Espèces" },
+            { value: "mobile_money", label: "Mobile Money" },
+            { value: "virement", label: "Virement bancaire" },
+            { value: "cheque", label: "Chèque" },
+          ]}
+        />
       </motion.div>
 
       {/* Notes */}

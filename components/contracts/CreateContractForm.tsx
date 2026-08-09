@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, ArrowRight, CheckCircle } from "@phosphor-icons/react"
+import { Select } from "@/components/ui/select"
 
 type FormData = {
   locataire_id: string
@@ -148,26 +149,17 @@ export function CreateContractForm({
               control={form.control}
               name="locataire_id"
               render={({ field, fieldState: { error } }) => (
-                <div>
-                  <select
-                    {...field}
-                    className={`w-full rounded-lg border px-4 py-3 text-neutral-900 outline-none transition ${
-                      error
-                        ? "border-red-300 focus:ring-2 focus:ring-red-100"
-                        : "border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                    }`}
-                  >
-                    <option value="">-- Sélectionner un locataire --</option>
-                    {tenants.map((tenant) => (
-                      <option key={tenant.id} value={tenant.id}>
-                        {tenant.nom}
-                      </option>
-                    ))}
-                  </select>
-                  {error && (
-                    <p className="text-xs text-red-600 mt-1">{error.message}</p>
-                  )}
-                </div>
+                <Select
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "", label: "-- Sélectionner un locataire --" },
+                    ...tenants.map((tenant) => ({
+                      value: tenant.id,
+                      label: tenant.nom,
+                    })),
+                  ]}
+                />
               )}
             />
 
@@ -208,26 +200,17 @@ export function CreateContractForm({
               control={form.control}
               name="logement_id"
               render={({ field, fieldState: { error } }) => (
-                <div>
-                  <select
-                    {...field}
-                    className={`w-full rounded-lg border px-4 py-3 text-neutral-900 outline-none transition ${
-                      error
-                        ? "border-red-300 focus:ring-2 focus:ring-red-100"
-                        : "border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                    }`}
-                  >
-                    <option value="">-- Sélectionner une propriété --</option>
-                    {properties.map((prop) => (
-                      <option key={prop.id} value={prop.id}>
-                        {prop.nom} ({prop.immeuble_nom})
-                      </option>
-                    ))}
-                  </select>
-                  {error && (
-                    <p className="text-xs text-red-600 mt-1">{error.message}</p>
-                  )}
-                </div>
+                <Select
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "", label: "-- Sélectionner une propriété --" },
+                    ...properties.map((prop) => ({
+                      value: prop.id,
+                      label: `${prop.nom} (${prop.immeuble_nom})`,
+                    })),
+                  ]}
+                />
               )}
             />
 

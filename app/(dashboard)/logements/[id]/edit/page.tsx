@@ -250,45 +250,36 @@ export default function EditLogementPage() {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <FormField label="Immeuble" icon={Buildings} required error={fieldErrors.immeubleId}>
-              <select
+              <Select
                 value={immeubleId}
-                onChange={(event) => setImmeubleId(event.target.value)}
-                className={fieldErrors.immeubleId ? fieldInputErrorClass : fieldInputClass}
-              >
-                <option value="" disabled>
-                  Sélectionner un immeuble
-                </option>
-                {immeubles.map((immeuble) => (
-                  <option key={immeuble.id} value={immeuble.id}>
-                    {immeuble.nom}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setImmeubleId(value as string)}
+                options={[
+                  { value: "", label: "Sélectionner un immeuble" },
+                  ...immeubles.map((immeuble) => ({
+                    value: immeuble.id,
+                    label: immeuble.nom,
+                  })),
+                ]}
+              />
             </FormField>
 
             <FormField label="Type de logement" icon={Tag}>
-              <select
+              <Select
                 value={typeLogement}
-                onChange={(event) => setTypeLogement(event.target.value)}
-                className={fieldInputClass}
-              >
-                {logementTypes.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => setTypeLogement(value as string)}
+                options={logementTypes}
+              />
             </FormField>
 
             <FormField label="Statut" icon={ToggleLeft}>
-              <select
+              <Select
                 value={statut}
-                onChange={(event) => setStatut(event.target.value as Statut)}
-                className={fieldInputClass}
-              >
-                <option value="vacant">Vacant</option>
-                <option value="occupe">Occupé</option>
-              </select>
+                onChange={(value) => setStatut(value as Statut)}
+                options={[
+                  { value: "vacant", label: "Vacant" },
+                  { value: "occupe", label: "Occupé" },
+                ]}
+              />
             </FormField>
           </div>
 

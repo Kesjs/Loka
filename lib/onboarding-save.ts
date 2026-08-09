@@ -27,19 +27,13 @@ export async function saveOnboarding(
     id: user.id,
     nom: data.profil.nom || user.email?.split("@")[0] || "Propriétaire",
     telephone: data.profil.telephone || null,
-    objectif: data.objectif,
     devise: data.preferences.devise || "FCFA",
-    frequence_loyer: data.preferences.frequenceLoyer,
-    jour_echeance: data.preferences.jourEcheance || null,
     garantie_defaut: data.preferences.garantie,
     montant_garantie_defaut: data.preferences.garantie
       ? parseMontant(data.preferences.montantGarantie)
       : null,
-    charges_incluses_defaut: data.preferences.chargesIncluses,
-    charges_defaut: data.preferences.charges,
     notif_email: data.preferences.notifEmail,
     widget_priorite: data.preferences.widgetPriorite,
-    logo_url: data.preferences.logoUrl || null,
     onboarding_complete: true,
   });
 
@@ -50,13 +44,86 @@ export async function saveOnboarding(
     };
   }
 
-  // 2. Immeuble / bien principal
+  // 2. Créer organisation (type = rôle sélectionné)
+  let organisationId: string | null = null;
+  if (data.role) {
+    const { data: org, error: orgError } = await supabase
+      .from("organisations")
+      .insert({
+        nom: data.role === "agence" 
+          ? (data.agenceInfo?.nom || "Mon Agence")
+          : data.profil.nom || "Mon Organisation",
+        type: data.role === "agence" 
+          ? "agence"
+          : data.role === "gestionnaire"
+          ? "gestionnaire"
+          : "proprietaire",
+      })
+      .select("id")
+      .single();
+
+    if (orgError || !org) {
+      return {
+        error:
+          "Impossible de créer votre organisation. Vérifiez les informations et réessayez.",
+      };
+    }
+    organisationId = org.id;
+  }
+
+  // 3. Créer membre_organisation (lier user à org avec role_interne)
+  if (organisationId) {
+    const { error: memError } = await supabase
+      .from("membres_organisation")
+      .insert({
+        organisation_id: organisationId,
+        user_id: user.id,
+        role_interne: data.roleInterne || 
+          (data.role === "agence" ? "admin" : "proprietaire"),
+      });
+
+    if (memError) {
+      return {
+        error:
+          "Impossible d'ajouter votre profil à l'organisation. Vérifiez et réessayez.",
+      };
+    }
+  }
+
+  // 4. Créer proprietaires_geres si gestionnaire/agence avec données
+  if (
+    organisationId &&
+    (data.role === "gestionnaire" || data.role === "agence") &&
+    data.proprietaireGere?.nom
+  ) {
+    const { error: propGereError } = await supabase
+      .from("proprietaires_geres")
+      .insert({
+        organisation_id: organisationId,
+        nom: data.proprietaireGere.nom,
+        telephone: data.proprietaireGere.telephone || null,
+        commission_pct: data.proprietaireGere.commissionPct || 10,
+      });
+
+    if (propGereError) {
+      return {
+        error:
+          "Impossible d'enregistrer le propriétaire géré. Vérifiez et réessayez.",
+      };
+    }
+  }
+
+  // 5. Immeuble / bien principal
   const { data: immeuble, error: immeubleError } = await supabase
     .from("immeubles")
     .insert({
       proprietaire_id: user.id,
+      organisation_id: organisationId,
       nom: data.bien.nom || "Mon bien",
       adresse: data.bien.adresse || null,
+      ville: data.bien.ville || null,
+      quartier: data.bien.quartier || null,
+      repere: data.bien.repere || null,
       type: data.bien.type,
     })
     .select("id")
@@ -69,7 +136,7 @@ export async function saveOnboarding(
     };
   }
 
-  // 3. Logements + (si occupés) locataires & contrats
+  // 6. Logements + (si occupés) locataires & contrats
   for (const logement of data.logements) {
     const loyerLogement = parseMontant(logement.loyer);
 
@@ -79,6 +146,7 @@ export async function saveOnboarding(
         immeuble_id: immeuble.id,
         nom: logement.nom,
         loyer_mensuel: loyerLogement,
+        type_location: data.bien.typeLocation || "longue_duree",
         statut: logement.occupe ? "occupe" : "vacant",
       })
       .select("id")
@@ -95,6 +163,7 @@ export async function saveOnboarding(
         .from("locataires")
         .insert({
           proprietaire_id: user.id,
+          organisation_id: organisationId,
           nom: logement.locataireNom,
           telephone: logement.locataireTelephone || null,
         })
@@ -107,10 +176,12 @@ export async function saveOnboarding(
         };
       }
 
+      const moyenPaiement = data.moyenPaiement || "especes";
       const { error: contratError } = await supabase.from("contrats").insert({
         locataire_id: locataire.id,
         logement_id: logementRow.id,
         loyer_mensuel: loyerLogement,
+        moyen_paiement: moyenPaiement,
         depot_garantie: data.preferences.garantie
           ? parseMontant(data.preferences.montantGarantie)
           : 0,

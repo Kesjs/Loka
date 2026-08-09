@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { getOrganisationScope } from "@/lib/organisation-scope"
 import { PaymentService } from "@/lib/services/PaymentService"
 import { PaymentRepository } from "@/lib/db/repositories/PaymentRepository"
 import { RecordPaymentDTO } from "@/lib/types/schema"
@@ -30,25 +31,32 @@ export async function GET(request: NextRequest) {
 
     // Get query parameters
     const searchParams = request.nextUrl.searchParams
-    const proprietaireId = searchParams.get("proprietaire_id") || user.id
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
 
-    // Verify proprietor ownership
-    if (proprietaireId !== user.id) {
-      return NextResponse.json(
-        { error: "Forbidden: Invalid proprietaire_id" },
-        { status: 403 }
-      )
-    }
+    // Récupérer le scope de l'organisation
+    const orgScope = await getOrganisationScope(supabase);
 
-    // Create repository and fetch
+    // Create repository and fetch (filtré par organisation)
     const paymentRepo = new PaymentRepository()
-    const { data, total } = await paymentRepo.getPaginated(
-      proprietaireId,
-      page,
-      pageSize
-    )
+    
+    // Adapter selon le type d'organisation
+    let data, total;
+    if (orgScope.organisationId) {
+      // Utilisateur gestionnaire/agence
+      ({ data, total } = await paymentRepo.getPaginatedByOrganisation(
+        orgScope.organisationId,
+        page,
+        pageSize
+      ));
+    } else {
+      // Utilisateur individuel — utiliser proprietaire_id
+      ({ data, total } = await paymentRepo.getPaginated(
+        orgScope.proprietaireIds[0],
+        page,
+        pageSize
+      ));
+    }
 
     return NextResponse.json(
       {

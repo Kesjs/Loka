@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "@phosphor-icons/react";
 import { flatNavItems } from "./nav-items";
+import { useOrganisationType } from "@/lib/hooks/useOrganisationType";
 
 interface NavigationDrawerProps {
   open: boolean;
@@ -17,6 +18,19 @@ export default function NavigationDrawer({
   onClose,
 }: NavigationDrawerProps) {
   const pathname = usePathname();
+  const orgType = useOrganisationType();
+
+  // Filtrer les items selon le type d'organisation
+  const visibleNavItems = flatNavItems.filter((item) => {
+    if (!item.conditionalShow) return true;
+    
+    // Si l'item doit être visible pour gestionnaire, le montrer aussi pour agence
+    if (item.conditionalShow === "gestionnaire") {
+      return orgType === "gestionnaire" || orgType === "agence";
+    }
+    
+    return item.conditionalShow === orgType;
+  });
 
   // Animation variants
   const backdropVariants = {
@@ -108,7 +122,7 @@ export default function NavigationDrawer({
 
             {/* Navigation Items */}
             <nav className="px-3 py-6 space-y-0">
-              {flatNavItems.map(({ href, label, icon: Icon, divider }, index) => {
+              {visibleNavItems.map(({ href, label, icon: Icon, divider }, index) => {
                 const isActive = pathname?.startsWith(href);
                 return (
                   <div key={href}>

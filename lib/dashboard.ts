@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getOrganisationScope } from "@/lib/organisation-scope";
 import type { Proprietaire } from "@/lib/types";
 
 export interface DashboardLogementRow {
@@ -26,8 +27,26 @@ export interface DashboardContratExpirant {
   jours_restants: number;
 }
 
+export interface DashboardProprietaireGere {
+  id: string;
+  nom: string;
+  nbBiens: number;
+  nbLogements: number;
+  revenuMensuel: number;
+}
+
+export interface DashboardPortefeuille {
+  nbProprietaires: number;
+  parProprietaire: DashboardProprietaireGere[];
+}
+
 export interface DashboardData {
   proprietaire: Proprietaire | null;
+  organisation: {
+    id: string;
+    nom: string;
+    type: "individuel" | "gestionnaire" | "agence";
+  };
   nbImmeubles: number;
   nbLogements: number;
   nbLogementsOccupes: number;
@@ -37,10 +56,16 @@ export interface DashboardData {
   logements: DashboardLogementRow[];
   paiementsRecents: DashboardPaiementRow[];
   contratsExpirants: DashboardContratExpirant[];
+  portefeuille?: DashboardPortefeuille;
 }
 
 const EMPTY_DASHBOARD: DashboardData = {
   proprietaire: null,
+  organisation: {
+    id: "",
+    nom: "",
+    type: "individuel",
+  },
   nbImmeubles: 0,
   nbLogements: 0,
   nbLogementsOccupes: 0,
@@ -61,16 +86,28 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   if (!user) return EMPTY_DASHBOARD;
 
+  // Récupérer le scope de l'organisation
+  const orgScope = await getOrganisationScope(supabase);
+
   const { data: proprietaire } = await supabase
     .from("proprietaire")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
 
-  const { data: immeubles } = await supabase
+  // Récupérer les immeubles de l'organisation
+  let immeublesQuery = supabase
     .from("immeubles")
-    .select("id, nom")
-    .eq("proprietaire_id", user.id);
+    .select("id, nom, proprietaire_gere_id");
+
+  // Filtrer par organisation_id si dispo, sinon par proprietaire_id
+  if (orgScope.organisationId) {
+    immeublesQuery = immeublesQuery.eq("organisation_id", orgScope.organisationId);
+  } else {
+    immeublesQuery = immeublesQuery.in("proprietaire_id", orgScope.proprietaireIds);
+  }
+
+  const { data: immeubles } = await immeublesQuery;
 
   const immeubleIds = (immeubles ?? []).map((i) => i.id);
 
@@ -97,11 +134,18 @@ export async function getDashboardData(): Promise<DashboardData> {
   const revenuMensuelPotentiel = logements.reduce((sum, l) => sum + l.loyer_mensuel, 0);
   const revenuMensuelReel = logementsOccupes.reduce((sum, l) => sum + l.loyer_mensuel, 0);
 
-  // Paiements récents (via contrats -> locataires, filtrés par propriétaire)
-  const { data: locataires } = await supabase
+  // Paiements récents (via contrats -> locataires, filtrés par organisation)
+  let locatairesQuery = supabase
     .from("locataires")
-    .select("id, nom")
-    .eq("proprietaire_id", user.id);
+    .select("id, nom");
+
+  if (orgScope.organisationId) {
+    locatairesQuery = locatairesQuery.eq("organisation_id", orgScope.organisationId);
+  } else {
+    locatairesQuery = locatairesQuery.in("proprietaire_id", orgScope.proprietaireIds);
+  }
+
+  const { data: locataires } = await locatairesQuery;
 
   const locataireIds = (locataires ?? []).map((l) => l.id);
 
@@ -163,8 +207,61 @@ export async function getDashboardData(): Promise<DashboardData> {
     })
     .sort((a, b) => a.jours_restants - b.jours_restants);
 
+  // Construire les données de portefeuille pour gestionnaire/agence
+  let portefeuille: DashboardPortefeuille | undefined;
+
+  if (orgScope.organisationType !== "individuel" && orgScope.proprietairesGeres.length > 0) {
+    const parProprietaire: DashboardProprietaireGere[] = orgScope.proprietairesGeres.map((pg) => {
+      // Compter les biens de ce propriétaire
+      const biensProprietaire = (immeubles ?? []).filter(
+        (imm) => imm.proprietaire_gere_id === pg.id
+      );
+      const nbBiens = biensProprietaire.length;
+      const biensIds = biensProprietaire.map((b) => b.id);
+
+      // Compter les logements de ces biens
+      const logementsProprietaire = (logementsRaw ?? []).filter((log) =>
+        biensIds.includes(log.immeuble_id)
+      );
+
+      // Calculer le revenu mensuel (logements occupés uniquement)
+      const revenuMensuel = logementsProprietaire
+        .filter((l) => l.statut === "occupe")
+        .reduce((sum, l) => sum + (Number(l.loyer_mensuel) || 0), 0);
+
+      return {
+        id: pg.id,
+        nom: pg.nom,
+        nbBiens,
+        nbLogements: logementsProprietaire.length,
+        revenuMensuel,
+      };
+    });
+
+    portefeuille = {
+      nbProprietaires: orgScope.proprietairesGeres.length,
+      parProprietaire,
+    };
+  }
+
+  // Récupérer le nom de l'organisation
+  let organisationNom = proprietaire?.nom || "Mon Organisation";
+  if (orgScope.organisationId) {
+    const { data: org } = await supabase
+      .from("organisations")
+      .select("nom")
+      .eq("id", orgScope.organisationId)
+      .maybeSingle();
+    if (org?.nom) organisationNom = org.nom;
+  }
+
   return {
     proprietaire: (proprietaire as Proprietaire) ?? null,
+    organisation: {
+      id: orgScope.organisationId || "",
+      nom: organisationNom,
+      type: orgScope.organisationType,
+    },
     nbImmeubles: immeubles?.length ?? 0,
     nbLogements,
     nbLogementsOccupes,
@@ -174,5 +271,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     logements,
     paiementsRecents,
     contratsExpirants,
+    portefeuille,
   };
 }

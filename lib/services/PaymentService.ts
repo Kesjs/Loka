@@ -12,6 +12,8 @@ import {
 } from "@/lib/errors/ApplicationError"
 import { RecordPaymentDTO, PaymentSchema } from "@/lib/types/schema"
 import type { Payment, MissingPayment } from "@/lib/db/repositories/PaymentRepository"
+import { generateReceipt, generateReceiptBlob, ReceiptData } from "./ReceiptService"
+import { createClient } from "@/lib/supabase/server"
 
 export class PaymentService {
   constructor(private paymentRepo: PaymentRepository) {}
@@ -39,8 +41,82 @@ export class PaymentService {
     // Create payment
     const payment = await this.paymentRepo.create(validated, userId)
 
-    // TODO: Generate receipt PDF
-    // TODO: Send email notification to tenant
+    // Generate receipt PDF and store URL
+    try {
+      const supabase = await createClient()
+      
+      // Récupérer les données nécessaires pour la quittance
+      const { data: contrat } = await supabase
+        .from("contrats")
+        .select("locataire_id, logement_id")
+        .eq("id", validated.contrat_id)
+        .maybeSingle()
+
+      if (contrat) {
+        const { data: locataire } = await supabase
+          .from("locataires")
+          .select("nom")
+          .eq("id", contrat.locataire_id)
+          .maybeSingle()
+
+        const { data: logement } = await supabase
+          .from("logements")
+          .select("nom")
+          .eq("id", contrat.logement_id)
+          .maybeSingle()
+
+        const { data: proprietaire } = await supabase
+          .from("proprietaire")
+          .select("nom, devise")
+          .eq("id", userId)
+          .maybeSingle()
+
+        if (proprietaire && locataire && logement) {
+          // Générer la quittance
+          const receiptData: ReceiptData = {
+            paiementId: payment.id,
+            proprietaireName: proprietaire.nom,
+            locataireName: locataire.nom,
+            logementName: logement.nom,
+            montant: Number(payment.montant),
+            devise: proprietaire.devise || "FCFA",
+            datePaiement: payment.date_paiement,
+            periodeDebut: payment.periode_debut,
+            periodeFin: payment.periode_fin,
+            mode: payment.mode,
+            reference: `QUI-${payment.id.substring(0, 8).toUpperCase()}`,
+          }
+
+          // Générer le Blob PDF
+          const receiptBlob = generateReceiptBlob(receiptData)
+          
+          // Uploader vers Supabase Storage
+          const fileName = `quittances/${payment.id}.pdf`
+          const { error: uploadError, data: uploadData } = await supabase.storage
+            .from("paiements")
+            .upload(fileName, receiptBlob, {
+              contentType: "application/pdf",
+              upsert: false,
+            })
+
+          if (!uploadError && uploadData) {
+            // Récupérer l'URL publique
+            const { data: { publicUrl } } = supabase.storage
+              .from("paiements")
+              .getPublicUrl(fileName)
+
+            // Mettre à jour le paiement avec l'URL
+            await this.paymentRepo.updateReceipt(payment.id, publicUrl)
+
+            // TODO: Envoyer email de confirmation au locataire
+            // await sendPaymentConfirmationEmail(...)
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erreur génération/stockage quittance:", error)
+      // Ne pas bloquer le paiement si la génération échoue
+    }
 
     return payment
   }

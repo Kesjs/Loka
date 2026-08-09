@@ -23,6 +23,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getOrganisationScope } from "@/lib/organisation-scope";
 import { withErrorHandler } from "@/lib/api/errorHandler";
 import {
   ValidationError,
@@ -72,11 +73,45 @@ async function handler(request: NextRequest) {
   }
 
   try {
-    // Build query
+    // Récupérer le scope de l'organisation
+    const orgScope = await getOrganisationScope(supabase);
+
+    // Récupérer les immeubles de l'organisation pour filtrer les logements
+    let immeublesQuery = supabase
+      .from("immeubles")
+      .select("id");
+
+    if (orgScope.organisationId) {
+      immeublesQuery = immeublesQuery.eq("organisation_id", orgScope.organisationId);
+    } else {
+      immeublesQuery = immeublesQuery.in("proprietaire_id", orgScope.proprietaireIds);
+    }
+
+    const { data: immeubles } = await immeublesQuery;
+
+    const immeubleIds = (immeubles ?? []).map((i) => i.id);
+
+    if (immeubleIds.length === 0) {
+      // Pas d'immeubles pour cette organisation
+      return NextResponse.json(
+        {
+          success: true,
+          logements: [],
+          total: 0,
+          page,
+          limit,
+          pages: 0,
+          hasMore: false,
+        },
+        { status: 200 }
+      );
+    }
+
+    // Build query - filtrer par immeubles de l'organisation
     let query = supabase
       .from("logements")
       .select("*", { count: "exact" })
-      .eq("proprietaire_id", user.id);
+      .in("immeuble_id", immeubleIds);
 
     // Apply filters
     if (immeubleId) {
@@ -125,7 +160,7 @@ async function handler(request: NextRequest) {
     query = supabase
       .from("logements")
       .select("*")
-      .eq("proprietaire_id", user.id);
+      .in("immeuble_id", immeubleIds);
 
     // Re-apply filters for paginated query
     if (immeubleId) {
@@ -213,13 +248,27 @@ async function handlePost(request: NextRequest) {
   }
 
   try {
+    // Récupérer le scope de l'organisation
+    const orgScope = await getOrganisationScope(supabase);
+
+    // Vérifier que l'immeuble appartient à l'organisation
+    const { data: immeuble } = await supabase
+      .from("immeubles")
+      .select("id")
+      .eq("id", createData.immeuble_id)
+      .eq("organisation_id", orgScope.organisationId)
+      .maybeSingle();
+
+    if (!immeuble) {
+      throw new ValidationError("Immeuble not found or not accessible");
+    }
+
     // Create logement
     const { data: logement, error: createError } = await supabase
       .from("logements")
       .insert({
-        proprietaire_id: user.id,
-        nom: createData.nom,
         immeuble_id: createData.immeuble_id,
+        nom: createData.nom,
         type: createData.type || null,
         description: createData.description || null,
         loyer_mensuel: createData.loyer_mensuel,

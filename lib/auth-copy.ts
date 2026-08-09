@@ -8,6 +8,106 @@ export interface AuthPanelCopy {
   rightHint?: string;
 }
 
+export interface StepContextCard {
+  badge: string;
+  title: string;
+  description: string;
+  highlightLabel?: string;
+  highlightValue?: string;
+}
+
+export function getStepContextCard(
+  step: number,
+  role: Role | null,
+  situation: Situation | null
+): StepContextCard {
+  switch (step) {
+    case 0:
+      return {
+        badge: "DÉMARRAGE RAPIDE",
+        title: "Bienvenue sur Loka",
+        description: "La solution de gestion locative conçue spécifiquement pour les propriétaires et agences au Bénin.",
+        highlightLabel: "Temps de config",
+        highlightValue: "< 3 minutes",
+      };
+    case 1:
+      return {
+        badge: "IDENTITÉ & MARQUE",
+        title: "Profil & En-tête officiel",
+        description: "Vos informations serviront à générer automatiquement vos quittances de loyer et avis d'échéance conformes.",
+        highlightLabel: "Génération automatique",
+        highlightValue: "Quittances E.164",
+      };
+    case 2:
+      return {
+        badge: "SUR-MESURE",
+        title: "Interface adaptée à votre rôle",
+        description: "Propriétaire indépendant, gestionnaire mandataire ou agence immobilière : Loka adapte ses tableaux de bord.",
+        highlightLabel: "Profils gérés",
+        highlightValue: "Bailleurs & Agences",
+      };
+    case 3:
+      return {
+        badge: "PARCOURS OPTIMISÉ",
+        title: "Expérience personnalisée",
+        description: "Nous ajustons le parcours selon la taille de votre parc pour vous éviter tout formulaire superflu.",
+        highlightLabel: "Formulaires",
+        highlightValue: "100% Pertinents",
+      };
+    case 4:
+    case 5:
+      if (role === "agence" || role === "gestionnaire") {
+        return {
+          badge: "PORTEFEUILLE DE BIENS",
+          title: "Propriétaires mandants",
+          description: "Organisez le suivi de vos bailleurs et automatisez le calcul et la retenue des commissions de gestion.",
+          highlightLabel: "Calcul commission",
+          highlightValue: "Automatique",
+        };
+      }
+      return {
+        badge: "PATRIMOINE IMMOBILIER",
+        title: "Immeubles & Bâtiments",
+        description: "Enregistrez vos immeubles pour regrouper facilement vos logements par quartier ou adresse.",
+        highlightLabel: "Suivi centralisé",
+        highlightValue: "Multi-biens",
+      };
+    case 6:
+    case 7:
+      return {
+        badge: "STRUCTURE DES LOTS",
+        title: "Découpage des logements",
+        description: "Nomenclature automatique des appartements, boutiques et pièces avec loyer pré-rempli.",
+        highlightLabel: "Numérotation",
+        highlightValue: "Instantanée",
+      };
+    case 8:
+      return {
+        badge: "ÉTAT DES LIEUX",
+        title: "Occupation & Locataires",
+        description: "Distinguez en un clic les logements loués de ceux vacants pour un calcul exact de votre revenu potentiel.",
+        highlightLabel: "Taux d'occupation",
+        highlightValue: "Temps réel",
+      };
+    case 9:
+      return {
+        badge: "TRÉSORERIE",
+        title: "Encaissements & Relances",
+        description: "Suivez les règlements Mobile Money (MTN MoMo, Moov) et virements avec génération de reçu en 1 clic.",
+        highlightLabel: "Suivi impayés",
+        highlightValue: "Automatisé",
+      };
+    default:
+      return {
+        badge: "ESPACE PRÊT",
+        title: "Configuration terminée !",
+        description: "Accédez dès maintenant à votre tableau de bord et commencez à piloter vos loyers en toute sérénité.",
+        highlightLabel: "Statut",
+        highlightValue: "Opérationnel ⚡",
+      };
+  }
+}
+
 export const LOGIN_COPY = {
   leftTitle: "Votre patrimoine locatif, sous contrôle.",
   leftSubtitle:

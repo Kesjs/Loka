@@ -39,6 +39,9 @@ export default function OnboardingLayout({
       rightHint={copy.rightHint}
       showBack={showBackButton}
       onBack={onPrev}
+      step={step}
+      role={role}
+      situation={situation}
       progress={
         showProgress
           ? {

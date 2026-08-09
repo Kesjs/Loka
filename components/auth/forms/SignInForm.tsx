@@ -9,6 +9,7 @@ import {
   EnvelopeSimple,
   Lock,
   CheckCircle,
+  CircleNotch,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -87,9 +88,11 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
 
       {/* Succès */}
       {success && (
-        <div className="flex items-start gap-3 rounded-lg border border-success-100 bg-success-50 px-4 py-3 text-sm text-success-600 animate-[slideDown_0.3s_ease-out]">
-          <CheckCircle size={18} className="mt-0.5 shrink-0" weight="fill" />
-          <span>Connexion réussie ! Redirection en cours...</span>
+        <div className="flex items-center gap-3 rounded-xl bg-success-50 px-4 py-3.5 text-sm text-success-700 animate-[slideDown_0.3s_ease-out]">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success-100">
+            <CheckCircle size={16} className="text-success-600" weight="fill" />
+          </span>
+          <span className="font-medium">Connexion réussie — redirection en cours…</span>
         </div>
       )}
 
@@ -167,8 +170,18 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
         className="h-11 w-full font-medium"
         disabled={loading || success}
       >
-        {loading && "Connexion en cours..."}
-        {success && "✓ Redirection..."}
+        {loading && (
+          <span className="flex items-center justify-center gap-2">
+            <CircleNotch size={16} className="animate-spin" />
+            Connexion en cours
+          </span>
+        )}
+        {success && (
+          <span className="flex items-center justify-center gap-2">
+            <CircleNotch size={16} className="animate-spin" />
+            Redirection
+          </span>
+        )}
         {!loading && !success && AUTH_MESSAGES.buttons.signIn}
       </Button>
     </form>

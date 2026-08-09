@@ -9,6 +9,7 @@ import {
   EnvelopeSimple,
   Lock,
   CheckCircle,
+  CircleNotch,
   Info,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -114,9 +115,11 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
 
       {/* Succès */}
       {success && (
-        <div className="flex items-start gap-3 rounded-lg border border-success-100 bg-success-50 px-4 py-3 text-sm text-success-600 animate-[slideDown_0.3s_ease-out]">
-          <CheckCircle size={18} className="mt-0.5 shrink-0" weight="fill" />
-          <span>Inscription réussie ! Redirection vers la configuration...</span>
+        <div className="flex items-center gap-3 rounded-xl bg-success-50 px-4 py-3.5 text-sm text-success-700 animate-[slideDown_0.3s_ease-out]">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success-100">
+            <CheckCircle size={16} className="text-success-600" weight="fill" />
+          </span>
+          <span className="font-medium">Compte créé — redirection en cours…</span>
         </div>
       )}
 
@@ -166,7 +169,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            disabled={loading || success}
+            disabled={loading}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition-colors hover:text-neutral-600 disabled:opacity-50"
             tabIndex={-1}
           >
@@ -201,7 +204,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
           <button
             type="button"
             onClick={() => setShowConfirmPassword((v) => !v)}
-            disabled={loading || success}
+            disabled={loading}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition-colors hover:text-neutral-600 disabled:opacity-50"
             tabIndex={-1}
           >
@@ -222,8 +225,18 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
         className="h-11 w-full font-medium"
         disabled={loading || success}
       >
-        {loading && AUTH_MESSAGES.buttons.loading}
-        {success && "✓ Redirection..."}
+        {loading && (
+          <span className="flex items-center justify-center gap-2">
+            <CircleNotch size={16} className="animate-spin" />
+            Veuillez patienter
+          </span>
+        )}
+        {success && (
+          <span className="flex items-center justify-center gap-2">
+            <CircleNotch size={16} className="animate-spin" />
+            Redirection
+          </span>
+        )}
         {!loading && !success && AUTH_MESSAGES.buttons.signUp}
       </Button>
 

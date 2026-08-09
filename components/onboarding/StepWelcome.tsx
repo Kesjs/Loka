@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, User, Phone, EnvelopeSimple } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
+import { HandWaving, User, Phone, EnvelopeSimple, SignOut } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -12,6 +13,7 @@ interface StepWelcomeProps {
 }
 
 export default function StepWelcome({ value, onChange, onNext }: StepWelcomeProps) {
+  const router = useRouter();
   const [user, setUser] = useState<{ email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,19 +37,40 @@ export default function StepWelcome({ value, onChange, onNext }: StepWelcomeProp
 
   const isValid = value.nom.trim() !== "" && value.telephone.trim() !== "";
 
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
   return (
     <div className="space-y-8">
+      {/* Ce n'est pas vous ? */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-400 transition-colors hover:text-neutral-600"
+        >
+          <SignOut size={14} />
+          Ce n&apos;est pas vous ? Se déconnecter
+        </button>
+      </div>
+
       {/* Succès de connexion */}
       <div className="text-center space-y-4">
         <div className="flex justify-center">
           <div className="relative">
-            <div className="absolute inset-0 bg-green-100 rounded-full blur-xl" />
-            <CheckCircle size={56} weight="fill" className="relative text-green-600" />
+            <div className="absolute inset-0 bg-primary-100 rounded-full blur-lg" />
+            <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary-50">
+              <HandWaving size={28} weight="fill" className="text-primary-600" />
+            </span>
           </div>
         </div>
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-neutral-900">
-            Bienvenue chez Loka ! 🎉
+            Bienvenue !
           </h1>
           <p className="text-sm text-neutral-600">
             Votre compte a été créé avec succès. Complétez vos informations pour commencer.

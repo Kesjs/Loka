@@ -21,11 +21,11 @@ export const AUTH_MESSAGES = {
   leftContent: {
     signIn: {
       title: "Bienvenue",
-      subtitle: "Connectez-vous à votre compte Loka pour gérer vos biens immobiliers.",
+      subtitle: "Connectez-vous à votre compte pour gérer vos biens immobiliers.",
       footnote: "Vous n'avez pas de compte ? Créez-en un en quelques minutes.",
     },
     signUp: {
-      title: "Rejoignez Loka",
+      title: "Créez votre compte",
       subtitle: "Créez votre compte et commencez à gérer vos biens immobiliers dès aujourd'hui.",
       footnote: "Vous avez déjà un compte ? Connectez-vous directement.",
     },
@@ -41,7 +41,7 @@ export const AUTH_MESSAGES = {
     },
     changeEmail: {
       title: "Modifiez votre email",
-      subtitle: "Mettez à jour l'adresse email associée à votre compte Loka.",
+      subtitle: "Mettez à jour l'adresse email associée à votre compte.",
       footnote: "Nous vous enverrons un lien de confirmation.",
     },
   },

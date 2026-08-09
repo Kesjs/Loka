@@ -33,8 +33,6 @@ export default function AuthTabs() {
     <AuthShell
       leftTitle={leftContent.title}
       leftSubtitle={leftContent.subtitle}
-      rightTitle="Loka"
-      rightSubtitle="Gestion Locative Simplifiée"
       showTabs
       activeTab={activeTab}
       onTabChange={setActiveTab}

@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { AnimatePresence, motion, Variants } from "framer-motion";
-import { ArrowLeft } from "@phosphor-icons/react";
+import { AnimatePresence, motion } from "framer-motion";
 import OnboardingLayout from "@/components/onboarding/OnboardingLayout";
 import ProgressDots from "@/components/onboarding/ProgressDots";
 import StepWelcome from "@/components/onboarding/StepWelcome";
@@ -24,19 +22,11 @@ import {
   initialOnboardingData,
   calculateTotalSteps,
   isProprietaireDebutant,
-  Role,
-  Situation,
 } from "@/components/onboarding/types";
 import { createClient } from "@/lib/supabase/client";
 import { saveOnboarding } from "@/lib/onboarding-save";
 
 const DRAFT_KEY = "loka_onboarding_draft";
-
-const variants: Variants = {
-  enter: { opacity: 0, x: 24 },
-  center: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -24 },
-};
 
 function loadDraft(): { step: number; data: OnboardingData } | null {
   if (typeof window === "undefined") return null;
@@ -49,62 +39,6 @@ function loadDraft(): { step: number; data: OnboardingData } | null {
   }
 }
 
-/**
- * Retourne l'étape physique réelle d'après l'étape logique
- */
-function getPhysicalStep(logicalStep: number, role: Role | null, situation: Situation | null): number {
-  // Étapes toujours présentes
-  if (logicalStep === 0) return 0; // Welcome
-  if (logicalStep === 1) return 1; // Profile
-  if (logicalStep === 2) return 2; // Role
-  if (logicalStep === 3) return 3; // Situation
-
-  let physical = 4;
-
-  // Agence uniquement : AgenceInfo
-  if (role === "agence") {
-    if (logicalStep === 4) return physical; // AgenceInfo
-    physical++;
-  }
-
-  // Gestionnaire ou Agence : ProprietaireGere
-  if (role === "gestionnaire" || role === "agence") {
-    const step = role === "agence" ? 5 : 4;
-    if (logicalStep === step) return physical; // ProprietaireGere
-    physical++;
-  }
-
-  // Property
-  if (logicalStep === (role === "agence" ? 6 : role === "gestionnaire" ? 5 : 4)) {
-    return physical;
-  }
-  physical++;
-
-  // HousingCount
-  const housingCountLogical = role === "agence" ? 7 : role === "gestionnaire" ? 6 : 5;
-  if (logicalStep === housingCountLogical) return physical;
-  physical++;
-
-  // Propriétaire débutant saute Occupation
-  const isDebutant = isProprietaireDebutant(role, situation);
-
-  if (!isDebutant) {
-    const occupationLogical = role === "agence" ? 8 : role === "gestionnaire" ? 7 : 6;
-    if (logicalStep === occupationLogical) return physical;
-    physical++;
-  }
-
-  // Propriétaire débutant saute Paiement
-  if (!isDebutant) {
-    const paiementLogical = role === "agence" ? 9 : role === "gestionnaire" ? 8 : 7;
-    if (logicalStep === paiementLogical) return physical;
-    physical++;
-  }
-
-  // Complete
-  return physical;
-}
-
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(() => loadDraft()?.step ?? 0);
@@ -115,19 +49,17 @@ export default function OnboardingPage() {
   const totalSteps = calculateTotalSteps(data.role, data.situation);
   const stepConfig = getStepConfig(step, data.role, data.situation);
 
+  // Auto-skip steps that don't apply to this path
+  useEffect(() => {
+    if (data.role === "proprietaire" && step === 4) {
+      setStep(5);
+    }
+  }, [data.role, step]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, data }));
   }, [step, data]);
-
-  // Auto-skip steps that should be skipped
-  useEffect(() => {
-    // Propriétaire at step 4: skip to step 5 (Property)
-    if (data.role === "proprietaire" && step === 4) {
-      setStep(5);
-    }
-    // Gestionnaire at step 5: skip to step 6 if role not filled (but shouldn't happen)
-  }, [data.role, step]);
 
   function next() {
     setStep((s) => Math.min(s + 1, totalSteps - 1));
@@ -194,7 +126,7 @@ export default function OnboardingPage() {
           />
         );
 
-      // Propriétaire : auto-advance via useEffect above
+      // Agence: AgenceInfo (step 4)
       case 4:
         if (data.role === "agence") {
           return (
@@ -205,7 +137,7 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Gestionnaire : StepProprietaireGere (step 4)
+        // Gestionnaire: ProprietaireGere (step 4)
         if (data.role === "gestionnaire") {
           return (
             <StepProprietaireGere
@@ -215,10 +147,10 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Propriétaire : this step is auto-skipped by useEffect
+        // Propriétaire: auto-skipped
         return null;
 
-      // Agence : StepProprietaireGere (step 5)
+      // Agence: ProprietaireGere (step 5)
       case 5:
         if (data.role === "agence") {
           return (
@@ -229,7 +161,7 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Gestionnaire ou Propriétaire : StepProperty
+        // Gestionnaire/Propriétaire: Property
         if (data.role === "gestionnaire" || data.role === "proprietaire") {
           return (
             <StepProperty
@@ -241,7 +173,7 @@ export default function OnboardingPage() {
         }
         return null;
 
-      // Agence : StepProperty (step 6)
+      // Agence: Property (step 6)
       case 6:
         if (data.role === "agence") {
           return (
@@ -252,7 +184,7 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Gestionnaire ou Propriétaire : StepHousingCount
+        // Gestionnaire/Propriétaire: HousingCount
         if (data.role === "gestionnaire" || data.role === "proprietaire") {
           return (
             <StepHousingCount
@@ -267,7 +199,7 @@ export default function OnboardingPage() {
         }
         return null;
 
-      // Agence : StepHousingCount (step 7)
+      // Agence: HousingCount (step 7)
       case 7:
         if (data.role === "agence") {
           return (
@@ -281,7 +213,7 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Propriétaire non-débutant : StepOccupation
+        // Propriétaire non-débutant: Occupation
         if (!isProprietaireDebutant(data.role, data.situation)) {
           return (
             <StepOccupation
@@ -291,10 +223,10 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Propriétaire débutant : saute Occupation, va à Complete
+        // Propriétaire débutant: skip to Complete
         return null;
 
-      // Agence/Gestionnaire : StepOccupation (step 8)
+      // Agence/Gestionnaire: Occupation (step 8)
       case 8:
         if (data.role === "agence" || data.role === "gestionnaire") {
           return (
@@ -305,7 +237,7 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Propriétaire non-débutant : StepPaiement
+        // Propriétaire non-débutant: Paiement
         if (!isProprietaireDebutant(data.role, data.situation)) {
           return (
             <StepPaiement
@@ -331,7 +263,7 @@ export default function OnboardingPage() {
         }
         return null;
 
-      // Agence : StepPaiement (step 9) - Gestionnaire skips this
+      // Agence: Paiement (step 9)
       case 9:
         if (data.role === "agence") {
           return (
@@ -356,13 +288,9 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Gestionnaire goes directly to Complete
-        if (data.role === "gestionnaire") {
-          return null;
-        }
         return null;
 
-      // Complete : toujours le dernier step
+      // Complete: Last step
       case totalSteps - 1:
         return (
           <StepComplete
@@ -390,10 +318,9 @@ export default function OnboardingPage() {
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
         >
           {renderStep()}

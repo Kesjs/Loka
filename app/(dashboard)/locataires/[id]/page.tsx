@@ -87,9 +87,11 @@ export default async function LocatairePage({ params }: Props) {
       {/* Espace Locataire - Visible si au moins un contrat actif */}
       {contratsActifs.length > 0 && (
         <TenantPortalCard
+          locataireId={locataire.id}
           locataireName={locataire.nom}
+          locataireEmail={locataire.email}
           logementName={logementActuel}
-          isActive={false}
+          isActive={Boolean((locataire as any).portal_active)}
         />
       )}
 

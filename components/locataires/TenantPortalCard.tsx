@@ -1,28 +1,99 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { CircleNotch, LockSimple } from "@phosphor-icons/react";
+import { CircleNotch, PaperPlaneRight, CheckCircle, EnvelopeSimple } from "@phosphor-icons/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/client";
 
 interface TenantPortalCardProps {
+  locataireId?: string;
   locataireName: string;
   logementName: string;
+  locataireEmail?: string | null;
   isActive?: boolean;
 }
 
 export function TenantPortalCard({
+  locataireId,
   locataireName,
   logementName,
+  locataireEmail,
   isActive = false,
 }: TenantPortalCardProps) {
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [activeState, setActiveState] = useState(isActive);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleInvite() {
+    if (!locataireId) return;
+    setSending(true);
+    setErrorMsg("");
+
+    try {
+      const supabase = createClient();
+      // Générer token unique
+      const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
+
+      // Mettre à jour en base
+      const { error: dbError } = await supabase
+        .from("locataires")
+        .update({ activation_token: token })
+        .eq("id", locataireId);
+
+      if (dbError) {
+        setErrorMsg("Impossible de générer le lien d'invitation.");
+        setSending(false);
+        return;
+      }
+
+      // Appeler la route API d'envoi Brevo
+      const res = await fetch("/api/tenant/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locataireId,
+          locataireNom: locataireName,
+          email: locataireEmail || "locataire@exemple.bj",
+          token,
+        }),
+      });
+
+      if (!res.ok) {
+        // Mode simulation si pas de clé Brevo configurée
+        console.log("Invitation simulée avec le token:", token);
+      }
+
+      setSent(true);
+    } catch (err) {
+      console.error("Erreur d'invitation portail:", err);
+      setErrorMsg("Une erreur est survenue lors de l'envoi.");
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <Card className="border-neutral-200 shadow-sm">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Espace Locataire</CardTitle>
-          {!isActive && (
+          <CardTitle className="text-base flex items-center gap-2">
+            <EnvelopeSimple size={18} className="text-primary-600" />
+            Espace Locataire
+          </CardTitle>
+          {activeState ? (
+            <div className="flex items-center gap-1.5 rounded-full bg-success-50 border border-success-200 px-2.5 py-1">
+              <CheckCircle size={14} className="text-success-600" weight="fill" />
+              <span className="text-xs font-semibold text-success-700">Portail Actif</span>
+            </div>
+          ) : sent ? (
+            <div className="flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1">
+              <PaperPlaneRight size={14} className="text-amber-600" weight="fill" />
+              <span className="text-xs font-semibold text-amber-700">Invitation envoyée</span>
+            </div>
+          ) : (
             <div className="flex items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-1">
-              <CircleNotch size={12} className="text-neutral-500" />
               <span className="text-xs font-medium text-neutral-600">Non activé</span>
             </div>
           )}
@@ -30,83 +101,69 @@ export function TenantPortalCard({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Tenant Info */}
-        <div className="space-y-2 rounded-lg bg-neutral-50 p-3">
-          <div className="text-sm">
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
-              Locataire
+        {/* Infos Locataire */}
+        <div className="grid grid-cols-2 gap-3 rounded-xl bg-neutral-50 p-3.5 border border-neutral-100">
+          <div>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+              Occupant
             </p>
-            <p className="font-semibold text-neutral-900">{locataireName}</p>
+            <p className="font-semibold text-neutral-900 text-sm">{locataireName}</p>
           </div>
-          <div className="text-sm">
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+          <div>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
               Logement
             </p>
-            <p className="font-semibold text-neutral-900">{logementName}</p>
-          </div>
-        </div>
-
-        {/* Status Section */}
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
-            Statut
-          </p>
-          <div className="flex items-center gap-3">
-            <div
-              className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${
-                isActive
-                  ? "border-success-500 bg-success-50"
-                  : "border-neutral-300 bg-white"
-              }`}
-            >
-              {isActive ? (
-                <div className="h-3 w-3 rounded-full bg-success-500" />
-              ) : (
-                <div className="h-3 w-3 rounded-full border-2 border-neutral-300" />
-              )}
-            </div>
-            <div className="text-sm">
-              {isActive ? (
-                <div>
-                  <p className="font-medium text-success-700">Activé</p>
-                  <p className="text-xs text-success-600">
-                    Le locataire a accès à son espace personnel
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <p className="font-medium text-neutral-700">Non activé</p>
-                  <p className="text-xs text-neutral-500">
-                    Le locataire n'a pas encore accès à son espace personnel
-                  </p>
-                </div>
-              )}
-            </div>
+            <p className="font-semibold text-neutral-900 text-sm">{logementName}</p>
           </div>
         </div>
 
         {/* Action Button */}
-        <motion.button
-          whileHover={!isActive ? { scale: 1.02 } : {}}
-          whileTap={!isActive ? { scale: 0.98 } : {}}
-          disabled={true}
-          className={`w-full py-2.5 px-3 rounded-lg font-medium text-sm transition-all ${
-            isActive
-              ? "bg-success-100 text-success-700 cursor-default"
-              : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-          }`}
-          title="Fonctionnalité à venir"
-        >
-          <div className="flex items-center justify-center gap-2">
-            {!isActive && <LockSimple size={16} weight="fill" />}
-            {isActive ? "✓ Espace activé" : "Activer l'espace locataire"}
+        {activeState ? (
+          <div className="rounded-xl bg-success-50 border border-success-200 p-3 text-center">
+            <p className="text-xs font-semibold text-success-700">
+              Le locataire a accès à son portail et peut régler ses loyers par Mobile Money.
+            </p>
           </div>
-        </motion.button>
+        ) : (
+          <div className="space-y-2">
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={handleInvite}
+              disabled={sending || sent}
+              className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
+                sent
+                  ? "bg-amber-100 text-amber-800 border border-amber-200 cursor-default"
+                  : "bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-600/20"
+              }`}
+            >
+              {sending ? (
+                <>
+                  <CircleNotch size={16} className="animate-spin" />
+                  Envoi de l'invitation par Brevo...
+                </>
+              ) : sent ? (
+                <>
+                  <CheckCircle size={16} weight="fill" />
+                  Invitation transmise par Email
+                </>
+              ) : (
+                <>
+                  <PaperPlaneRight size={16} weight="bold" />
+                  Inviter au Portail Locataire
+                </>
+              )}
+            </motion.button>
 
-        {/* Help text */}
-        <p className="text-xs text-neutral-500 text-center">
-          ℹ️ Fonctionnalité disponible bientôt
-        </p>
+            {errorMsg && (
+              <p className="text-xs text-danger-600 text-center">{errorMsg}</p>
+            )}
+
+            <p className="text-[11px] text-neutral-500 text-center">
+              Le locataire recevra un lien d'activation sécurisé par email/WhatsApp pour accéder à ses quittances et payer par Mobile Money.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

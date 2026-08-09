@@ -30,7 +30,14 @@ export default function StepPaiement({
   onChangeMontant,
   onNext,
 }: StepPaiementProps) {
-  const isComplete = moyenPaiement && (!garantie || montantGarantie);
+  const currentMoyen = moyenPaiement || "especes";
+
+  function handleContinue() {
+    if (!moyenPaiement) {
+      onChangeMoyen("especes");
+    }
+    onNext();
+  }
 
   return (
     <div className="space-y-6">
@@ -111,7 +118,7 @@ export default function StepPaiement({
         </div>
       )}
 
-      <Button onClick={onNext} disabled={!isComplete} className="w-full">
+      <Button onClick={handleContinue} className="w-full">
         Continuer
       </Button>
     </div>

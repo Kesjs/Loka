@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import OnboardingLayout from "@/components/onboarding/OnboardingLayout";
 import StepWelcome from "@/components/onboarding/StepWelcome";
-import StepProfile from "@/components/onboarding/StepProfile";
 import StepRole from "@/components/onboarding/StepRole";
 import StepSituation from "@/components/onboarding/StepSituation";
 import StepAgenceInfo from "@/components/onboarding/StepAgenceInfo";
@@ -18,15 +17,13 @@ import StepComplete from "@/components/onboarding/StepComplete";
 import {
   OnboardingData,
   initialOnboardingData,
-  calculateTotalSteps,
-  isProprietaireDebutant,
+  getStepSequence,
+  StepType,
 } from "@/components/onboarding/types";
 import { createClient } from "@/lib/supabase/client";
 import { saveOnboarding } from "@/lib/onboarding-save";
 import {
   loadOnboardingDraft,
-  saveDraftLocally,
-  saveDraftToDatabase,
   deleteDraft,
   createAutoSaveFunction,
 } from "@/lib/onboarding-draft";
@@ -40,7 +37,15 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const autoSaveFunctionRef = useRef<((step: number, data: OnboardingData) => Promise<void>) | null>(null);
 
-  const totalSteps = calculateTotalSteps(data.role, data.situation);
+  const stepSequence = getStepSequence(data.role, data.situation);
+  const totalSteps = stepSequence.length;
+
+  // Ajuster l'étape courante si la séquence rétrécit suite à un changement de rôle
+  useEffect(() => {
+    if (step >= totalSteps) {
+      setStep(Math.max(totalSteps - 1, 0));
+    }
+  }, [totalSteps, step]);
 
   // Charger le brouillon au montage
   useEffect(() => {
@@ -60,13 +65,6 @@ export default function OnboardingPage() {
     })();
   }, []);
 
-  // Auto-skip steps that don't apply to this path
-  useEffect(() => {
-    if (data.role === "proprietaire" && step === 3) {
-      setStep(4);
-    }
-  }, [data.role, step]);
-
   // Auto-save avec débounce
   useEffect(() => {
     if (isLoading) return;
@@ -78,15 +76,7 @@ export default function OnboardingPage() {
   }
 
   function prev() {
-    setStep((s) => {
-      const prevStep = s - 1;
-      // Sauter l'étape 3 (AgenceInfo/ProprietaireGere) pour les propriétaires
-      // car cette étape est auto-skippée à l'aller
-      if (data.role === "proprietaire" && prevStep === 3) {
-        return 2; // retour direct à Situation
-      }
-      return Math.max(prevStep, 0);
-    });
+    setStep((s) => Math.max(s - 1, 0));
   }
 
   async function handleFinish() {
@@ -120,10 +110,11 @@ export default function OnboardingPage() {
     );
   }
 
+  const currentStepType: StepType = stepSequence[step] || "welcome";
+
   function renderStep() {
-    switch (step) {
-      // Step 0: Welcome & Profil
-      case 0:
+    switch (currentStepType) {
+      case "welcome":
         return (
           <StepWelcome
             value={data.profil}
@@ -132,8 +123,7 @@ export default function OnboardingPage() {
           />
         );
 
-      // Step 1: Choix du Rôle
-      case 1:
+      case "role":
         return (
           <StepRole
             value={data.role}
@@ -142,8 +132,7 @@ export default function OnboardingPage() {
           />
         );
 
-      // Step 2: Contexte & Situation
-      case 2:
+      case "situation":
         return (
           <StepSituation
             role={data.role}
@@ -156,177 +145,84 @@ export default function OnboardingPage() {
           />
         );
 
-      // Agence: AgenceInfo (step 3)
-      case 3:
-        if (data.role === "agence") {
-          return (
-            <StepAgenceInfo
-              value={data.agenceInfo}
-              onChange={(v) => setData((d) => ({ ...d, agenceInfo: v }))}
-              onNext={next}
-            />
-          );
-        }
-        // Gestionnaire: ProprietaireGere (step 3)
-        if (data.role === "gestionnaire") {
-          return (
-            <StepProprietaireGere
-              value={data.proprietaireGere}
-              onChange={(v) => setData((d) => ({ ...d, proprietaireGere: v }))}
-              onNext={next}
-            />
-          );
-        }
-        // Propriétaire: auto-skipped vers step 4
-        return null;
+      case "agence_info":
+        return (
+          <StepAgenceInfo
+            value={data.agenceInfo}
+            onChange={(v) => setData((d) => ({ ...d, agenceInfo: v }))}
+            onNext={next}
+          />
+        );
 
-      // Agence: ProprietaireGere (step 4)
-      case 4:
-        if (data.role === "agence") {
-          return (
-            <StepProprietaireGere
-              value={data.proprietaireGere}
-              onChange={(v) => setData((d) => ({ ...d, proprietaireGere: v }))}
-              onNext={next}
-            />
-          );
-        }
-        // Gestionnaire/Propriétaire: Property
-        if (data.role === "gestionnaire" || data.role === "proprietaire") {
-          return (
-            <StepProperty
-              value={data.bien}
-              onChange={(v) => setData((d) => ({ ...d, bien: v }))}
-              onNext={next}
-            />
-          );
-        }
-        return null;
+      case "proprietaire_gere":
+        return (
+          <StepProprietaireGere
+            value={data.proprietaireGere}
+            onChange={(v) => setData((d) => ({ ...d, proprietaireGere: v }))}
+            onNext={next}
+          />
+        );
 
-      // Agence: Property (step 5)
-      case 5:
-        if (data.role === "agence") {
-          return (
-            <StepProperty
-              value={data.bien}
-              onChange={(v) => setData((d) => ({ ...d, bien: v }))}
-              onNext={next}
-            />
-          );
-        }
-        // Gestionnaire/Propriétaire: HousingCount
-        if (data.role === "gestionnaire" || data.role === "proprietaire") {
-          return (
-            <StepHousingCount
-              value={data.nombreLogements}
-              bienNom={data.bien.nom}
-              bienType={data.bien.type}
-              onChange={(n) => setData((d) => ({ ...d, nombreLogements: n }))}
-              onGenerate={(logements) => setData((d) => ({ ...d, logements }))}
-              onNext={next}
-            />
-          );
-        }
-        return null;
+      case "property":
+        return (
+          <StepProperty
+            value={data.bien}
+            onChange={(v) => setData((d) => ({ ...d, bien: v }))}
+            onNext={next}
+          />
+        );
 
-      // Agence: HousingCount (step 6)
-      case 6:
-        if (data.role === "agence") {
-          return (
-            <StepHousingCount
-              value={data.nombreLogements}
-              bienNom={data.bien.nom}
-              bienType={data.bien.type}
-              onChange={(n) => setData((d) => ({ ...d, nombreLogements: n }))}
-              onGenerate={(logements) => setData((d) => ({ ...d, logements }))}
-              onNext={next}
-            />
-          );
-        }
-        // Propriétaire non-débutant: Occupation
-        if (!isProprietaireDebutant(data.role, data.situation)) {
-          return (
-            <StepOccupation
-              logements={data.logements}
-              onChange={(logements) => setData((d) => ({ ...d, logements }))}
-              onNext={next}
-            />
-          );
-        }
-        // Propriétaire débutant: skip to Complete
-        return null;
+      case "housing_count":
+        return (
+          <StepHousingCount
+            value={data.nombreLogements}
+            bienNom={data.bien.nom}
+            bienType={data.bien.type}
+            onChange={(n) => setData((d) => ({ ...d, nombreLogements: n }))}
+            onGenerate={(logements) => setData((d) => ({ ...d, logements }))}
+            onNext={next}
+          />
+        );
 
-      // Agence/Gestionnaire: Occupation (step 7)
-      case 7:
-        if (data.role === "agence" || data.role === "gestionnaire") {
-          return (
-            <StepOccupation
-              logements={data.logements}
-              onChange={(logements) => setData((d) => ({ ...d, logements }))}
-              onNext={next}
-            />
-          );
-        }
-        // Propriétaire non-débutant: Paiement
-        if (!isProprietaireDebutant(data.role, data.situation)) {
-          return (
-            <StepPaiement
-              moyenPaiement={data.moyenPaiement}
-              garantie={data.preferences.garantie}
-              montantGarantie={data.preferences.montantGarantie}
-              onChangeMoyen={(v) => setData((d) => ({ ...d, moyenPaiement: v }))}
-              onChangeGarantie={(v) =>
-                setData((d) => ({
-                  ...d,
-                  preferences: { ...d.preferences, garantie: v },
-                }))
-              }
-              onChangeMontant={(v) =>
-                setData((d) => ({
-                  ...d,
-                  preferences: { ...d.preferences, montantGarantie: v },
-                }))
-              }
-              onNext={next}
-            />
-          );
-        }
-        return null;
+      case "occupation":
+        return (
+          <StepOccupation
+            logements={data.logements}
+            onChange={(logements) => setData((d) => ({ ...d, logements }))}
+            onNext={next}
+          />
+        );
 
-      // Agence: Paiement (step 8)
-      case 8:
-        if (data.role === "agence") {
-          return (
-            <StepPaiement
-              moyenPaiement={data.moyenPaiement}
-              garantie={data.preferences.garantie}
-              montantGarantie={data.preferences.montantGarantie}
-              onChangeMoyen={(v) => setData((d) => ({ ...d, moyenPaiement: v }))}
-              onChangeGarantie={(v) =>
-                setData((d) => ({
-                  ...d,
-                  preferences: { ...d.preferences, garantie: v },
-                }))
-              }
-              onChangeMontant={(v) =>
-                setData((d) => ({
-                  ...d,
-                  preferences: { ...d.preferences, montantGarantie: v },
-                }))
-              }
-              onNext={next}
-            />
-          );
-        }
-        return null;
+      case "paiement":
+        return (
+          <StepPaiement
+            moyenPaiement={data.moyenPaiement}
+            garantie={data.preferences.garantie}
+            montantGarantie={data.preferences.montantGarantie}
+            onChangeMoyen={(v) => setData((d) => ({ ...d, moyenPaiement: v }))}
+            onChangeGarantie={(v) =>
+              setData((d) => ({
+                ...d,
+                preferences: { ...d.preferences, garantie: v },
+              }))
+            }
+            onChangeMontant={(v) =>
+              setData((d) => ({
+                ...d,
+                preferences: { ...d.preferences, montantGarantie: v },
+              }))
+            }
+            onNext={next}
+          />
+        );
 
-      // Complete: Last step
-      case totalSteps - 1:
+      case "complete":
         return (
           <StepComplete
             onFinish={handleFinish}
             loading={finishing}
             error={finishError}
+            data={data}
           />
         );
 
@@ -345,7 +241,7 @@ export default function OnboardingPage() {
     >
       <AnimatePresence mode="wait">
         <motion.div
-          key={step}
+          key={`${step}-${currentStepType}`}
           initial={{ opacity: 0, x: 24 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -24 }}

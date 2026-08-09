@@ -98,7 +98,7 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={loading || success}
+            disabled={loading}
             className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-4 text-sm transition-all placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
             placeholder={AUTH_MESSAGES.placeholders.email}
           />
@@ -121,14 +121,14 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            disabled={loading || success}
+            disabled={loading}
             className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
             placeholder={AUTH_MESSAGES.placeholders.password}
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            disabled={loading || success}
+            disabled={loading}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition-colors hover:text-neutral-600 disabled:opacity-50"
             aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
             tabIndex={-1}
@@ -143,7 +143,7 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
         <button
           type="button"
           onClick={onForgotPassword}
-          disabled={loading || success}
+          disabled={loading}
           className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors disabled:opacity-50"
         >
           {AUTH_MESSAGES.hints.forgotPasswordQuestion}

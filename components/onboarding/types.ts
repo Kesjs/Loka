@@ -1,19 +1,11 @@
-export type Role =
-  | "proprietaire"
-  | "gestionnaire"
-  | "agence"
-  | "autre";
+import { ReactNode } from "react";
 
-export type RoleInterne =
-  | "gestionnaire"
-  | "administrateur"
-  | "mandataire"
-  | "autre";
+export type Role = "proprietaire" | "gestionnaire" | "agence" | "autre";
 
 export type Situation =
-  | "possede_deja"
   | "premier_bien"
   | "commence_louer"
+  | "possede_deja"
   | "gere_deja"
   | "famille"
   | "particuliers"
@@ -22,61 +14,64 @@ export type Situation =
   | "portefeuille_existant"
   | "migre_autre_outil";
 
+export type RoleInterne = "admin" | "gestionnaire" | "mandataire" | "consultant" | "administrateur" | "autre";
+
 export type TypeBien =
   | "immeuble"
   | "maison"
+  | "appartement"
+  | "commercial"
   | "villa"
   | "boutique"
   | "terrain"
   | "bureau_local_commercial"
-  | "espace_fete";
+  | "espace_fete"
+  | "autre";
 
 export type TypeLocation = "longue_duree" | "courte_duree";
 
 export type MoyenPaiement = "especes" | "mobile_money" | "virement" | "plusieurs";
 
-export interface ProprietaireGere {
+export interface LogementData {
   nom: string;
-  telephone: string;
-  commissionPct?: number;
-}
-
-export interface AgenceInfo {
-  nom: string;
-  ville: string;
-  taillePortefeuille: "1-10" | "10-50" | "50+";
-}
-
-export interface LogementOccupation {
-  nom: string;
+  loyer?: string;
   occupe: boolean;
   locataireNom?: string;
   locataireTelephone?: string;
-  loyer?: string;
   dateDebut?: string;
   dateFin?: string;
 }
 
+export type LogementOccupation = LogementData;
+
+export interface AgenceInfo {
+  nom: string;
+  telephone?: string;
+  email?: string;
+  ville?: string;
+  taillePortefeuille?: string;
+}
+
+export interface ProprietaireGere {
+  nom: string;
+  telephone: string;
+  commissionPct: number;
+}
+
 export interface OnboardingData {
-  // Profil utilisateur
   profil: {
     nom: string;
     telephone: string;
     email: string;
   };
 
-  // Organisation
   role: Role | null;
   situation: Situation | null;
-  roleInterne?: RoleInterne; // si gestionnaire
+  roleInterne?: RoleInterne;
 
-  // Info agence (si agence)
   agenceInfo?: AgenceInfo;
-
-  // Propriétaire géré (si gestionnaire/agence)
   proprietaireGere?: ProprietaireGere;
 
-  // Bien principal
   bien: {
     nom: string;
     adresse: string;
@@ -88,10 +83,10 @@ export interface OnboardingData {
   };
 
   nombreLogements: number;
-  logements: LogementOccupation[];
+  logements: LogementData[];
 
-  // Paiements et préférences
   moyenPaiement: MoyenPaiement | null;
+
   preferences: {
     garantie: boolean;
     montantGarantie: string;
@@ -116,7 +111,7 @@ export const initialOnboardingData: OnboardingData = {
   },
   nombreLogements: 1,
   logements: [],
-  moyenPaiement: null,
+  moyenPaiement: "especes",
   preferences: {
     garantie: false,
     montantGarantie: "",
@@ -126,67 +121,65 @@ export const initialOnboardingData: OnboardingData = {
   },
 };
 
+export type StepType =
+  | "welcome"
+  | "role"
+  | "situation"
+  | "agence_info"
+  | "proprietaire_gere"
+  | "property"
+  | "housing_count"
+  | "occupation"
+  | "paiement"
+  | "complete";
+
 /**
- * Calcule le nombre total d'étapes pour un parcours donné
- * 
- * Base: Welcome(0) + Profile(1) + Role(2) + Situation(3) = 4
- * 
- * Agence: +AgenceInfo +ProprietaireGere = 2
- * Gestionnaire: +ProprietaireGere = 1
- * Propriétaire: +0
- * 
- * All: +Property +HousingCount = 2
- * Propriétaire/Agence/Gestionnaire: +Occupation = 1
- * Propriétaire non-débutant: +Paiement = 1
- * All: +Complete = 1
- * 
- * TOTAL:
- * - Propriétaire débutant: 4 + 0 + 2 + 0 + 1 = 7
- * - Propriétaire confirmé: 4 + 0 + 2 + 1 + 1 + 1 = 9
- * - Gestionnaire: 4 + 1 + 2 + 1 + 1 = 9
- * - Agence: 4 + 2 + 2 + 1 + 1 + 1 = 11
+ * Retourne la séquence exacte d'étapes actives selon le rôle et le contexte
  */
-export function calculateTotalSteps(role: Role | null, situation: Situation | null): number {
-  if (!role || !situation) return 3; // Welcome/Profil(0) + Role(1) + Situation(2)
+export function getStepSequence(
+  role: Role | null,
+  situation: Situation | null
+): StepType[] {
+  const steps: StepType[] = ["welcome", "role", "situation"];
 
-  let count = 3; // Welcome/Profil(0) + Role(1) + Situation(2)
+  if (!role || !situation) return steps;
 
-  // Optional steps based on role
   if (role === "agence") {
-    count += 2; // AgenceInfo + ProprietaireGere
+    steps.push("agence_info", "proprietaire_gere");
   } else if (role === "gestionnaire") {
-    count += 1; // ProprietaireGere
+    steps.push("proprietaire_gere");
   }
-  // Propriétaire adds 0
 
-  // Base steps for property & housing
-  count += 2; // Property + HousingCount
+  steps.push("property", "housing_count");
 
-  // Occupation step (all roles except débutant propriétaire)
   const isDebutant =
     role === "proprietaire" &&
     (situation === "premier_bien" || situation === "commence_louer");
 
   if (!isDebutant) {
-    count += 1; // Occupation
+    steps.push("occupation");
   }
 
-  // Paiement step (only non-débutant propriétaire and agence)
-  if (role === "proprietaire" && !isDebutant) {
-    count += 1; // Paiement
-  } else if (role === "agence") {
-    count += 1; // Paiement
+  if ((role === "proprietaire" && !isDebutant) || role === "agence") {
+    steps.push("paiement");
   }
 
-  count += 1; // Complete
+  steps.push("complete");
 
-  return count;
+  return steps;
 }
 
-/**
- * Retourne vrai si propriétaire débutant (saute 3 étapes)
- */
-export function isProprietaireDebutant(role: Role | null, situation: Situation | null): boolean {
+export function calculateTotalSteps(
+  role: Role | null,
+  situation: Situation | null
+): number {
+  return getStepSequence(role, situation).length;
+}
+
+export function isProprietaireDebutant(
+  role: Role | null,
+  situation: Situation | null
+): boolean {
   return (
     role === "proprietaire" &&
     (situation === "premier_bien" || situation === "commence_louer")

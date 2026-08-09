@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Buildings } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 import { getNavItemsByProfile } from "./nav-items";
-import { useOrganisationType } from "@/lib/hooks/useOrganisationType";
+import { useOrganisationInfo } from "@/lib/hooks/useOrganisationType";
 
 interface SidebarProps {
   open: boolean;
@@ -16,10 +16,10 @@ interface SidebarProps {
 export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
   const pathname = usePathname();
   const collapsed = !open;
-  const orgType = useOrganisationType();
+  const { organisationType, organisationNom, logoUrl } = useOrganisationInfo();
 
   // Récupérer les items selon le profil de l'utilisateur
-  const visibleNavItems = getNavItemsByProfile(orgType);
+  const visibleNavItems = getNavItemsByProfile(organisationType);
 
   // Animation variants
   const sidebarVariants = {
@@ -51,16 +51,20 @@ export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
           <Link
             href="/home"
             className="flex items-center justify-center"
-            title="Saint Pierre Immobilier"
+            title={organisationNom}
           >
-            <div className="relative h-10 w-10 rounded-md shadow-lg overflow-hidden">
-              <Image 
-                src="/logo.jpg" 
-                alt="Logo Saint Pierre Immobilier" 
-                fill 
-                className="object-cover" 
-                priority
-              />
+            <div className="relative h-10 w-10 rounded-md shadow-lg overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700 text-primary-400">
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={organisationNom}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              ) : (
+                <Buildings size={22} weight="duotone" />
+              )}
             </div>
           </Link>
         ) : (
@@ -70,21 +74,25 @@ export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
               href="/home"
               className="flex items-center gap-3 min-w-0"
             >
-              <div className="relative h-10 w-10 shrink-0 rounded-md shadow-lg overflow-hidden flex-shrink-0">
-                <Image 
-                  src="/logo.jpg" 
-                  alt="Logo Saint Pierre Immobilier" 
-                  fill 
-                  className="object-cover" 
-                  priority
-                />
+              <div className="relative h-10 w-10 shrink-0 rounded-md shadow-lg overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700 text-primary-400">
+                {logoUrl ? (
+                  <Image
+                    src={logoUrl}
+                    alt={organisationNom}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                ) : (
+                  <Buildings size={22} weight="duotone" />
+                )}
               </div>
-              <div className="leading-tight whitespace-nowrap">
-                <span className="block text-sm font-bold text-primary-400">
-                  Saint Pierre
+              <div className="leading-tight whitespace-nowrap overflow-hidden">
+                <span className="block text-sm font-bold text-primary-400 truncate max-w-[140px]">
+                  {organisationNom}
                 </span>
-                <span className="block text-[11px] font-medium tracking-wide text-slate-400 uppercase">
-                  Immobilier
+                <span className="block text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                  {organisationType === "agence" ? "Agence" : organisationType === "gestionnaire" ? "Gestionnaire" : "Gestion Locative"}
                 </span>
               </div>
             </Link>

@@ -55,56 +55,72 @@ export function useOrganisationType(): OrganisationType | null {
   return organisationType;
 }
 
-/**
- * Hook pour obtenir le type d'organisation + état de chargement
- */
-export function useOrganisationTypeWithLoading() {
-  const [organisationType, setOrganisationType] = useState<OrganisationType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export interface OrganisationInfo {
+  organisationType: OrganisationType | null;
+  organisationNom: string;
+  logoUrl: string | null;
+  isLoading: boolean;
+}
+
+export function useOrganisationInfo(): OrganisationInfo {
+  const [info, setInfo] = useState<OrganisationInfo>({
+    organisationType: null,
+    organisationNom: "Loka",
+    logoUrl: null,
+    isLoading: true,
+  });
 
   useEffect(() => {
     let mounted = true;
 
-    async function fetch() {
+    async function fetchInfo() {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
         if (!user) {
-          if (mounted) setOrganisationType(null);
+          if (mounted) setInfo((prev) => ({ ...prev, isLoading: false }));
           return;
         }
 
-        const { data: proprietaire, error: err } = await supabase
+        const { data: proprietaire } = await supabase
           .from("proprietaire")
-          .select("profil_type")
+          .select("nom, profil_type")
           .eq("id", user.id)
           .maybeSingle();
 
-        if (err) throw err;
+        const { data: org } = await supabase
+          .from("organisations")
+          .select("nom, nom_commercial, logo_url")
+          .eq("owner_user_id", user.id)
+          .maybeSingle();
 
         if (mounted) {
-          setOrganisationType((proprietaire?.profil_type || "proprietaire") as OrganisationType);
-          setError(null);
+          const orgType = (proprietaire?.profil_type || "proprietaire") as OrganisationType;
+          const nom = org?.nom_commercial || org?.nom || proprietaire?.nom || "Loka";
+          const logo = org?.logo_url || null;
+
+          setInfo({
+            organisationType: orgType,
+            organisationNom: nom,
+            logoUrl: logo,
+            isLoading: false,
+          });
         }
-      } catch (err) {
-        console.error("❌ Erreur:", err);
-        if (mounted) {
-          setOrganisationType(null);
-          setError(err instanceof Error ? err.message : "Erreur inconnue");
-        }
-      } finally {
-        if (mounted) setIsLoading(false);
+      } catch (error) {
+        console.error("Erreur useOrganisationInfo:", error);
+        if (mounted) setInfo((prev) => ({ ...prev, isLoading: false }));
       }
     }
 
-    fetch();
+    fetchInfo();
 
     return () => {
       mounted = false;
     };
   }, []);
 
-  return { organisationType, isLoading, error };
+  return info;
 }

@@ -16,6 +16,7 @@ import {
   Bell,
   Briefcase,
   UsersThree,
+  ArrowsLeftRight,
 } from "@phosphor-icons/react";
 import type { OrganisationType } from "@/lib/dashboard";
 import type { ElementType } from "react";
@@ -77,6 +78,13 @@ export const flatNavItems: NavItem[] = [
     group: "Finances",
   },
   {
+    label: "Reversements",
+    href: "/reversements",
+    icon: ArrowsLeftRight,
+    group: "Finances",
+    conditionalShow: "gestionnaire", // Visible gestionnaire + agence uniquement
+  },
+  {
     label: "Rapports",
     href: "/rapports",
     icon: ChartBar,
@@ -123,7 +131,7 @@ export function getNavItemsByProfile(profile: OrganisationType | null): NavItem[
  * Retourne le nombre d'items attendu pour chaque profil
  */
 export function getExpectedNavItemCount(profile: OrganisationType | null): number {
-  if (profile === "agence") return 11; // tous les items
-  if (profile === "gestionnaire") return 10; // sans "Équipe"
-  return 9; // sans "Propriétaires" ni "Équipe"
+  if (profile === "agence") return 12; // tous les items dont Reversements + Equipe
+  if (profile === "gestionnaire") return 11; // sans "Equipe", avec Reversements
+  return 9; // sans "Propriétaires", "Reversements" ni "Equipe"
 }

@@ -104,9 +104,17 @@ export default function AuthShell({
       {/* Panneau droit — formulaire */}
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 md:w-[56%] md:px-10 lg:px-14">
         <div className="w-full max-w-[420px]">
-          {/* Logo mobile — fond blanc géré par BrandLockup */}
-          <div className="mb-8 flex justify-center md:hidden">
-            <BrandLockup variant="on-light" size="md" />
+          {/* Logo mobile — empilé verticalement */}
+          <div className="mb-8 flex flex-col items-center gap-3 md:hidden">
+            <BrandLockup variant="on-light" size="md" showWordmark={false} />
+            <div className="text-center leading-tight">
+              <span className="block text-sm font-bold text-neutral-900">
+                Saint Pierre
+              </span>
+              <span className="block text-[11px] font-medium uppercase tracking-wide text-neutral-500">
+                Immobilier
+              </span>
+            </div>
           </div>
 
           {showBack && onBack && (

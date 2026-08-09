@@ -115,7 +115,13 @@ export default function OnboardingPage() {
   function renderStep() {
     switch (step) {
       case 0:
-        return <StepWelcome onNext={next} />;
+        return (
+          <StepWelcome
+            value={data.profil}
+            onChange={(v) => setData((d) => ({ ...d, profil: v }))}
+            onNext={next}
+          />
+        );
 
       case 1:
         return (

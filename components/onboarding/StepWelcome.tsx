@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CheckCircle, User, Phone, EnvelopeSimple } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 interface StepWelcomeProps {
+  value: { nom: string; telephone: string; email: string };
+  onChange: (v: { nom: string; telephone: string; email: string }) => void;
   onNext: () => void;
 }
 
-export default function StepWelcome({ onNext }: StepWelcomeProps) {
-  const [user, setUser] = useState<{ email?: string; user_metadata?: any } | null>(null);
+export default function StepWelcome({ value, onChange, onNext }: StepWelcomeProps) {
+  const [user, setUser] = useState<{ email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,6 +21,10 @@ export default function StepWelcome({ onNext }: StepWelcomeProps) {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
+        // Pré-remplir l'email depuis l'utilisateur
+        if (user?.email && !value.email) {
+          onChange({ ...value, email: user.email });
+        }
       } catch (err) {
         console.error("Erreur récupération utilisateur:", err);
       } finally {
@@ -27,52 +33,104 @@ export default function StepWelcome({ onNext }: StepWelcomeProps) {
     })();
   }, []);
 
+  const isValid = value.nom.trim() !== "" && value.telephone.trim() !== "";
+
   return (
-    <div className="space-y-8 text-center">
-      {/* Icône succès */}
-      <div className="flex justify-center">
-        <div className="relative">
-          <div className="absolute inset-0 bg-green-100 rounded-full blur-xl" />
-          <CheckCircle size={64} weight="fill" className="relative text-green-600" />
+    <div className="space-y-8">
+      {/* Succès de connexion */}
+      <div className="text-center space-y-4">
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="absolute inset-0 bg-green-100 rounded-full blur-xl" />
+            <CheckCircle size={56} weight="fill" className="relative text-green-600" />
+          </div>
         </div>
-      </div>
-
-      {/* Titre et sous-titre */}
-      <div className="space-y-3">
-        <h1 className="text-3xl font-bold text-neutral-900">
-          Bienvenue chez Loka ! 🎉
-        </h1>
-        <p className="text-lg text-neutral-600">
-          Votre compte a été créé avec succès.
-        </p>
-      </div>
-
-      {/* Infos utilisateur */}
-      {!loading && user && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-neutral-600 mb-1">Connecté en tant que :</p>
-          <p className="text-base font-semibold text-neutral-900 truncate">
-            {user.email}
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold text-neutral-900">
+            Bienvenue chez Loka ! 🎉
+          </h1>
+          <p className="text-sm text-neutral-600">
+            Votre compte a été créé avec succès. Complétez vos informations pour commencer.
           </p>
         </div>
-      )}
-
-      {/* Texte de transition */}
-      <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
-        <p className="text-sm text-neutral-700">
-          Nous avons besoin de quelques informations pour configurer votre profil et vous proposer une meilleure expérience.
-        </p>
       </div>
 
-      {/* Bouton */}
-      <Button onClick={onNext} className="w-full h-12 text-base font-medium">
-        Commencer la configuration
-      </Button>
+      {/* Formulaire profil */}
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-900">
+              <User size={15} />
+              Nom complet
+              <span className="text-danger-600">*</span>
+            </label>
+            <input
+              type="text"
+              value={value.nom}
+              onChange={(e) => onChange({ ...value, nom: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isValid) {
+                  e.preventDefault();
+                  onNext();
+                }
+              }}
+              placeholder="Ex : Marie Dossou"
+              className="h-10 w-full rounded-md border border-neutral-300 px-3 text-sm placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              autoFocus
+            />
+          </div>
 
-      {/* Message optionnel */}
-      <p className="text-xs text-neutral-500">
-        Cette configuration prendra environ 5 minutes
-      </p>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-900">
+              <Phone size={15} />
+              Téléphone
+              <span className="text-danger-600">*</span>
+            </label>
+            <input
+              type="tel"
+              value={value.telephone}
+              onChange={(e) => onChange({ ...value, telephone: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isValid) {
+                  e.preventDefault();
+                  onNext();
+                }
+              }}
+              placeholder="+229 97 00 00 00"
+              className="h-10 w-full rounded-md border border-neutral-300 px-3 text-sm placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-900">
+              <EnvelopeSimple size={15} />
+              Email
+            </label>
+            <input
+              type="email"
+              value={value.email}
+              onChange={(e) => onChange({ ...value, email: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isValid) {
+                  e.preventDefault();
+                  onNext();
+                }
+              }}
+              placeholder="marie@exemple.com"
+              disabled
+              className="h-10 w-full rounded-md border border-neutral-300 px-3 text-sm bg-neutral-100 placeholder:text-neutral-400 text-neutral-600 cursor-not-allowed"
+            />
+          </div>
+        </div>
+
+        <p className="text-xs text-neutral-500">
+          <span className="text-danger-600">*</span> Champs obligatoires
+        </p>
+
+        <Button onClick={onNext} disabled={!isValid} className="w-full h-11">
+          Continuer vers l'étape suivante
+        </Button>
+      </div>
     </div>
   );
 }

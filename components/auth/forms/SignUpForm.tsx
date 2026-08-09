@@ -225,19 +225,14 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
         className="h-11 w-full font-medium"
         disabled={loading || success}
       >
-        {loading && (
+        {loading || success ? (
           <span className="flex items-center justify-center gap-2">
             <CircleNotch size={16} className="animate-spin" />
-            Veuillez patienter
+            Création du compte...
           </span>
+        ) : (
+          AUTH_MESSAGES.buttons.signUp
         )}
-        {success && (
-          <span className="flex items-center justify-center gap-2">
-            <CircleNotch size={16} className="animate-spin" />
-            Redirection
-          </span>
-        )}
-        {!loading && !success && AUTH_MESSAGES.buttons.signUp}
       </Button>
 
       {/* Lien connexion */}

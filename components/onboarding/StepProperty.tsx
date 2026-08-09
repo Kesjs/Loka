@@ -10,7 +10,7 @@ interface StepPropertyProps {
     quartier: string;
     repere: string;
     type: TypeBien | null;
-    typeLocation: TypeLocation;
+    typeLocation: TypeLocation | null;
   };
   onChange: (v: {
     nom: string;
@@ -19,7 +19,7 @@ interface StepPropertyProps {
     quartier: string;
     repere: string;
     type: TypeBien | null;
-    typeLocation: TypeLocation;
+    typeLocation: TypeLocation | null;
   }) => void;
   onNext: () => void;
 }
@@ -159,36 +159,51 @@ export default function StepProperty({ value, onChange, onNext }: StepPropertyPr
           <p className="text-xs text-neutral-500">Optionnel</p>
         </div>
 
-        {/* Type de location */}
+        {/* Type de location (optionnel) */}
         <div className="space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
-          <label className="text-sm font-medium text-neutral-700">Type de location</label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-neutral-700">Type de location</label>
+            <span className="text-xs text-neutral-400">Optionnel</span>
+          </div>
           <div className="flex gap-2">
             {(["longue_duree", "courte_duree"] as const).map((opt) => (
               <button
                 key={opt}
                 type="button"
-                onClick={() => handleChange("typeLocation", opt)}
+                onClick={() => {
+                  if (value.typeLocation === opt) {
+                    onChange({ ...value, typeLocation: null });
+                  } else {
+                    handleChange("typeLocation", opt);
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    handleChange("typeLocation", opt);
+                    if (value.typeLocation === opt) {
+                      onChange({ ...value, typeLocation: null });
+                    } else {
+                      handleChange("typeLocation", opt);
+                    }
                   }
                 }}
                 className={`flex-1 px-3 py-2.5 text-sm font-medium rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                   value.typeLocation === opt
                     ? "border-primary-500 bg-primary-50 text-primary-700"
-                    : "border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+                    : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
                 }`}
               >
                 {opt === "longue_duree" ? "Longue durée" : "Courte durée"}
               </button>
             ))}
           </div>
-          <p className="text-xs text-neutral-500 mt-2">
-            {value.typeLocation === "longue_duree"
-              ? "Location classique (annuelle ou long terme)"
-              : "Location saisonnière (courte durée)"}
-          </p>
+          {value.typeLocation && (
+            <p className="text-xs text-neutral-500 mt-1">
+              {value.typeLocation === "longue_duree"
+                ? "Location classique (annuelle ou long terme)"
+                : "Location saisonnière (Airbnb, hôtel…)"}
+            </p>
+          )}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { User, Phone, EnvelopeSimple } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import PhoneInputBenin from "@/components/ui/PhoneInputBenin";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 interface StepProfileProps {
   value: { nom: string; telephone: string; email: string };
@@ -10,8 +10,8 @@ interface StepProfileProps {
 }
 
 export default function StepProfile({ value, onChange, onNext }: StepProfileProps) {
-  const [phoneValid, setPhoneValid] = useState(false);
-  const isValid = value.nom.trim() !== "" && value.telephone.trim() !== "" && phoneValid;
+  const isPhoneValid = value.telephone ? isValidPhoneNumber(value.telephone, "BJ") : false;
+  const isValid = value.nom.trim() !== "" && value.telephone.trim() !== "" && isPhoneValid;
 
   return (
     <div className="space-y-5">
@@ -45,9 +45,8 @@ export default function StepProfile({ value, onChange, onNext }: StepProfileProp
           </label>
           <PhoneInputBenin
             value={value.telephone}
-            onChange={(normalized, valid) => {
+            onChange={(normalized) => {
               onChange({ ...value, telephone: normalized });
-              setPhoneValid(valid);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && isValid) {

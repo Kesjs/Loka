@@ -62,8 +62,8 @@ export default function OnboardingPage() {
 
   // Auto-skip steps that don't apply to this path
   useEffect(() => {
-    if (data.role === "proprietaire" && step === 4) {
-      setStep(5);
+    if (data.role === "proprietaire" && step === 3) {
+      setStep(4);
     }
   }, [data.role, step]);
 
@@ -78,7 +78,15 @@ export default function OnboardingPage() {
   }
 
   function prev() {
-    setStep((s) => Math.max(s - 1, 0));
+    setStep((s) => {
+      const prevStep = s - 1;
+      // Sauter l'étape 3 (AgenceInfo/ProprietaireGere) pour les propriétaires
+      // car cette étape est auto-skippée à l'aller
+      if (data.role === "proprietaire" && prevStep === 3) {
+        return 2; // retour direct à Situation
+      }
+      return Math.max(prevStep, 0);
+    });
   }
 
   async function handleFinish() {
@@ -114,6 +122,7 @@ export default function OnboardingPage() {
 
   function renderStep() {
     switch (step) {
+      // Step 0: Welcome & Profil
       case 0:
         return (
           <StepWelcome
@@ -123,16 +132,8 @@ export default function OnboardingPage() {
           />
         );
 
+      // Step 1: Choix du Rôle
       case 1:
-        return (
-          <StepProfile
-            value={data.profil}
-            onChange={(v) => setData((d) => ({ ...d, profil: v }))}
-            onNext={next}
-          />
-        );
-
-      case 2:
         return (
           <StepRole
             value={data.role}
@@ -141,7 +142,8 @@ export default function OnboardingPage() {
           />
         );
 
-      case 3:
+      // Step 2: Contexte & Situation
+      case 2:
         return (
           <StepSituation
             role={data.role}
@@ -154,8 +156,8 @@ export default function OnboardingPage() {
           />
         );
 
-      // Agence: AgenceInfo (step 4)
-      case 4:
+      // Agence: AgenceInfo (step 3)
+      case 3:
         if (data.role === "agence") {
           return (
             <StepAgenceInfo
@@ -165,7 +167,7 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Gestionnaire: ProprietaireGere (step 4)
+        // Gestionnaire: ProprietaireGere (step 3)
         if (data.role === "gestionnaire") {
           return (
             <StepProprietaireGere
@@ -175,11 +177,11 @@ export default function OnboardingPage() {
             />
           );
         }
-        // Propriétaire: auto-skipped
+        // Propriétaire: auto-skipped vers step 4
         return null;
 
-      // Agence: ProprietaireGere (step 5)
-      case 5:
+      // Agence: ProprietaireGere (step 4)
+      case 4:
         if (data.role === "agence") {
           return (
             <StepProprietaireGere
@@ -201,8 +203,8 @@ export default function OnboardingPage() {
         }
         return null;
 
-      // Agence: Property (step 6)
-      case 6:
+      // Agence: Property (step 5)
+      case 5:
         if (data.role === "agence") {
           return (
             <StepProperty
@@ -227,8 +229,8 @@ export default function OnboardingPage() {
         }
         return null;
 
-      // Agence: HousingCount (step 7)
-      case 7:
+      // Agence: HousingCount (step 6)
+      case 6:
         if (data.role === "agence") {
           return (
             <StepHousingCount
@@ -254,8 +256,8 @@ export default function OnboardingPage() {
         // Propriétaire débutant: skip to Complete
         return null;
 
-      // Agence/Gestionnaire: Occupation (step 8)
-      case 8:
+      // Agence/Gestionnaire: Occupation (step 7)
+      case 7:
         if (data.role === "agence" || data.role === "gestionnaire") {
           return (
             <StepOccupation
@@ -291,8 +293,8 @@ export default function OnboardingPage() {
         }
         return null;
 
-      // Agence: Paiement (step 9)
-      case 9:
+      // Agence: Paiement (step 8)
+      case 8:
         if (data.role === "agence") {
           return (
             <StepPaiement

@@ -10,8 +10,6 @@ import { AUTH_MESSAGES } from "@/lib/auth-messages";
 import { getStepContextCard } from "@/lib/auth-copy";
 import { Role, Situation } from "@/components/onboarding/types";
 
-const HERO_IMAGE = "/auth/hero.webp";
-
 type AuthTab = "signin" | "signup" | "forgot-password";
 
 interface AuthShellProps {
@@ -62,29 +60,21 @@ export default function AuthShell({
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row">
-      {/* Panneau gauche — photo hero + overlay + carte contextuelle (Prop 4) & preuve sociale (Prop 2) */}
-      <div className="relative hidden min-h-screen overflow-hidden md:flex md:w-[46%] md:flex-col lg:w-[44%]">
-        <Image
-          src={HERO_IMAGE}
-          alt=""
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="44vw"
-        />
-        {/* Overlay somptueux avec gradient profond */}
+      {/* Panneau gauche — sticky sur desktop */}
+      <div className="relative hidden md:flex md:w-[46%] lg:w-[44%] md:sticky md:top-0 md:h-screen md:flex-shrink-0 overflow-hidden bg-gradient-to-br from-neutral-950 via-slate-900 to-primary-950 md:flex-col">
+        {/* Motif Grille Technique ultra-subtil */}
         <div
-          className="absolute inset-0 bg-gradient-to-b from-neutral-950/92 via-neutral-900/85 to-primary-950/95"
+          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none"
           aria-hidden
         />
 
-        {/* Halos lumineux d'ambiance */}
+        {/* Halos Lumineux Mesh Gradient d'Arrière-Plan */}
         <div
-          className="absolute -bottom-24 -left-20 h-96 w-96 rounded-full bg-primary-600/25 blur-3xl pointer-events-none"
+          className="absolute -top-32 -left-20 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-primary-600/30 to-amber-500/20 blur-[100px] pointer-events-none"
           aria-hidden
         />
         <div
-          className="absolute top-12 -right-12 h-72 w-72 rounded-full bg-amber-500/15 blur-3xl pointer-events-none"
+          className="absolute bottom-10 -right-20 h-[450px] w-[450px] rounded-full bg-gradient-to-bl from-emerald-500/20 to-primary-700/25 blur-[120px] pointer-events-none"
           aria-hidden
         />
 
@@ -98,7 +88,7 @@ export default function AuthShell({
             </span>
           </div>
 
-          {/* Section centrale : Titre & Carte contextuelle dynamique (Proposition 4) */}
+          {/* Section centrale : Titre & Carte contextuelle sobre (sans glassmorphism) */}
           <div className="my-auto space-y-6 pt-6">
             <motion.div
               className="space-y-3"
@@ -107,40 +97,40 @@ export default function AuthShell({
               transition={{ duration: 0.5, ease: "easeOut" }}
               key={leftTitle}
             >
-              <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-white lg:text-4xl">
+              <h1 className="text-3xl font-black leading-tight tracking-tight text-white lg:text-4xl">
                 {leftTitle}
               </h1>
-              <p className="text-base leading-relaxed text-neutral-300">
+              <p className="text-base leading-relaxed text-slate-300">
                 {leftSubtitle}
               </p>
             </motion.div>
 
-            {/* Carte contextuelle en Glassmorphism (Proposition 4) */}
+            {/* Carte contextuelle épurée et solide — haute lisibilité */}
             {stepCard && (
               <AnimatePresence mode="wait">
                 <motion.div
                   key={stepCard.badge + stepCard.title}
-                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.98 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="group relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-xl shadow-2xl transition-all hover:border-white/30 hover:bg-white/[0.13]"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl"
                 >
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary-300">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary-400">
                       {stepCard.badge}
                     </span>
                     {stepCard.highlightValue && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-primary-500/20 px-2 py-0.5 text-xs font-semibold text-primary-200 border border-primary-400/20">
+                      <span className="inline-flex items-center gap-1 rounded bg-primary-950/90 px-2.5 py-0.5 text-xs font-bold text-primary-300 border border-primary-800/60">
                         <Lightning size={12} weight="fill" className="text-amber-400" />
                         {stepCard.highlightValue}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-base font-bold text-white group-hover:text-primary-100 transition-colors">
+                  <h3 className="text-base font-bold text-white">
                     {stepCard.title}
                   </h3>
-                  <p className="mt-1 text-xs leading-relaxed text-neutral-300">
+                  <p className="mt-1.5 text-xs leading-relaxed text-slate-300">
                     {stepCard.description}
                   </p>
                 </motion.div>
@@ -148,40 +138,52 @@ export default function AuthShell({
             )}
           </div>
 
-          {/* Section basse : Preuve sociale & Chiffres clés (Proposition 2) */}
-          <div className="space-y-4 border-t border-white/10 pt-6">
-            {/* Stack d'avatars & confiance */}
+          {/* Section basse : Preuve sociale avec vraies photos d'avatars africains & micro-badges */}
+          <div className="space-y-4 border-t border-slate-800/90 pt-6">
+            {/* Stack d'avatars africains réels & message de confiance */}
             <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-xs font-bold text-neutral-900 ring-2 ring-neutral-950">
-                  MD
-                </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-primary-600 to-primary-400 text-xs font-bold text-white ring-2 ring-neutral-950">
-                  AK
-                </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-400 text-xs font-bold text-white ring-2 ring-neutral-950">
-                  JS
-                </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-950 text-[10px] font-bold text-primary-300 ring-2 ring-neutral-950 border border-white/20">
+              <div className="flex -space-x-2 shrink-0">
+                <Image
+                  src="/auth/avatar-1.png"
+                  alt="Utilisateur Loka"
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-full object-cover ring-2 ring-neutral-950"
+                />
+                <Image
+                  src="/auth/avatar-2.png"
+                  alt="Utilisateur Loka"
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-full object-cover ring-2 ring-neutral-950"
+                />
+                <Image
+                  src="/auth/avatar-3.png"
+                  alt="Utilisateur Loka"
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-full object-cover ring-2 ring-neutral-950"
+                />
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 text-[10px] font-bold text-primary-300 ring-2 ring-neutral-950 border border-slate-700">
                   +500
                 </div>
               </div>
-              <p className="text-xs font-medium leading-snug text-neutral-300">
+              <p className="text-xs font-medium leading-snug text-slate-300">
                 <span className="font-bold text-white">+500 bailleurs & agences</span> à Cotonou, Calavi & Porto-Novo.
               </p>
             </div>
 
-            {/* Micro-badges de réassurance */}
+            {/* Micro-badges de réassurance sobres */}
             <div className="grid grid-cols-3 gap-2 pt-1">
-              <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-neutral-300">
+              <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/90 px-2.5 py-2 text-[11px] text-slate-300">
                 <ShieldCheck size={14} className="text-emerald-400 shrink-0" weight="fill" />
                 <span className="truncate">Normes ARCEP</span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-neutral-300">
+              <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/90 px-2.5 py-2 text-[11px] text-slate-300">
                 <Lightning size={14} className="text-amber-400 shrink-0" weight="fill" />
-                <span className="truncate">Quittance 1-Clic</span>
+                <span className="truncate">Quittances 1-Clic</span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-neutral-300">
+              <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/90 px-2.5 py-2 text-[11px] text-slate-300">
                 <TrendUp size={14} className="text-primary-400 shrink-0" weight="bold" />
                 <span className="truncate">99% Collectés</span>
               </div>
@@ -190,17 +192,16 @@ export default function AuthShell({
         </div>
       </div>
 
-      {/* Panneau droit — formulaire */}
-      <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 md:w-[54%] md:px-10 lg:w-[56%] lg:px-14">
-        <div className="w-full max-w-[420px]">
+      <div className="flex flex-1 flex-col min-h-screen px-4 pb-12 pt-8 md:px-10 md:pt-12 lg:px-14 xl:px-20">
+        <div className="w-full max-w-2xl mx-auto">
           {/* Logo mobile — empilé verticalement */}
           <div className="mb-8 flex flex-col items-center gap-3 md:hidden">
             <BrandLockup variant="on-light" size="md" showWordmark={false} />
             <div className="text-center leading-tight">
-              <span className="block text-sm font-bold text-neutral-900">
+              <span className="block text-base font-extrabold text-neutral-900">
                 Saint Pierre
               </span>
-              <span className="block text-[11px] font-medium uppercase tracking-wide text-neutral-500">
+              <span className="block text-xs font-semibold uppercase tracking-wider text-neutral-500">
                 Immobilier
               </span>
             </div>
@@ -210,9 +211,9 @@ export default function AuthShell({
             <button
               type="button"
               onClick={onBack}
-              className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-800"
+              className="mb-5 inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 transition-colors hover:text-neutral-900"
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft size={16} weight="bold" />
               Retour
             </button>
           )}
@@ -226,7 +227,7 @@ export default function AuthShell({
             />
           )}
 
-          {/* Onglets */}
+          {/* Onglets avec typographie plus affirmée */}
           {showTabs && activeTab && onTabChange && (
             <div className="mb-6 flex gap-2 border-b border-neutral-200">
               {[
@@ -236,10 +237,10 @@ export default function AuthShell({
                 <button
                   key={tab.id}
                   onClick={() => onTabChange(tab.id as AuthTab)}
-                  className={`relative px-4 py-3 text-sm font-medium transition-colors ${
+                  className={`relative px-4 py-3 text-base font-bold transition-colors ${
                     activeTab === tab.id
                       ? "text-neutral-900"
-                      : "text-neutral-500 hover:text-neutral-700"
+                      : "text-neutral-400 hover:text-neutral-700"
                   }`}
                 >
                   {tab.label}
@@ -258,17 +259,17 @@ export default function AuthShell({
           {(rightTitle || rightSubtitle) && !showTabs && (
             <div className="mb-6">
               {rightTitle && (
-                <h2 className="text-2xl font-bold text-neutral-900">{rightTitle}</h2>
+                <h2 className="text-3xl font-black tracking-tight text-neutral-900">{rightTitle}</h2>
               )}
               {rightSubtitle && (
-                <p className="mt-1 text-sm text-neutral-500">{rightSubtitle}</p>
+                <p className="mt-1.5 text-sm text-neutral-500">{rightSubtitle}</p>
               )}
             </div>
           )}
 
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
             {rightHint && (
-              <p className="mb-5 text-sm text-neutral-500">{rightHint}</p>
+              <p className="mb-5 text-sm font-medium text-neutral-600">{rightHint}</p>
             )}
             {children}
           </div>
@@ -279,4 +280,5 @@ export default function AuthShell({
     </div>
   );
 }
+
 

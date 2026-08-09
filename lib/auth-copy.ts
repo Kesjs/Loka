@@ -26,19 +26,11 @@ export function getStepContextCard(
       return {
         badge: "DÉMARRAGE RAPIDE",
         title: "Bienvenue sur Loka",
-        description: "La solution de gestion locative conçue spécifiquement pour les propriétaires et agences au Bénin.",
-        highlightLabel: "Temps de config",
-        highlightValue: "< 3 minutes",
-      };
-    case 1:
-      return {
-        badge: "IDENTITÉ & MARQUE",
-        title: "Profil & En-tête officiel",
-        description: "Vos informations serviront à générer automatiquement vos quittances de loyer et avis d'échéance conformes.",
+        description: "Vos informations officielles serviront à générer automatiquement vos quittances de loyer conformes.",
         highlightLabel: "Génération automatique",
         highlightValue: "Quittances E.164",
       };
-    case 2:
+    case 1:
       return {
         badge: "SUR-MESURE",
         title: "Interface adaptée à votre rôle",
@@ -46,7 +38,7 @@ export function getStepContextCard(
         highlightLabel: "Profils gérés",
         highlightValue: "Bailleurs & Agences",
       };
-    case 3:
+    case 2:
       return {
         badge: "PARCOURS OPTIMISÉ",
         title: "Expérience personnalisée",
@@ -54,8 +46,8 @@ export function getStepContextCard(
         highlightLabel: "Formulaires",
         highlightValue: "100% Pertinents",
       };
+    case 3:
     case 4:
-    case 5:
       if (role === "agence" || role === "gestionnaire") {
         return {
           badge: "PORTEFEUILLE DE BIENS",
@@ -72,8 +64,8 @@ export function getStepContextCard(
         highlightLabel: "Suivi centralisé",
         highlightValue: "Multi-biens",
       };
+    case 5:
     case 6:
-    case 7:
       return {
         badge: "STRUCTURE DES LOTS",
         title: "Découpage des logements",
@@ -81,7 +73,7 @@ export function getStepContextCard(
         highlightLabel: "Numérotation",
         highlightValue: "Instantanée",
       };
-    case 8:
+    case 7:
       return {
         badge: "ÉTAT DES LIEUX",
         title: "Occupation & Locataires",
@@ -89,7 +81,7 @@ export function getStepContextCard(
         highlightLabel: "Taux d'occupation",
         highlightValue: "Temps réel",
       };
-    case 9:
+    case 8:
       return {
         badge: "TRÉSORERIE",
         title: "Encaissements & Relances",
@@ -126,29 +118,23 @@ export function getOnboardingPanelCopy(
     case 0:
       return {
         leftTitle: "Bienvenue chez Saint Pierre",
-        leftSubtitle: "Quelques minutes pour configurer votre espace.",
-        progressLabel: "Bienvenue",
+        leftSubtitle: "Ces informations apparaîtront sur vos documents officiels.",
+        progressLabel: "Profil",
+        rightHint: "Nom et téléphone requis pour continuer.",
       };
     case 1:
       return {
         leftTitle: "Qui êtes-vous ?",
-        leftSubtitle: "Ces informations apparaîtront sur vos documents.",
-        progressLabel: "Profil",
-        rightHint: "Nom et téléphone requis pour continuer.",
-      };
-    case 2:
-      return {
-        leftTitle: "Votre profil",
         leftSubtitle: "Nous adaptons l'interface à votre activité.",
         progressLabel: "Rôle",
       };
-    case 3:
+    case 2:
       return {
         leftTitle: "Votre contexte",
         leftSubtitle: "Pour ne vous demander que l'essentiel.",
         progressLabel: "Contexte",
       };
-    case 4:
+    case 3:
       if (role === "agence") {
         return {
           leftTitle: "Votre agence",
@@ -168,7 +154,7 @@ export function getOnboardingPanelCopy(
         leftSubtitle: "Commencez par un immeuble, le reste viendra après.",
         progressLabel: "Bien",
       };
-    case 5:
+    case 4:
       if (role === "agence") {
         return {
           leftTitle: "Propriétaire géré",
@@ -182,7 +168,7 @@ export function getOnboardingPanelCopy(
         progressLabel: "Bien",
         rightHint: "Vous pourrez tout modifier plus tard.",
       };
-    case 6:
+    case 5:
       if (role === "agence") {
         return {
           leftTitle: "Vos biens",
@@ -198,7 +184,7 @@ export function getOnboardingPanelCopy(
         rightHint:
           "On les nomme automatiquement — vous pourrez modifier chaque nom et loyer à l'étape suivante.",
       };
-    case 7:
+    case 6:
       if (role === "agence") {
         return {
           leftTitle: "Vos logements",
@@ -221,7 +207,7 @@ export function getOnboardingPanelCopy(
         leftSubtitle: "Votre tableau de bord vous attend.",
         progressLabel: "Terminé",
       };
-    case 8:
+    case 7:
       if (role === "agence" || role === "gestionnaire") {
         return {
           leftTitle: "État des lieux",
@@ -242,7 +228,7 @@ export function getOnboardingPanelCopy(
         leftSubtitle: "Votre tableau de bord vous attend.",
         progressLabel: "Terminé",
       };
-    case 9:
+    case 8:
       if (role === "agence") {
         return {
           leftTitle: "Encaissement",
@@ -266,10 +252,13 @@ export function getOnboardingPanelCopy(
 
 /** Étapes comptées dans la barre de progression (hors welcome et complete). */
 export function getOnboardingProgressMeta(step: number, totalSteps: number) {
-  const actionableTotal = Math.max(totalSteps - 2, 1);
-  const showProgress = step > 0 && step < totalSteps - 1;
-  const current = step;
-  const percent = Math.round((current / actionableTotal) * 100);
+  // On affiche la progression dès l'étape 0, sauf la dernière (StepComplete)
+  const showProgress = step < totalSteps - 1;
+  // Affichage 1-based (l'utilisateur voit "Étape 1 sur N" et non "Étape 0")
+  const current = step + 1;
+  // On exclut la dernière étape (Complete) du total visible
+  const total = totalSteps - 1;
+  const percent = Math.round((step / Math.max(total - 1, 1)) * 100);
 
-  return { showProgress, current, total: actionableTotal, percent };
+  return { showProgress, current, total, percent };
 }

@@ -8,7 +8,6 @@ import {
   WarningCircle,
   EnvelopeSimple,
   Lock,
-  CheckCircle,
   CircleNotch,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -26,12 +25,10 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setSuccess(false);
 
     // Validation
     if (!email || !password) {
@@ -65,11 +62,8 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
         return;
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        router.push("/home");
-        router.refresh();
-      }, 1000);
+      router.push("/home");
+      router.refresh();
     } catch (err) {
       setError(AUTH_MESSAGES.errors.networkError);
       setLoading(false);
@@ -86,15 +80,7 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
         </div>
       )}
 
-      {/* Succès */}
-      {success && (
-        <div className="flex items-center gap-3 rounded-xl bg-success-50 px-4 py-3.5 text-sm text-success-700 animate-[slideDown_0.3s_ease-out]">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success-100">
-            <CheckCircle size={16} className="text-success-600" weight="fill" />
-          </span>
-          <span className="font-medium">Connexion réussie — redirection en cours…</span>
-        </div>
-      )}
+
 
       {/* Email */}
       <div className="space-y-2">
@@ -168,21 +154,16 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
       <Button
         type="submit"
         className="h-11 w-full font-medium"
-        disabled={loading || success}
+        disabled={loading}
       >
-        {loading && (
+        {loading ? (
           <span className="flex items-center justify-center gap-2">
             <CircleNotch size={16} className="animate-spin" />
-            Connexion en cours
+            Connexion en cours...
           </span>
+        ) : (
+          AUTH_MESSAGES.buttons.signIn
         )}
-        {success && (
-          <span className="flex items-center justify-center gap-2">
-            <CircleNotch size={16} className="animate-spin" />
-            Redirection
-          </span>
-        )}
-        {!loading && !success && AUTH_MESSAGES.buttons.signIn}
       </Button>
     </form>
   );

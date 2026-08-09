@@ -84,7 +84,7 @@ export interface OnboardingData {
     quartier: string;
     repere: string;
     type: TypeBien | null;
-    typeLocation: TypeLocation;
+    typeLocation: TypeLocation | null;
   };
 
   nombreLogements: number;
@@ -112,7 +112,7 @@ export const initialOnboardingData: OnboardingData = {
     quartier: "",
     repere: "",
     type: null,
-    typeLocation: "longue_duree",
+    typeLocation: null,
   },
   nombreLogements: 1,
   logements: [],
@@ -147,9 +147,9 @@ export const initialOnboardingData: OnboardingData = {
  * - Agence: 4 + 2 + 2 + 1 + 1 + 1 = 11
  */
 export function calculateTotalSteps(role: Role | null, situation: Situation | null): number {
-  if (!role || !situation) return 4; // Welcome + Profile + Role + Situation (always reachable)
+  if (!role || !situation) return 3; // Welcome/Profil(0) + Role(1) + Situation(2)
 
-  let count = 4; // Welcome + Profile + Role + Situation
+  let count = 3; // Welcome/Profil(0) + Role(1) + Situation(2)
 
   // Optional steps based on role
   if (role === "agence") {

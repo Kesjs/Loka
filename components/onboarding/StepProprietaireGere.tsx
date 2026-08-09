@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { ProprietaireGere } from "./types";
 import { Button } from "@/components/ui/button";
 import PhoneInputBenin from "@/components/ui/PhoneInputBenin";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 interface StepProprietaireGereProps {
   value: ProprietaireGere | undefined;
@@ -17,8 +17,8 @@ export default function StepProprietaireGere({
   onNext,
 }: StepProprietaireGereProps) {
   const proprietaire = value || { nom: "", telephone: "", commissionPct: 10 };
-  const [phoneValid, setPhoneValid] = useState(false);
-  const isComplete = proprietaire.nom && proprietaire.telephone && phoneValid;
+  const isPhoneValid = proprietaire.telephone ? isValidPhoneNumber(proprietaire.telephone, "BJ") : false;
+  const isComplete = Boolean(proprietaire.nom && proprietaire.telephone && isPhoneValid);
 
   return (
     <div className="space-y-6">
@@ -42,9 +42,8 @@ export default function StepProprietaireGere({
           </label>
           <PhoneInputBenin
             value={proprietaire.telephone}
-            onChange={(normalized, valid) => {
+            onChange={(normalized) => {
               onChange({ ...proprietaire, telephone: normalized });
-              setPhoneValid(valid);
             }}
             required
           />

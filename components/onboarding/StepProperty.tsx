@@ -26,12 +26,10 @@ interface StepPropertyProps {
 
 const types: { value: TypeBien; label: string; icon: typeof House }[] = [
   { value: "immeuble", label: "Immeuble", icon: Buildings },
-  { value: "maison", label: "Maison", icon: House },
-  { value: "villa", label: "Villa", icon: House },
+  { value: "maison",   label: "Maison",   icon: House },
+  { value: "villa",    label: "Villa",    icon: House },
   { value: "boutique", label: "Boutique", icon: Storefront },
-  { value: "terrain", label: "Terrain", icon: Mountains },
-  { value: "bureau_local_commercial", label: "Bureau/Local", icon: Buildings },
-  { value: "espace_fete", label: "Espace fête", icon: Buildings },
+  { value: "terrain",  label: "Terrain",  icon: Mountains },
 ];
 
 export default function StepProperty({ value, onChange, onNext }: StepPropertyProps) {

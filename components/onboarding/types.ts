@@ -19,14 +19,9 @@ export type RoleInterne = "admin" | "gestionnaire" | "mandataire" | "consultant"
 export type TypeBien =
   | "immeuble"
   | "maison"
-  | "appartement"
-  | "commercial"
   | "villa"
   | "boutique"
-  | "terrain"
-  | "bureau_local_commercial"
-  | "espace_fete"
-  | "autre";
+  | "terrain";
 
 export type TypeLocation = "longue_duree" | "courte_duree";
 

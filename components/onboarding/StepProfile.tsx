@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { User, Phone, EnvelopeSimple } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import PhoneInputBenin from "@/components/ui/PhoneInputBenin";
 
 interface StepProfileProps {
   value: { nom: string; telephone: string; email: string };
@@ -8,7 +10,8 @@ interface StepProfileProps {
 }
 
 export default function StepProfile({ value, onChange, onNext }: StepProfileProps) {
-  const isValid = value.nom.trim() !== "" && value.telephone.trim() !== "";
+  const [phoneValid, setPhoneValid] = useState(false);
+  const isValid = value.nom.trim() !== "" && value.telephone.trim() !== "" && phoneValid;
 
   return (
     <div className="space-y-5">
@@ -40,18 +43,19 @@ export default function StepProfile({ value, onChange, onNext }: StepProfileProp
             Téléphone
             <span className="text-danger-600">*</span>
           </label>
-          <input
-            type="tel"
+          <PhoneInputBenin
             value={value.telephone}
-            onChange={(e) => onChange({ ...value, telephone: e.target.value })}
+            onChange={(normalized, valid) => {
+              onChange({ ...value, telephone: normalized });
+              setPhoneValid(valid);
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && isValid) {
                 e.preventDefault();
                 onNext();
               }
             }}
-            placeholder="+229 97 00 00 00"
-            className="h-10 w-full rounded-md border border-neutral-300 px-3 text-sm placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            required
           />
         </div>
 

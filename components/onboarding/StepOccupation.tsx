@@ -2,6 +2,7 @@ import { useState } from "react";
 import { User, Phone, CurrencyCircleDollar, CalendarBlank } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { LogementOccupation } from "./types";
+import PhoneInputBenin from "@/components/ui/PhoneInputBenin";
 
 interface StepOccupationProps {
   logements: LogementOccupation[];
@@ -100,12 +101,11 @@ export default function StepOccupation({ logements, onChange, onNext }: StepOccu
                     <label className="text-xs font-medium text-neutral-600 flex items-center gap-1">
                       <Phone size={13} /> Téléphone
                     </label>
-                    <input
-                      type="tel"
+                    <PhoneInputBenin
                       value={logement.locataireTelephone ?? ""}
-                      onChange={(e) => updateLogement(i, { locataireTelephone: e.target.value })}
-                      className="w-full h-9 px-2.5 rounded-md border border-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="97 00 00 00"
+                      onChange={(normalized) =>
+                        updateLogement(i, { locataireTelephone: normalized })
+                      }
                     />
                   </div>
                   <div className="space-y-1">

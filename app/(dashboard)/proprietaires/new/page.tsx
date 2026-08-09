@@ -9,22 +9,19 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getOrganisationScope } from "@/lib/organisation-scope";
+import PhoneInputBenin from "@/components/ui/PhoneInputBenin";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 export default function NewProprietairePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [phoneValid, setPhoneValid] = useState(false);
   const [formData, setFormData] = useState({
     nom: "",
     telephone: "",
     email: "",
   });
-
-  const validatePhone = (phone: string): boolean => {
-    // Validation ARCEP Bénin : 10 chiffres commençant par 01
-    const cleaned = phone.replace(/\s+/g, "");
-    return /^01\d{8}$/.test(cleaned);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,8 +42,8 @@ export default function NewProprietairePage() {
         return;
       }
 
-      if (!validatePhone(formData.telephone)) {
-        setError("Numéro invalide : doit contenir 10 chiffres et commencer par 01");
+      if (!isValidPhoneNumber(formData.telephone, "BJ")) {
+        setError("Numéro invalide — format attendu : +229XXXXXXXX (Bénin)");
         setLoading(false);
         return;
       }
@@ -141,16 +138,16 @@ export default function NewProprietairePage() {
               <label htmlFor="telephone" className="text-sm font-medium text-neutral-700">
                 Téléphone <span className="text-danger-500">*</span>
               </label>
-              <Input
+              <PhoneInputBenin
                 id="telephone"
-                type="tel"
-                placeholder="Ex: 01 23 45 67 89"
                 value={formData.telephone}
-                onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
-                required
+                onChange={(normalized, valid) => {
+                  setFormData({ ...formData, telephone: normalized });
+                  setPhoneValid(valid);
+                }}
                 disabled={loading}
+                required
               />
-              <p className="text-xs text-neutral-500">Format : 10 chiffres commençant par 01</p>
             </div>
 
             <div className="space-y-2">

@@ -10,6 +10,17 @@ import { createClient } from "@/lib/supabase/server"
 import { PaymentRepository } from "@/lib/db/repositories/PaymentRepository"
 import { ValidationError, DatabaseError } from "@/lib/errors/ApplicationError"
 
+/** Champs qu'un propriétaire peut modifier sur un paiement existant. */
+const UPDATABLE_FIELDS = [
+  "montant",
+  "date_paiement",
+  "periode_debut",
+  "periode_fin",
+  "mode",
+  "notes",
+  "reconciliation_status",
+] as const
+
 /**
  * GET /api/paiements/[id]
  * Fetch single payment
@@ -108,10 +119,24 @@ export async function PUT(
     // Parse update data
     const body = await request.json()
 
+    const updatePayload: Record<string, unknown> = {}
+    for (const field of UPDATABLE_FIELDS) {
+      if (body[field] !== undefined) {
+        updatePayload[field] = body[field]
+      }
+    }
+
+    if (Object.keys(updatePayload).length === 0) {
+      return NextResponse.json(
+        { error: "No updatable field provided" },
+        { status: 400 }
+      )
+    }
+
     // Update payment
     const { data: updated, error } = await supabase
       .from("paiements")
-      .update(body)
+      .update(updatePayload)
       .eq("id", id)
       .select()
       .single()

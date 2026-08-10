@@ -66,35 +66,38 @@ export class AlertRepository {
     return (data as Alert[]) || []
   }
 
-  async markAsRead(id: string): Promise<void> {
+  async markAsRead(id: string, userId: string): Promise<void> {
     const supabase = await createClient()
 
     const { error } = await supabase
       .from("alerts")
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq("id", id)
+      .eq("proprietaire_id", userId)
 
     if (error) throw new DatabaseError(error.message)
   }
 
-  async markMultipleAsRead(ids: string[]): Promise<void> {
+  async markMultipleAsRead(ids: string[], userId: string): Promise<void> {
     const supabase = await createClient()
 
     const { error } = await supabase
       .from("alerts")
       .update({ is_read: true, read_at: new Date().toISOString() })
       .in("id", ids)
+      .eq("proprietaire_id", userId)
 
     if (error) throw new DatabaseError(error.message)
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, userId: string): Promise<void> {
     const supabase = await createClient()
 
     const { error } = await supabase
       .from("alerts")
       .delete()
       .eq("id", id)
+      .eq("proprietaire_id", userId)
 
     if (error) throw new DatabaseError(error.message)
   }

@@ -55,10 +55,14 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
     const { alertId, is_read } = body
 
+    if (typeof alertId !== "string" || alertId.length === 0) {
+      return NextResponse.json({ error: "alertId is required" }, { status: 400 })
+    }
+
     const repo = new AlertRepository()
 
     if (is_read) {
-      await repo.markAsRead(alertId)
+      await repo.markAsRead(alertId, user.id)
     }
 
     return NextResponse.json({ success: true })

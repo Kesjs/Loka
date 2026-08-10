@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CircleNotch, PaperPlaneRight, CheckCircle, EnvelopeSimple } from "@phosphor-icons/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
 
 interface TenantPortalCardProps {
   locataireId?: string;
@@ -18,7 +17,6 @@ export function TenantPortalCard({
   locataireId,
   locataireName,
   logementName,
-  locataireEmail,
   isActive = false,
 }: TenantPortalCardProps) {
   const [sending, setSending] = useState(false);
@@ -32,37 +30,17 @@ export function TenantPortalCard({
     setErrorMsg("");
 
     try {
-      const supabase = createClient();
-      // Générer token unique
-      const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
-
-      // Mettre à jour en base
-      const { error: dbError } = await supabase
-        .from("locataires")
-        .update({ activation_token: token })
-        .eq("id", locataireId);
-
-      if (dbError) {
-        setErrorMsg("Impossible de générer le lien d'invitation.");
-        setSending(false);
-        return;
-      }
-
-      // Appeler la route API d'envoi Brevo
+      // Le jeton d'activation est généré et enregistré côté serveur.
       const res = await fetch("/api/tenant/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          locataireId,
-          locataireNom: locataireName,
-          email: locataireEmail || "locataire@exemple.bj",
-          token,
-        }),
+        body: JSON.stringify({ locataireId }),
       });
 
       if (!res.ok) {
-        // Mode simulation si pas de clé Brevo configurée
-        console.log("Invitation simulée avec le token:", token);
+        setErrorMsg("Impossible d'envoyer l'invitation pour le moment.");
+        setSending(false);
+        return;
       }
 
       setSent(true);

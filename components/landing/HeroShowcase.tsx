@@ -19,10 +19,17 @@ import {
   Users,
 } from "@phosphor-icons/react";
 
+// Type pour les items de navigation
+interface NavItem {
+  label: string;
+  icon: React.ComponentType<any>;
+  active?: boolean;
+}
+
 // Reproduction fidèle de flatNavItems (components/layout/nav-items.tsx)
 // filtrée pour le profil "Agence" (le plus complet, 12 items) — cohérent avec
 // getNavItemsByProfile("agence"). "Accueil" actif, pour matcher le contenu affiché à droite.
-const navItems = [
+const navItems: NavItem[] = [
   { label: "Accueil", icon: House, active: true },
   { label: "Immeubles", icon: Buildings },
   { label: "Logements", icon: Door },
@@ -35,7 +42,7 @@ const navItems = [
   { label: "Équipe", icon: UsersThree },
   { label: "Notifications", icon: Bell },
   { label: "Paramètres", icon: Gear },
-] as const;
+];
 
 // Reproduction fidèle de StatsGrid.tsx (mêmes 4 stats, mêmes tokens de couleur
 // corrigés : success/primary/accent/neutral) — pas de stats "aspirationnelles"
@@ -117,7 +124,7 @@ export default function HeroShowcase() {
           </div>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-hidden px-2.5 py-3">
-          {navItems.map(({ label, icon: Icon, active = false }) => (
+          {navItems.map(({ label, icon: Icon, active }) => (
             <div
               key={label}
               className={`flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium ${

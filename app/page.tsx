@@ -449,17 +449,17 @@ function FaqItemRow({ item, isOpen, onToggle }: { item: FaqItem; isOpen: boolean
   const answerId = `faq-answer-${item.id}`;
 
   return (
-    <div className="border-b border-neutral-200 last:border-b-0 py-8">
+    <div className="border-b border-neutral-200 last:border-b-0 px-5 py-4 sm:px-6 sm:py-5">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
         aria-controls={answerId}
-        className="flex min-h-20 w-full items-center justify-between gap-5 px-1 text-left text-base font-extrabold tracking-[-0.03em] text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 sm:text-lg"
+        className="flex w-full items-center justify-between gap-4 text-left text-base font-extrabold tracking-[-0.03em] text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 sm:text-lg"
       >
         <span>{item.question}</span>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-primary-800" aria-hidden="true">
-          {isOpen ? <CaretUp size={17} /> : <CaretDown size={17} />}
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-primary-800" aria-hidden="true">
+          {isOpen ? <CaretUp size={16} /> : <CaretDown size={16} />}
         </span>
       </button>
       <AnimatePresence initial={false}>
@@ -472,7 +472,7 @@ function FaqItemRow({ item, isOpen, onToggle }: { item: FaqItem; isOpen: boolean
             transition={{ duration: shouldReduceMotion ? 0 : 0.25, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <p className="max-w-2xl pb-8 pt-2 text-base leading-8 text-neutral-600">{item.answer}</p>
+            <p className="max-w-2xl pb-1 pt-3 text-sm leading-6 text-neutral-600 sm:text-base sm:leading-7">{item.answer}</p>
           </motion.div>
         ) : null}
       </AnimatePresence>

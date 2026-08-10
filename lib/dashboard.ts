@@ -19,6 +19,16 @@ import { getOrganisationScope as getOrgScopeFromOrgScope } from "@/lib/organisat
 export type OrganisationType = "individuel" | "gestionnaire" | "agence";
 
 /**
+ * Propriétaire géré (pour portefeuille multi-propriétaire)
+ */
+export interface DashboardProprietaireGere {
+  id: string;
+  nom: string;
+  nbBiens: number;
+  nbLogements: number;
+}
+
+/**
  * Données du dashboard
  */
 export interface DashboardData {

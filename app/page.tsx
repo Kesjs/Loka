@@ -527,6 +527,9 @@ export default function LandingPage() {
               <strong className="block text-[17px] font-extrabold tracking-[-0.04em] text-neutral-950">Loka</strong>
               <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Gestion locative · Bénin</span>
             </span>
+            <span className="sm:hidden leading-tight">
+              <strong className="block text-[17px] font-extrabold tracking-[-0.04em] text-neutral-950">Loka</strong>
+            </span>
           </Link>
 
           <nav aria-label="Navigation principale" className="hidden items-center gap-7 text-[13px] font-semibold text-neutral-600 lg:flex">
@@ -543,9 +546,11 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-2.5">
-            <Link href="/login" className="hidden min-h-11 items-center rounded-lg px-3 py-3 text-[13px] font-semibold text-neutral-600 transition-colors hover:text-primary-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 sm:inline-flex">
-              Connexion
-            </Link>
+            <Button asChild variant="ghost" size="sm" className="hidden min-h-11 rounded-lg px-3 py-3 text-[13px] font-semibold text-neutral-600 transition-colors hover:text-primary-800 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 sm:inline-flex">
+              <Link href="/login">
+                Connexion
+              </Link>
+            </Button>
             <Button asChild size="default" className="hidden min-h-11 rounded-lg bg-primary-800 px-5 text-[13px] font-bold text-white shadow-sm shadow-primary-800/20 hover:bg-primary-900 sm:inline-flex">
               <Link href="/login?tab=signup">
                 Commencer gratuitement
@@ -558,14 +563,19 @@ export default function LandingPage() {
               aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-navigation"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 transition-colors hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 lg:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 transition-all hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 lg:hidden"
             >
-              {mobileMenuOpen ? <X size={20} aria-hidden="true" /> : <List size={20} aria-hidden="true" />}
+              <motion.div
+                animate={{ rotate: mobileMenuOpen ? 90 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {mobileMenuOpen ? <X size={20} aria-hidden="true" /> : <List size={20} aria-hidden="true" />}
+              </motion.div>
             </button>
           </div>
         </div>
 
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {mobileMenuOpen ? (
             <motion.nav
               id="mobile-navigation"
@@ -573,27 +583,47 @@ export default function LandingPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: shouldReduceMotion ? 0 : 0.22, ease: "easeOut" }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.3, ease: "easeInOut" }}
               className="overflow-hidden border-t border-neutral-200 bg-white lg:hidden"
             >
-              <div className="mx-auto flex max-w-[1240px] flex-col gap-1 px-5 py-4 sm:px-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.1, duration: 0.2 }}
+                className="mx-auto flex max-w-[1240px] flex-col gap-1 px-5 py-4 sm:px-6"
+              >
                 {[
                   ["Fonctionnalités", "#fonctionnalites"],
                   ["Tarifs", "#tarifs"],
                   ["À propos", "/a-propos"],
                   ["Contact", "/contact"],
                 ].map(([label, href]) => (
-                  <Link key={href} href={href} onClick={closeMobileMenu} className="flex min-h-11 items-center rounded-xl px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800">
-                    {label}
-                  </Link>
+                  <motion.div
+                    key={href}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link href={href} onClick={closeMobileMenu} className="flex min-h-11 items-center rounded-xl px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800">
+                      {label}
+                    </Link>
+                  </motion.div>
                 ))}
-                <div className="mt-2 flex flex-col gap-2 border-t border-neutral-100 pt-3 sm:flex-row">
-                  <Link href="/login" onClick={closeMobileMenu} className="flex min-h-11 items-center justify-center rounded-lg border border-neutral-300 px-4 py-3 text-sm font-bold text-neutral-800 hover:border-primary-300 hover:text-primary-800">Connexion</Link>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.2 }}
+                  className="mt-2 flex flex-col gap-2 border-t border-neutral-100 pt-3 sm:flex-row"
+                >
+                  <Button asChild variant="outline" size="lg" className="rounded-lg border-neutral-300 text-neutral-800 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800">
+                    <Link href="/login" onClick={closeMobileMenu}>Connexion</Link>
+                  </Button>
                   <Button asChild size="lg" className="rounded-lg bg-primary-800 text-sm font-bold hover:bg-primary-900">
                     <Link href="/login?tab=signup" onClick={closeMobileMenu}>Commencer gratuitement <ArrowUpRight size={16} weight="bold" aria-hidden="true" /></Link>
                   </Button>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </motion.nav>
           ) : null}
         </AnimatePresence>

@@ -24,7 +24,7 @@ export class PaymentService {
   async recordPayment(
     dto: unknown,
     userId: string
-  ): Promise<Payment> {
+  ): Promise<Payment & { receiptWarning?: string }> {
     // Validate input
     const validated = RecordPaymentDTO.parse(dto)
 
@@ -41,16 +41,23 @@ export class PaymentService {
     // Create payment
     const payment = await this.paymentRepo.create(validated, userId)
 
-    // Generate receipt PDF and store URL
+    // Generate receipt PDF and store URL (best-effort)
+    let receiptWarning: string | null = null
     try {
       const supabase = await createClient()
       
       // Récupérer les données nécessaires pour la quittance
-      const { data: contrat } = await supabase
+      const { data: contrat, error: contratError } = await supabase
         .from("contrats")
         .select("locataire_id, logement_id")
         .eq("id", validated.contrat_id)
         .maybeSingle()
+
+      if (contratError) {
+        throw new Error(
+          `Impossible de charger le contrat pour la quittance : ${contratError.message}`
+        )
+      }
 
       if (contrat) {
         const { data: locataire } = await supabase
@@ -99,26 +106,35 @@ export class PaymentService {
               upsert: false,
             })
 
-          if (!uploadError && uploadData) {
-            // Récupérer l'URL publique
-            const { data: { publicUrl } } = supabase.storage
-              .from("paiements")
-              .getPublicUrl(fileName)
-
-            // Mettre à jour le paiement avec l'URL
-            await this.paymentRepo.updateReceipt(payment.id, publicUrl)
-
-            // TODO: Envoyer email de confirmation au locataire
-            // await sendPaymentConfirmationEmail(...)
+          if (uploadError || !uploadData) {
+            throw new Error(
+              `Échec de l'upload de la quittance : ${uploadError?.message ?? "réponse vide"}`
+            )
           }
+
+          // Récupérer l'URL publique
+          const { data: { publicUrl } } = supabase.storage
+            .from("paiements")
+            .getPublicUrl(fileName)
+
+          // Mettre à jour le paiement avec l'URL
+          await this.paymentRepo.updateReceipt(payment.id, publicUrl)
+
+          // TODO: Envoyer email de confirmation au locataire
+          // await sendPaymentConfirmationEmail(...)
         }
       }
     } catch (error) {
+      // La quittance est best-effort : le paiement reste enregistré, mais
+      // l'échec est signalé à l'appelant via `receiptWarning`.
       console.error("Erreur génération/stockage quittance:", error)
-      // Ne pas bloquer le paiement si la génération échoue
+      receiptWarning =
+        error instanceof Error
+          ? `La quittance n'a pas pu être générée : ${error.message}`
+          : "La quittance n'a pas pu être générée."
     }
 
-    return payment
+    return receiptWarning ? { ...payment, receiptWarning } : payment
   }
 
   /**

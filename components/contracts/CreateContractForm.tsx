@@ -14,6 +14,7 @@ import { useForm, Controller } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, ArrowRight, CheckCircle } from "@phosphor-icons/react"
 import { Select } from "@/components/ui/select"
+import { fetchJson } from "@/lib/api/fetchJson"
 
 type FormData = {
   locataire_id: string
@@ -37,6 +38,7 @@ export function CreateContractForm({
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [warning, setWarning] = useState("")
 
   const form = useForm<FormData>({
     mode: "onChange",
@@ -48,19 +50,24 @@ export function CreateContractForm({
   async function onSubmit(data: FormData) {
     setIsSubmitting(true)
     setError("")
+    setWarning("")
 
     try {
-      const response = await fetch("/api/contracts", {
+      const result = await fetchJson<{ warning?: string }>("/api/contracts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        fallbackMessage: "Erreur lors de la création du contrat",
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(
-          errorData.error || "Erreur lors de la création du contrat"
-        )
+      // Le contrat est créé mais une étape best-effort a échoué (email…).
+      if (result?.warning) {
+        setWarning(result.warning)
+        setTimeout(() => {
+          router.push("/contrats")
+          router.refresh()
+        }, 4000)
+        return
       }
 
       router.push("/contrats")
@@ -91,6 +98,12 @@ export function CreateContractForm({
         >
           {error}
         </motion.div>
+      )}
+
+      {warning && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+          {warning}
+        </div>
       )}
 
       {/* Progress Steps */}

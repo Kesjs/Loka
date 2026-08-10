@@ -19,26 +19,40 @@ export default async function EquipePage() {
   }
 
   // Charger les vrais membres de l'organisation
-  const { data: membres } = orgScope.organisationId
+  const { data: membres, error: membresError } = orgScope.organisationId
     ? await supabase
         .from("membres_organisation")
         .select("id, user_id, role_interne, created_at")
         .eq("organisation_id", orgScope.organisationId)
         .order("created_at", { ascending: true })
-    : { data: [] };
+    : { data: [], error: null };
+
+  if (membresError) {
+    throw new Error(
+      `Impossible de charger les membres de l'organisation : ${membresError.message}`
+    );
+  }
 
   // Charger les infos de chaque membre (nom depuis table proprietaire)
   const membresAvecNom = await Promise.all(
     (membres ?? []).map(async (m) => {
       if (!m.user_id) return { ...m, nom: "Membre inconnu", email: null };
-      const { data: prop } = await supabase
+      const { data: prop, error: propError } = await supabase
         .from("proprietaire")
         .select("nom")
         .eq("id", m.user_id)
         .maybeSingle();
+      if (propError) {
+        console.error("Erreur de chargement du membre:", propError);
+      }
+      // L'API admin peut être indisponible (clé service manquante) : l'email
+      // reste optionnel mais l'échec doit rester visible dans les logs.
       const { data: authUser } = await supabase.auth.admin
         .getUserById(m.user_id)
-        .catch(() => ({ data: null }));
+        .catch((err) => {
+          console.error("Erreur de récupération de l'utilisateur:", err);
+          return { data: null };
+        });
       return {
         ...m,
         nom: prop?.nom || "Membre",

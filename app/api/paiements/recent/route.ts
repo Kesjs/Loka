@@ -5,6 +5,8 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { apiErrorResponse } from "@/lib/api/errorHandler"
+import { DatabaseError } from "@/lib/errors/ApplicationError"
 
 /**
  * GET /api/paiements/recent?proprietaire_id=xxx&limit=5
@@ -58,7 +60,7 @@ export async function GET(request: NextRequest) {
       .limit(limit)
 
     if (error) {
-      throw error
+      throw new DatabaseError(error.message, error)
     }
 
     // Format response
@@ -73,10 +75,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(formatted, { status: 200 })
   } catch (error) {
-    console.error("GET /api/paiements/recent error:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch recent payments" },
-      { status: 500 }
-    )
+    return apiErrorResponse(error, "Failed to fetch recent payments")
   }
 }

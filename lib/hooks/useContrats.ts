@@ -7,6 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { queryKeys, queryConfig } from "@/lib/react-query"
+import { assertOk } from "@/lib/api/fetchJson"
 
 export interface ContratData {
   id: string
@@ -42,7 +43,7 @@ export function useContrats(
       const response = await fetch(
         `/api/contrats?proprietaire_id=${proprietaireId}&page=${page}&pageSize=${pageSize}`
       )
-      if (!response.ok) throw new Error("Failed to fetch contrats")
+      await assertOk(response, "Failed to fetch contrats")
       return response.json()
     },
     ...queryConfig.paginated,
@@ -59,7 +60,7 @@ export function useContratsActive(proprietaireId: string) {
       const response = await fetch(
         `/api/contrats?proprietaire_id=${proprietaireId}&statut=actif`
       )
-      if (!response.ok) throw new Error("Failed to fetch active contrats")
+      await assertOk(response, "Failed to fetch active contrats")
       return response.json()
     },
     ...queryConfig.dynamic,
@@ -79,7 +80,7 @@ export function useContratsExpiring(
       const response = await fetch(
         `/api/contrats/expiring?proprietaire_id=${proprietaireId}&days=${days}`
       )
-      if (!response.ok) throw new Error("Failed to fetch expiring contrats")
+      await assertOk(response, "Failed to fetch expiring contrats")
       return response.json()
     },
     ...queryConfig.dynamic,
@@ -94,7 +95,7 @@ export function useContrat(id: string) {
     queryKey: queryKeys.contrat(id),
     queryFn: async (): Promise<ContratData> => {
       const response = await fetch(`/api/contrats/${id}`)
-      if (!response.ok) throw new Error("Failed to fetch contrat")
+      await assertOk(response, "Failed to fetch contrat")
       return response.json()
     },
     ...queryConfig.static,
@@ -115,7 +116,7 @@ export function useCreateContrat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to create contrat")
+      await assertOk(response, "Failed to create contrat")
       return response.json()
     },
     onSuccess: (newContrat) => {
@@ -143,7 +144,7 @@ export function useUpdateContrat(id: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to update contrat")
+      await assertOk(response, "Failed to update contrat")
       return response.json()
     },
     onSuccess: (updatedContrat) => {
@@ -171,7 +172,7 @@ export function useTerminateContrat(id: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to terminate contrat")
+      await assertOk(response, "Failed to terminate contrat")
       return response.json()
     },
     onSuccess: () => {

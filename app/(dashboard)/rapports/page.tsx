@@ -10,6 +10,7 @@ import OccupancyChart from "@/components/reports/OccupancyChart"
 import PaymentMethodsChart from "@/components/reports/PaymentMethodsChart"
 import DateRangePicker from "@/components/reports/DateRangePicker"
 import { useQuery } from "@tanstack/react-query"
+import { assertOk } from "@/lib/api/fetchJson"
 
 export default function RapportsPage() {
   const [dateRange, setDateRange] = useState({
@@ -18,7 +19,11 @@ export default function RapportsPage() {
   })
 
   // Fetch financial report
-  const { data: financialReport, isLoading: financialLoading } = useQuery({
+  const {
+    data: financialReport,
+    isLoading: financialLoading,
+    error: financialError,
+  } = useQuery({
     queryKey: [
       "reports/financial",
       dateRange.startDate.toISOString(),
@@ -28,17 +33,21 @@ export default function RapportsPage() {
       const res = await fetch(
         `/api/reports/financial?startDate=${dateRange.startDate.toISOString()}&endDate=${dateRange.endDate.toISOString()}`
       )
-      if (!res.ok) throw new Error("Failed to fetch financial report")
+      await assertOk(res, "Impossible de charger le rapport financier")
       return res.json()
     },
   })
 
   // Fetch occupancy report
-  const { data: occupancyReport, isLoading: occupancyLoading } = useQuery({
+  const {
+    data: occupancyReport,
+    isLoading: occupancyLoading,
+    error: occupancyError,
+  } = useQuery({
     queryKey: ["reports/occupancy"],
     queryFn: async () => {
       const res = await fetch("/api/reports/occupancy")
-      if (!res.ok) throw new Error("Failed to fetch occupancy report")
+      await assertOk(res, "Impossible de charger le rapport d'occupation")
       return res.json()
     },
   })
@@ -183,7 +192,17 @@ export default function RapportsPage() {
                 </CardContent>
               </Card>
             </>
-          ) : null}
+          ) : (
+            <Card className="border-neutral-200 shadow-sm">
+              <CardContent className="py-10 text-center">
+                <p className="text-sm text-red-600">
+                  {financialError instanceof Error
+                    ? financialError.message
+                    : "Aucune donnée disponible."}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Occupancy Tab */}
@@ -325,7 +344,17 @@ export default function RapportsPage() {
                 </CardContent>
               </Card>
             </>
-          ) : null}
+          ) : (
+            <Card className="border-neutral-200 shadow-sm">
+              <CardContent className="py-10 text-center">
+                <p className="text-sm text-red-600">
+                  {occupancyError instanceof Error
+                    ? occupancyError.message
+                    : "Aucune donnée disponible."}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 

@@ -12,6 +12,7 @@ import { PropertyRepository } from "@/lib/db/repositories/PropertyRepository"
 import { GuaranteeRepository } from "@/lib/db/repositories/GuaranteeRepository"
 import { AlertRepository } from "@/lib/db/repositories/AlertRepository"
 import { sendContractEmail } from "@/lib/services/EmailService"
+import { apiErrorResponse } from "@/lib/api/errorHandler"
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send contract creation email
+    let emailWarning: string | null = null
     try {
       const { data } = await supabase.auth.admin.getUserById(user.id)
       const userObj = data?.user
@@ -88,6 +90,8 @@ export async function POST(request: NextRequest) {
       }
     } catch (error) {
       console.error("Error sending contract email:", error)
+      emailWarning =
+        "Le contrat a été créé mais l'email de confirmation n'a pas pu être envoyé."
     }
 
     // Send welcome email to tenant (future enhancement)
@@ -98,17 +102,11 @@ export async function POST(request: NextRequest) {
         success: true,
         contract,
         message: "Contrat créé avec succès",
+        ...(emailWarning ? { warning: emailWarning } : {}),
       },
       { status: 201 }
     )
   } catch (error) {
-    console.error("Error creating contract:", error)
-    const message =
-      error instanceof Error ? error.message : "Erreur lors de la création du contrat"
-
-    return NextResponse.json(
-      { error: message },
-      { status: 400 }
-    )
+    return apiErrorResponse(error, "Erreur lors de la création du contrat")
   }
 }

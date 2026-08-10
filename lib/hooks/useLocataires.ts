@@ -7,6 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { queryKeys, queryConfig } from "@/lib/react-query"
+import { assertOk } from "@/lib/api/fetchJson"
 
 export interface LocataireData {
   id: string
@@ -38,7 +39,7 @@ export function useLocataires(
       const response = await fetch(
         `/api/locataires?proprietaire_id=${proprietaireId}&page=${page}&pageSize=${pageSize}`
       )
-      if (!response.ok) throw new Error("Failed to fetch locataires")
+      await assertOk(response, "Failed to fetch locataires")
       return response.json()
     },
     ...queryConfig.paginated,
@@ -53,7 +54,7 @@ export function useLocataire(id: string) {
     queryKey: queryKeys.locataire(id),
     queryFn: async (): Promise<LocataireData> => {
       const response = await fetch(`/api/locataires/${id}`)
-      if (!response.ok) throw new Error("Failed to fetch locataire")
+      await assertOk(response, "Failed to fetch locataire")
       return response.json()
     },
     ...queryConfig.static,
@@ -74,7 +75,7 @@ export function useCreateLocataire() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to create locataire")
+      await assertOk(response, "Failed to create locataire")
       return response.json()
     },
     onSuccess: (newLocataire) => {
@@ -102,7 +103,7 @@ export function useUpdateLocataire(id: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to update locataire")
+      await assertOk(response, "Failed to update locataire")
       return response.json()
     },
     onSuccess: (updatedLocataire) => {
@@ -128,7 +129,7 @@ export function useDeleteLocataire() {
       const response = await fetch(`/api/locataires/${id}`, {
         method: "DELETE",
       })
-      if (!response.ok) throw new Error("Failed to delete locataire")
+      await assertOk(response, "Failed to delete locataire")
     },
     onSuccess: (_, id) => {
       queryClient.removeQueries({

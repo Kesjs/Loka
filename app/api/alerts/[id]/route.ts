@@ -35,7 +35,7 @@ export async function PATCH(
     return NextResponse.json({ success: true })
   } catch (error) {
     const errorResponse = handleApiError(error)
-    return NextResponse.json(errorResponse, { status: 500 })
+    return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
   }
 }
 
@@ -61,6 +61,6 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch (error) {
     const errorResponse = handleApiError(error)
-    return NextResponse.json(errorResponse, { status: 500 })
+    return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
   }
 }

@@ -5,6 +5,8 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { apiErrorResponse } from "@/lib/api/errorHandler"
+import { DatabaseError } from "@/lib/errors/ApplicationError"
 
 /**
  * GET /api/paiements/stats?proprietaire_id=xxx
@@ -41,19 +43,27 @@ export async function GET(request: NextRequest) {
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
 
     // Get all payments for this month
-    const { data: payments } = await supabase
+    const { data: payments, error: paymentsError } = await supabase
       .from("paiements")
       .select("montant, mode")
       .eq("proprietaire_id", proprietaireId)
       .gte("date_paiement", monthStart.toISOString())
       .lte("date_paiement", monthEnd.toISOString())
 
+    if (paymentsError) {
+      throw new DatabaseError(paymentsError.message, paymentsError)
+    }
+
     // Get all contracts to calculate expected revenue
-    const { data: contracts } = await supabase
+    const { data: contracts, error: contractsError } = await supabase
       .from("contrats")
       .select("loyer_mensuel, statut")
       .eq("proprietaire_id", proprietaireId)
       .eq("statut", "actif")
+
+    if (contractsError) {
+      throw new DatabaseError(contractsError.message, contractsError)
+    }
 
     // Calculate stats
     const totalPaid = payments?.reduce((sum, p) => sum + (p.montant || 0), 0) || 0
@@ -82,10 +92,6 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     )
   } catch (error) {
-    console.error("GET /api/paiements/stats error:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch payment statistics" },
-      { status: 500 }
-    )
+    return apiErrorResponse(error, "Failed to fetch payment statistics")
   }
 }

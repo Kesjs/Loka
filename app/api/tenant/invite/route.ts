@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendTenantInvitationEmail } from "@/lib/brevo";
+import { apiErrorResponse } from "@/lib/api/errorHandler";
 
 export async function POST(request: Request) {
   try {
@@ -42,9 +43,21 @@ export async function POST(request: Request) {
       logoUrl,
     });
 
-    return NextResponse.json({ success: true, emailSent: emailRes.success });
+    if (!emailRes.success) {
+      console.error("Envoi de l'invitation locataire échoué :", emailRes.error);
+      return NextResponse.json(
+        {
+          error:
+            emailRes.error ||
+            "L'invitation n'a pas pu être envoyée au locataire.",
+          code: "EMAIL_NOT_SENT",
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({ success: true, emailSent: true });
   } catch (error) {
-    console.error("Erreur API /api/tenant/invite:", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    return apiErrorResponse(error, "Erreur serveur");
   }
 }

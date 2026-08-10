@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Warning, Info, CheckCircle, Trash, Check } from '@phosphor-icons/react'
+import { fetchJson } from '@/lib/api/fetchJson'
 
 interface AlertNotificationProps {
   alert: Alert
@@ -20,6 +21,7 @@ interface AlertNotificationProps {
 export function AlertNotification({ alert, onClose }: AlertNotificationProps) {
   const [isMarked, setIsMarked] = useState(alert.is_read)
   const [isDeleted, setIsDeleted] = useState(false)
+  const [actionError, setActionError] = useState('')
 
   if (isDeleted) return null
 
@@ -56,33 +58,41 @@ export function AlertNotification({ alert, onClose }: AlertNotificationProps) {
   const TypeIcon = typeInfo.icon
 
   const handleMarkAsRead = async () => {
+    setActionError('')
     try {
-      const response = await fetch(`/api/alerts/${alert.id}`, {
+      await fetchJson(`/api/alerts/${alert.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_read: true }),
+        fallbackMessage: "L'alerte n'a pas pu être marquée comme lue.",
       })
-
-      if (response.ok) {
-        setIsMarked(true)
-      }
+      setIsMarked(true)
     } catch (error) {
       console.error('Erreur lors du marquage:', error)
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "L'alerte n'a pas pu être marquée comme lue."
+      )
     }
   }
 
   const handleDelete = async () => {
+    setActionError('')
     try {
-      const response = await fetch(`/api/alerts/${alert.id}`, {
+      await fetchJson(`/api/alerts/${alert.id}`, {
         method: 'DELETE',
+        fallbackMessage: "L'alerte n'a pas pu être supprimée.",
       })
-
-      if (response.ok) {
-        setIsDeleted(true)
-        onClose?.()
-      }
+      setIsDeleted(true)
+      onClose?.()
     } catch (error) {
       console.error('Erreur lors de la suppression:', error)
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "L'alerte n'a pas pu être supprimée."
+      )
     }
   }
 
@@ -120,6 +130,12 @@ export function AlertNotification({ alert, onClose }: AlertNotificationProps) {
           <p className="text-xs text-gray-600 mt-1">
             {formattedDate}
           </p>
+
+          {actionError && (
+            <p role="alert" className="text-xs font-medium text-red-700 mt-2">
+              {actionError}
+            </p>
+          )}
 
           {/* Link if available */}
           {alert.action_url && (

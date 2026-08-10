@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
 import { motion } from "framer-motion"
 import { ArrowLeft, CheckCircle } from "@phosphor-icons/react"
+import { fetchJson } from "@/lib/api/fetchJson"
 
 type FormData = {
   loyer_mensuel: number
@@ -55,18 +56,12 @@ export function RenewContractForm({
     setError("")
 
     try {
-      const response = await fetch(`/api/contracts/${contractId}/renew`, {
+      await fetchJson(`/api/contracts/${contractId}/renew`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        fallbackMessage: "Erreur lors du renouvellement du contrat",
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(
-          errorData.error || "Erreur lors du renouvellement du contrat"
-        )
-      }
 
       router.push(`/contrats/${contractId}`)
       router.refresh()

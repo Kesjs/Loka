@@ -8,7 +8,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { PaymentRepository } from "@/lib/db/repositories/PaymentRepository"
-import { ValidationError, DatabaseError } from "@/lib/errors/ApplicationError"
+import { DatabaseError } from "@/lib/errors/ApplicationError"
+import { apiErrorResponse } from "@/lib/api/errorHandler"
 
 /**
  * GET /api/paiements/[id]
@@ -46,6 +47,7 @@ export async function GET(
       .single()
 
     if (error) {
+      console.error("GET /api/paiements/[id] lookup error:", error)
       return NextResponse.json({ error: "Payment not found" }, { status: 404 })
     }
 
@@ -56,11 +58,7 @@ export async function GET(
 
     return NextResponse.json(payment, { status: 200 })
   } catch (error) {
-    console.error("GET /api/paiements/[id] error:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch payment" },
-      { status: 500 }
-    )
+    return apiErrorResponse(error, "Failed to fetch payment")
   }
 }
 
@@ -86,7 +84,7 @@ export async function PUT(
     }
 
     // Verify ownership first
-    const { data: payment } = await supabase
+    const { data: payment, error: lookupError } = await supabase
       .from("paiements")
       .select(
         `
@@ -97,7 +95,10 @@ export async function PUT(
       .eq("id", id)
       .single()
 
-    if (!payment) {
+    if (lookupError || !payment) {
+      if (lookupError) {
+        console.error("PUT /api/paiements/[id] lookup error:", lookupError)
+      }
       return NextResponse.json({ error: "Payment not found" }, { status: 404 })
     }
 
@@ -122,16 +123,7 @@ export async function PUT(
 
     return NextResponse.json(updated, { status: 200 })
   } catch (error) {
-    console.error("PUT /api/paiements/[id] error:", error)
-
-    if (error instanceof DatabaseError) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json(
-      { error: "Failed to update payment" },
-      { status: 500 }
-    )
+    return apiErrorResponse(error, "Failed to update payment")
   }
 }
 
@@ -157,7 +149,7 @@ export async function DELETE(
     }
 
     // Verify ownership
-    const { data: payment } = await supabase
+    const { data: payment, error: lookupError } = await supabase
       .from("paiements")
       .select(
         `
@@ -168,7 +160,10 @@ export async function DELETE(
       .eq("id", id)
       .single()
 
-    if (!payment) {
+    if (lookupError || !payment) {
+      if (lookupError) {
+        console.error("DELETE /api/paiements/[id] lookup error:", lookupError)
+      }
       return NextResponse.json({ error: "Payment not found" }, { status: 404 })
     }
 
@@ -188,15 +183,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
-    console.error("DELETE /api/paiements/[id] error:", error)
-
-    if (error instanceof DatabaseError) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json(
-      { error: "Failed to delete payment" },
-      { status: 500 }
-    )
+    return apiErrorResponse(error, "Failed to delete payment")
   }
 }

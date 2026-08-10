@@ -132,8 +132,8 @@ export class AlertService {
   /**
    * Mark alert as read
    */
-  async markAsRead(alertId: string): Promise<void> {
-    await this.alertRepo.markAsRead(alertId)
+  async markAsRead(alertId: string, proprietaireId: string): Promise<void> {
+    await this.alertRepo.markAsRead(alertId, proprietaireId)
   }
 
   /**

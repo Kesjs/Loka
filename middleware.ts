@@ -25,20 +25,33 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  const pathname = request.nextUrl.pathname;
+
+  // Ces routes s'authentifient elles-mêmes (signature HMAC, secret cron).
+  if (
+    pathname.startsWith("/api/webhooks") ||
+    pathname.startsWith("/api/cron")
+  ) {
+    return response;
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
+  const isApiRoute = pathname.startsWith("/api");
   const isAuthRoute = pathname === "/" || pathname.startsWith("/auth");
   const isOnboardingRoute = pathname.startsWith("/onboarding");
   const isPublicRoute = isAuthRoute;
 
   if (!user && !isPublicRoute) {
+    if (isApiRoute) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (user) {
+  if (user && !isApiRoute) {
     if (isAuthRoute && pathname !== "/onboarding" && pathname !== "/home") {
       return NextResponse.redirect(new URL("/home", request.url));
     }

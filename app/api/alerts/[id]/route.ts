@@ -29,7 +29,7 @@ export async function PATCH(
     const repo = new AlertRepository()
 
     if (is_read) {
-      await repo.markAsRead(id)
+      await repo.markAsRead(id, user.id)
     }
 
     return NextResponse.json({ success: true })
@@ -56,7 +56,7 @@ export async function DELETE(
     const { id } = await params
     const repo = new AlertRepository()
 
-    await repo.delete(id)
+    await repo.delete(id, user.id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

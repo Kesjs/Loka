@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
         // Continuer sans logo
         doc.setFont("helvetica", "bold");
         doc.setFontSize(24);
-        doc.setTextColor(...primaryColor);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         doc.text(organisationName, 20, yPosition);
         yPosition = 45;
       }
@@ -116,20 +116,20 @@ export async function POST(request: NextRequest) {
       // Pas de logo, afficher le nom en texte
       doc.setFont("helvetica", "bold");
       doc.setFontSize(24);
-      doc.setTextColor(...primaryColor);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.text(organisationName || "Loka", 20, yPosition);
       yPosition = 45;
     }
 
     // Ligne séparatrice
-    doc.setDrawColor(...primaryColor);
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.line(20, yPosition + 5, 190, yPosition + 5);
     yPosition += 15;
 
     // Titre document
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.setTextColor(...neutralDark);
+    doc.setTextColor(neutralDark[0], neutralDark[1], neutralDark[2]);
     doc.text("Quittance de Loyer", 20, yPosition);
     yPosition += 20;
 
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
     // Section paiement
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.setTextColor(...neutralDark);
+    doc.setTextColor(neutralDark[0], neutralDark[1], neutralDark[2]);
     doc.text("Détails du Paiement", 20, yPosition);
     yPosition += 10;
 
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(...neutralDark);
+    doc.setTextColor(neutralDark[0], neutralDark[1], neutralDark[2]);
     yPosition += 12;
 
     if (lastPayment) {
@@ -301,27 +301,27 @@ export async function GET(request: NextRequest) {
         console.warn("Erreur ajout logo PDF:", error);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(24);
-        doc.setTextColor(...primaryColor);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         doc.text(organisationName, 20, yPosition);
         yPosition = 45;
       }
     } else {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(24);
-      doc.setTextColor(...primaryColor);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.text(organisationName, 20, yPosition);
       yPosition = 45;
     }
 
     // Ligne séparatrice
-    doc.setDrawColor(...primaryColor);
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.line(20, yPosition + 5, 190, yPosition + 5);
     yPosition += 15;
 
     // Titre
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.setTextColor(...neutralDark);
+    doc.setTextColor(neutralDark[0], neutralDark[1], neutralDark[2]);
     doc.text("Quittance de Loyer", 20, yPosition);
     yPosition += 20;
 
@@ -340,7 +340,7 @@ export async function GET(request: NextRequest) {
     // Section paiement
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.setTextColor(...neutralDark);
+    doc.setTextColor(neutralDark[0], neutralDark[1], neutralDark[2]);
     doc.text("Détails du Paiement", 20, yPosition);
     yPosition += 10;
 
@@ -349,7 +349,7 @@ export async function GET(request: NextRequest) {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(...neutralDark);
+    doc.setTextColor(neutralDark[0], neutralDark[1], neutralDark[2]);
     yPosition += 12;
 
     doc.text(`Montant: ${paiement.montant} FCFA`, 30, yPosition);

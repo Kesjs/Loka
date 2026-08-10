@@ -42,6 +42,8 @@ export async function middleware(request: NextRequest) {
     "/careers",
     "/cgu",
     "/confidentialite",
+    "/auth",
+    "/login",
   ];
   
   const isPublicRoute = PUBLIC_ROUTES.some(

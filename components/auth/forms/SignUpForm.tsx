@@ -56,6 +56,9 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
     { label: "Un symbole (!@#$...)", met: /[!@#$%^&*(),.?":{}|<>]/.test(password) },
   ];
   const passwordFocused = password.length > 0;
+  const [passwordBlurred, setPasswordBlurred] = useState(false);
+  const passwordAllValid = passwordCriteria.every((c) => c.met);
+  const passwordShowInvalid = passwordBlurred && password.length > 0 && !passwordAllValid;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -150,7 +153,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading || success}
-            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-4 text-sm transition-all placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
+            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-4 text-sm transition-all placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-[1.5px] focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
             placeholder={AUTH_MESSAGES.placeholders.email}
           />
         </div>
@@ -172,8 +175,15 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => setPasswordBlurred(true)}
             disabled={loading || success}
-            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
+            className={`h-11 w-full rounded-lg border pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:outline-none disabled:bg-neutral-100 disabled:text-neutral-500 ${
+              passwordAllValid
+                ? "border-success-500 focus:ring-[1.5px] focus:ring-success-500"
+                : passwordShowInvalid
+                ? "border-danger-500 focus:ring-[1.5px] focus:ring-danger-500"
+                : "border-neutral-300 focus:border-transparent focus:ring-[1.5px] focus:ring-primary-500"
+            }`}
             placeholder={AUTH_MESSAGES.placeholders.password}
           />
           <button
@@ -226,7 +236,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             disabled={loading || success}
-            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
+            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:border-transparent focus:outline-none focus:ring-[1.5px] focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
             placeholder={AUTH_MESSAGES.placeholders.confirmPassword}
           />
           <button

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthShell from "@/components/auth/AuthShell";
 import SignInForm from "@/components/auth/forms/SignInForm";
@@ -10,8 +11,24 @@ import { AUTH_MESSAGES } from "@/lib/auth-messages";
 
 type AuthTab = "signin" | "signup" | "forgot-password";
 
+function getInitialTab(param: string | null): AuthTab {
+  return param === "signup" ? "signup" : "signin";
+}
+
 export default function AuthTabs() {
-  const [activeTab, setActiveTab] = useState<AuthTab>("signin");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<AuthTab>(() => getInitialTab(searchParams.get("tab")));
+
+  // Garde l'URL synchronisée (/auth ou /auth?tab=signup) quand on change d'onglet
+  function setTab(tab: AuthTab) {
+    setActiveTab(tab);
+    if (tab === "signup") {
+      router.replace("/auth?tab=signup", { scroll: false });
+    } else if (tab === "signin") {
+      router.replace("/auth", { scroll: false });
+    }
+  }
 
   // Récupérer le contenu dynamique selon la tab active
   const contentKeyMap = {
@@ -35,7 +52,7 @@ export default function AuthTabs() {
       leftSubtitle={leftContent.subtitle}
       showTabs
       activeTab={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={setTab}
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -50,7 +67,7 @@ export default function AuthTabs() {
             <SignInForm onForgotPassword={() => setActiveTab("forgot-password")} />
           )}
           {activeTab === "signup" && (
-            <SignUpForm onSwitchToSignIn={() => setActiveTab("signin")} />
+            <SignUpForm onSwitchToSignIn={() => setTab("signin")} />
           )}
           {activeTab === "forgot-password" && (
             <ForgotPasswordForm onBackToSignIn={() => setActiveTab("signin")} />

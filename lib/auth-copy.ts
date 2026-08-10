@@ -117,7 +117,7 @@ export function getOnboardingPanelCopy(
   switch (step) {
     case 0:
       return {
-        leftTitle: "Bienvenue chez Saint Pierre",
+        leftTitle: "Bienvenue chez Loka",
         leftSubtitle: "Ces informations apparaîtront sur vos documents officiels.",
         progressLabel: "Profil",
         rightHint: "Nom et téléphone requis pour continuer.",

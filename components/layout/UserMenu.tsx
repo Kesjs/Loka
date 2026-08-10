@@ -26,7 +26,7 @@ export default function UserMenu() {
     setLoading(true);
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/auth");
     router.refresh();
   }
 

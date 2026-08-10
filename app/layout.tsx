@@ -9,7 +9,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Saint Pierre Immobilier — Gestion locative",
+  title: "Loka — Gestion locative",
   description: "Gérez vos immeubles, locataires et loyers en toute simplicité.",
 }
 

@@ -148,7 +148,7 @@ const pricingPlans: PricingPlan[] = [
     description: "Pour débuter avec 1 à 3 logements.",
     features: ["Suivi des règlements", "Quittances PDF standard", "Historique locataire"],
     cta: "Commencer gratuitement",
-    href: "/login?tab=signup",
+    href: "/auth?tab=signup",
   },
   {
     id: "pro",
@@ -159,7 +159,7 @@ const pricingPlans: PricingPlan[] = [
     description: "Pour les propriétaires indépendants.",
     features: ["Jusqu'à 20 logements", "Logo & en-tête personnalisés", "Relances SMS & WhatsApp", "Portail locataire actif"],
     cta: "Essai gratuit 14 jours",
-    href: "/login?tab=signup",
+    href: "/auth?tab=signup",
     highlighted: true,
   },
   {
@@ -212,7 +212,6 @@ const footerGroups = [
     links: [
       { label: "FAQ", href: "#faq" },
       { label: "Contact & support", href: "/contact" },
-      { label: "Documentation", href: "/contact" },
     ],
   },
   {
@@ -554,12 +553,12 @@ export default function LandingPage() {
 
           <div className="flex items-center gap-2.5">
             <Button asChild variant="ghost" size="sm" className="hidden min-h-11 rounded-lg px-3 py-3 text-[13px] font-semibold text-neutral-600 transition-colors hover:text-primary-800 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 sm:inline-flex">
-              <Link href="/login">
+              <Link href="/auth">
                 Connexion
               </Link>
             </Button>
             <Button asChild size="default" className="hidden min-h-11 rounded-lg bg-primary-800 px-5 text-[13px] font-bold text-white shadow-sm shadow-primary-800/20 hover:bg-primary-900 sm:inline-flex">
-              <Link href="/login?tab=signup">
+              <Link href="/auth?tab=signup">
                 Commencer gratuitement
                 <ArrowUpRight size={16} weight="bold" aria-hidden="true" />
               </Link>
@@ -624,10 +623,10 @@ export default function LandingPage() {
                   className="mt-2 flex flex-col gap-2 border-t border-neutral-100 pt-3 sm:flex-row"
                 >
                   <Button asChild variant="outline" size="lg" className="rounded-lg border-neutral-300 text-neutral-800 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800">
-                    <Link href="/login" onClick={closeMobileMenu}>Connexion</Link>
+                    <Link href="/auth" onClick={closeMobileMenu}>Connexion</Link>
                   </Button>
                   <Button asChild size="lg" className="rounded-lg bg-primary-800 text-sm font-bold hover:bg-primary-900">
-                    <Link href="/login?tab=signup" onClick={closeMobileMenu}>Commencer gratuitement <ArrowUpRight size={16} weight="bold" aria-hidden="true" /></Link>
+                    <Link href="/auth?tab=signup" onClick={closeMobileMenu}>Commencer gratuitement <ArrowUpRight size={16} weight="bold" aria-hidden="true" /></Link>
                   </Button>
                 </motion.div>
               </motion.div>
@@ -653,7 +652,7 @@ export default function LandingPage() {
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg" className="min-h-12 rounded-lg bg-primary-800 px-6 text-sm font-bold shadow-lg shadow-primary-800/20 hover:bg-primary-900">
-                  <Link href="/login?tab=signup">
+                  <Link href="/auth?tab=signup">
                     Créer mon compte
                     <ArrowRight size={17} weight="bold" aria-hidden="true" />
                   </Link>
@@ -738,7 +737,7 @@ export default function LandingPage() {
                   <h2 id="simulator-title" className="mt-5 max-w-md text-3xl font-bold leading-[1.02] tracking-[-0.06em] sm:text-4xl">Combien d'heures pourriez-vous récupérer ?</h2>
                   <p className="mt-6 max-w-md text-base leading-7 text-primary-100">Pour {logementsCount} logements, Loka peut vous faire gagner environ {hoursSaved} heures par mois sur les suivis et les quittances.</p>
                   <Button asChild variant="outline" size="lg" className="mt-8 min-h-12 rounded-lg border-white/30 bg-white px-5 text-sm font-bold text-primary-900 hover:bg-primary-50">
-                    <Link href="/login?tab=signup">Tester avec mon portefeuille <ArrowRight size={17} weight="bold" aria-hidden="true" /></Link>
+                    <Link href="/auth?tab=signup">Tester avec mon portefeuille <ArrowRight size={17} weight="bold" aria-hidden="true" /></Link>
                   </Button>
                 </div>
                 <div className="flex flex-col justify-center rounded-3xl bg-primary-900/35 p-6 sm:p-8">
@@ -919,7 +918,7 @@ export default function LandingPage() {
               <h2 className="mt-3 text-2xl font-bold tracking-[-0.045em] text-neutral-950 sm:text-3xl">Votre prochain encaissement peut déjà être plus simple.</h2>
               <p className="mt-3 text-base text-neutral-600">Créez votre espace Loka et testez le parcours pendant 14 jours, sans engagement.</p>
             </div>
-            <Button asChild size="lg" className="shrink-0 rounded-lg bg-primary-800 px-6 text-sm font-bold hover:bg-primary-900"><Link href="/login?tab=signup">Commencer maintenant <ArrowRight size={17} weight="bold" aria-hidden="true" /></Link></Button>
+            <Button asChild size="lg" className="shrink-0 rounded-lg bg-primary-800 px-6 text-sm font-bold hover:bg-primary-900"><Link href="/auth?tab=signup">Commencer maintenant <ArrowRight size={17} weight="bold" aria-hidden="true" /></Link></Button>
           </Reveal>
         </section>
       </main>

@@ -1,213 +1,271 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import {
-  CurrencyCircleDollar,
-  House,
-  Buildings,
-  Users,
-  CheckCircle,
-  Clock,
   ArrowUpRight,
-  Sparkle,
+  Buildings,
+  CheckCircle,
+  CurrencyCircleDollar,
   DeviceMobile,
   FileText,
+  House,
+  Sparkle,
 } from "@phosphor-icons/react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+type DashboardTab = "vue_ensemble" | "reglements";
+
+const metrics = [
+  {
+    label: "Loyers collectés",
+    value: "3 850 000 FCFA",
+    helper: "+12% ce mois",
+    icon: CurrencyCircleDollar,
+    tone: "text-primary-800",
+    surface: "bg-primary-50",
+  },
+  {
+    label: "Taux d'occupation",
+    value: "96 %",
+    helper: "24 / 25 logements loués",
+    icon: House,
+    tone: "text-neutral-900",
+    surface: "bg-neutral-50",
+  },
+  {
+    label: "Canal Mobile Money",
+    value: "78 %",
+    helper: "MTN MoMo & Moov Money",
+    icon: DeviceMobile,
+    tone: "text-primary-800",
+    surface: "bg-primary-50/70",
+  },
+  {
+    label: "Quittances générées",
+    value: "100 %",
+    helper: "Conformes & archivées",
+    icon: FileText,
+    tone: "text-success-600",
+    surface: "bg-success-50",
+  },
+] as const;
+
+const payments = [
+  {
+    initials: "KM",
+    name: "Koffi M. · Résidence Fidjrossè",
+    property: "Appartement A2 · Juin 2026",
+    amount: "150 000 FCFA",
+    method: "MTN MoMo",
+    avatar: "bg-primary-50 text-primary-800",
+  },
+  {
+    initials: "DA",
+    name: "Dossou A. · Immeuble Haie Vive",
+    property: "Boutique B1 · Juin 2026",
+    amount: "200 000 FCFA",
+    method: "Moov Money",
+    avatar: "bg-accent-50 text-accent-600",
+  },
+  {
+    initials: "SG",
+    name: "Sossou G. · Villa Calavi",
+    property: "Logement principal · Juin 2026",
+    amount: "350 000 FCFA",
+    method: "Virement bancaire",
+    avatar: "bg-neutral-100 text-neutral-700",
+  },
+] as const;
+
+const receipts = [
+  {
+    name: "Marie Dossou",
+    property: "Appartement 302",
+    date: "Aujourd'hui, 14:20",
+    channel: "WhatsApp & Email",
+    status: "Délivrée",
+  },
+  {
+    name: "Constantin Agbossou",
+    property: "Boutique N°4",
+    date: "Hier, 09:15",
+    channel: "Portail locataire",
+    status: "Téléchargée",
+  },
+  {
+    name: "Fabiola Mensah",
+    property: "Villa Les Palmiers",
+    date: "07 Juin 2026",
+    channel: "WhatsApp direct",
+    status: "Délivrée",
+  },
+] as const;
 
 export default function HeroShowcase() {
-  const [activeTab, setActiveTab] = useState<"vue_ensemble" | "reglements">("vue_ensemble");
+  const [activeTab, setActiveTab] = useState<DashboardTab>("vue_ensemble");
+  const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div className="w-full rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-2xl md:p-6 text-slate-100">
-      {/* Header bar du mockup */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <Buildings size={20} weight="duotone" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-white">Loka</span>
-              <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
-                Portefeuille Bénin 🇧🇯
-              </span>
+    <motion.div
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.65, ease: "easeOut" }}
+      className="relative w-full overflow-hidden rounded-[28px] border border-neutral-200 bg-white p-4 shadow-[0_28px_80px_rgba(30,41,59,0.12)] sm:p-6 lg:p-7"
+    >
+      <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary-50" aria-hidden="true" />
+      <div className="relative">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-neutral-100 pb-5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-800">
+              <Buildings size={20} weight="duotone" aria-hidden="true" />
+            </span>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-extrabold text-neutral-900">Vue d'ensemble</span>
+                <span className="rounded-full bg-primary-50 px-2.5 py-1 text-[10px] font-extrabold text-primary-800">
+                  Portefeuille Bénin 🇧🇯
+                </span>
+              </div>
+              <p className="text-xs text-neutral-500">Votre activité locative, en un seul endroit.</p>
             </div>
-            <p className="text-xs text-slate-400">Dashboard de gestion locative en temps réel</p>
           </div>
         </div>
 
-        {/* Onglets interactifs */}
-        <div className="flex rounded-lg bg-slate-900 p-1 border border-slate-800">
-          <button
-            onClick={() => setActiveTab("vue_ensemble")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              activeTab === "vue_ensemble"
-                ? "bg-slate-800 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
+        <Tabs
+          value={activeTab}
+            onValueChange={(value) => setActiveTab(value as DashboardTab)}
+            className="max-w-full"
           >
-            Vue d'ensemble
-          </button>
-          <button
-            onClick={() => setActiveTab("reglements")}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              activeTab === "reglements"
-                ? "bg-slate-800 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            Règlements récents
-          </button>
-        </div>
-      </div>
+            <TabsList className="h-11 max-w-full overflow-x-auto rounded-full border border-neutral-200 bg-neutral-50 p-1">
+              <TabsTrigger
+                value="vue_ensemble"
+                className="min-h-9 rounded-full px-3 text-[11px] font-bold text-neutral-500 data-[state=active]:bg-white data-[state=active]:text-neutral-900 data-[state=active]:shadow-sm sm:px-4"
+              >
+                Vue d'ensemble
+              </TabsTrigger>
+              <TabsTrigger
+                value="reglements"
+                className="min-h-9 rounded-full px-3 text-[11px] font-bold text-neutral-500 data-[state=active]:bg-white data-[state=active]:text-neutral-900 data-[state=active]:shadow-sm sm:px-4"
+              >
+                Règlements récents
+              </TabsTrigger>
+            </TabsList>
 
-      {activeTab === "vue_ensemble" ? (
-        <div className="space-y-6">
-          {/* Cartes KPI */}
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-medium">Loyers collectés</span>
-                <CurrencyCircleDollar size={18} className="text-emerald-400" />
-              </div>
-              <p className="text-xl font-black text-white">3 850 000 FCFA</p>
-              <div className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
-                <ArrowUpRight size={14} />
-                <span>+12% ce mois</span>
-              </div>
+            <TabsContent value="vue_ensemble" className="mt-0 focus-visible:outline-none">
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {metrics.map((metric, index) => {
+                const Icon = metric.icon;
+                return (
+                  <motion.div
+                    key={metric.label}
+                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, delay: shouldReduceMotion ? 0 : index * 0.06 }}
+                    className={`rounded-2xl border border-neutral-100 p-4 ${metric.surface}`}
+                  >
+                    <div className="mb-3 flex items-center justify-between gap-2 text-neutral-500">
+                      <span className="text-[11px] font-semibold leading-tight">{metric.label}</span>
+                      <Icon size={18} className={metric.tone} aria-hidden="true" />
+                    </div>
+                    <p className="text-lg font-bold tracking-[-0.04em] text-neutral-900 sm:text-xl">{metric.value}</p>
+                    <p className={`mt-2 text-[10px] font-semibold ${metric.tone}`}>{metric.helper}</p>
+                  </motion.div>
+                );
+              })}
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-medium">Taux d'occupation</span>
-                <House size={18} className="text-amber-400" />
+            <div className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-neutral-500">
+                  Derniers encaissements synchronisés
+                </p>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-success-600">
+                  <span className="h-2 w-2 rounded-full bg-success-500" aria-hidden="true" />
+                  En direct · 🇧🇯 Bénin
+                </span>
               </div>
-              <p className="text-xl font-black text-white">96 %</p>
-              <p className="mt-2 text-[11px] text-slate-400">24 / 25 logements loués</p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-medium">Canal Mobile Money</span>
-                <DeviceMobile size={18} className="text-blue-400" />
-              </div>
-              <p className="text-xl font-black text-white">78 %</p>
-              <p className="mt-2 text-[11px] text-slate-400">MTN MoMo & Moov Money</p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-medium">Quittances générées</span>
-                <FileText size={18} className="text-emerald-400" />
-              </div>
-              <p className="text-xl font-black text-white">100 %</p>
-              <p className="mt-2 text-[11px] text-emerald-400">Conformes & archivées</p>
-            </div>
-          </div>
-
-          {/* Section d'activité récente */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Derniers encaissements synchronisés
-              </h4>
-              <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
-                <Sparkle size={12} weight="fill" />
-                Mise à jour en direct
-              </span>
-            </div>
-
-            <div className="divide-y divide-slate-800/80 text-xs">
-              <div className="flex items-center justify-between py-2.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 font-bold">
-                    KM
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">Koffi M. (Résidence Fidjrossè)</p>
-                    <p className="text-[11px] text-slate-400">Appartement A2 · Juin 2026</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-white">150 000 FCFA</p>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
-                    <CheckCircle size={12} weight="fill" /> MTN MoMo
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-2.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 font-bold">
-                    DA
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">Dossou A. (Immeuble Haie Vive)</p>
-                    <p className="text-[11px] text-slate-400">Boutique B1 · Juin 2026</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-white">200 000 FCFA</p>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
-                    <CheckCircle size={12} weight="fill" /> Moov Money
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-2.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-slate-300 font-bold">
-                    SG
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">Sossou G. (Villa Calavi)</p>
-                    <p className="text-[11px] text-slate-400">Logement principal · Juin 2026</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-white">350 000 FCFA</p>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-400">
-                    <CheckCircle size={12} weight="fill" /> Virement Bancaire
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-              Historique des quittances prêtes à l'envoi
-            </h4>
-            <div className="space-y-3">
-              {[
-                { nom: "Marie Dossou", bien: "Appartement 302", date: "Aujourd'hui, 14:20", canal: "WhatsApp & Email", statut: "Délivrée" },
-                { nom: "Constantin Agbossou", bien: "Boutique N°4", date: "Hier, 09:15", canal: "Portail Locataire", statut: "Téléchargée" },
-                { nom: "Fabiola Mensah", bien: "Villa Les Palmiers", date: "07 Juin 2026", canal: "WhatsApp Direct", statut: "Délivrée" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/80 p-3 text-xs">
-                  <div className="flex items-center gap-3">
-                    <FileText size={20} className="text-emerald-400 shrink-0" />
-                    <div>
-                      <p className="font-bold text-white">{item.nom}</p>
-                      <p className="text-slate-400 text-[11px]">{item.bien} · {item.date}</p>
+              <div className="divide-y divide-neutral-100">
+                {payments.map((payment) => (
+                  <div key={payment.name} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold ${payment.avatar}`}>
+                        {payment.initials}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-neutral-900">{payment.name}</p>
+                        <p className="truncate text-[11px] text-neutral-500">{payment.property}</p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xs font-extrabold text-neutral-900">{payment.amount}</p>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-success-600">
+                        <CheckCircle size={12} weight="fill" aria-hidden="true" />
+                        {payment.method}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="rounded bg-slate-800 px-2 py-1 text-[10px] text-slate-300 border border-slate-700">
-                      {item.canal}
+                ))}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="reglements" className="mt-0 focus-visible:outline-none">
+          <motion.div
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5"
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-neutral-500">
+                  Historique des quittances prêtes à l'envoi
+                </p>
+                <p className="mt-1 text-xs text-neutral-500">Chaque paiement laisse une trace claire.</p>
+              </div>
+              <FileText size={22} className="text-primary-800" aria-hidden="true" />
+            </div>
+            <div className="space-y-3">
+              {receipts.map((receipt) => (
+                <div key={receipt.name} className="flex flex-col gap-3 rounded-xl border border-neutral-100 bg-neutral-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-primary-800 shadow-xs">
+                      <FileText size={18} aria-hidden="true" />
                     </span>
-                    <span className="rounded bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
-                      {item.statut}
+                    <div>
+                      <p className="text-xs font-extrabold text-neutral-900">{receipt.name}</p>
+                      <p className="text-[11px] text-neutral-500">{receipt.property} · {receipt.date}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pl-12 sm:pl-0">
+                    <span className="rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-neutral-600">
+                      {receipt.channel}
+                    </span>
+                    <span className="rounded-full bg-success-50 px-2.5 py-1 text-[10px] font-extrabold text-success-600">
+                      {receipt.status}
                     </span>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
+        </TabsContent>
+          </Tabs>
         </div>
-      )}
-    </div>
+
+      <div className="relative mt-5 flex items-center justify-between gap-3 border-t border-neutral-100 pt-4 text-[11px] text-neutral-500">
+        <span className="inline-flex items-center gap-2">
+          <Sparkle size={14} className="text-accent-500" aria-hidden="true" />
+          Une vue pensée pour décider plus vite.
+        </span>
+        <span className="hidden items-center gap-1 font-semibold text-primary-800 sm:inline-flex">
+          Explorer le tableau de bord
+          <ArrowUpRight size={14} aria-hidden="true" />
+        </span>
+      </div>
+    </motion.div>
   );
 }

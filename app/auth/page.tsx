@@ -1,6 +1,14 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import AuthTabs from "@/components/auth/AuthTabs";
 
-export default async function AuthPage() {
-  // Redirection vers la page d'accueil (système auth unique)
-  redirect("/");
+export const metadata = {
+  title: "Connexion ou création de compte — Loka",
+};
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthTabs />
+    </Suspense>
+  );
 }

@@ -37,7 +37,7 @@ export default function BrandLockup({
       >
         <Image
           src="/logo.jpg"
-          alt="Saint Pierre Immobilier"
+          alt="Loka"
           width={dims.image}
           height={dims.image}
           className="rounded-md object-contain"
@@ -46,24 +46,14 @@ export default function BrandLockup({
       </div>
 
       {showWordmark && (
-        <div className="leading-tight">
-          <span
-            className={cn(
-              "block text-sm font-bold",
-              onDark ? "text-white" : "text-neutral-900"
-            )}
-          >
-            Saint Pierre
-          </span>
-          <span
-            className={cn(
-              "block text-[11px] font-medium uppercase tracking-wide",
-              onDark ? "text-slate-400" : "text-neutral-500"
-            )}
-          >
-            Immobilier
-          </span>
-        </div>
+        <span
+          className={cn(
+            "text-base font-extrabold tracking-[-0.03em]",
+            onDark ? "text-white" : "text-neutral-900"
+          )}
+        >
+          Loka
+        </span>
       )}
     </div>
   );

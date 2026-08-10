@@ -94,20 +94,15 @@ export default function NavigationDrawer({
                 <div className="relative h-10 w-10 shrink-0 rounded-md shadow-lg overflow-hidden flex-shrink-0">
                   <Image 
                     src="/logo.jpg" 
-                    alt="Logo Saint Pierre Immobilier" 
+                    alt="Logo Loka" 
                     fill 
                     className="object-cover"
                     priority
                   />
                 </div>
-                <div className="leading-tight">
-                  <span className="block text-sm font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
-                    Saint Pierre
-                  </span>
-                  <span className="block text-[11px] font-medium tracking-wide text-slate-500 uppercase">
-                    Immobilier
-                  </span>
-                </div>
+                <span className="text-base font-extrabold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
+                  Loka
+                </span>
               </div>
               <motion.button
                 onClick={onClose}

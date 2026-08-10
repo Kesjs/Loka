@@ -12,7 +12,7 @@ export async function getSession() {
 export async function requireAuth() {
   const user = await getSession();
   if (!user) {
-    redirect("/login");
+    redirect("/auth");
   }
   return user;
 }

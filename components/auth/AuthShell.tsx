@@ -194,17 +194,9 @@ export default function AuthShell({
 
       <div className="flex flex-1 flex-col min-h-screen px-4 pb-12 pt-8 md:px-10 md:pt-12 lg:px-14 xl:px-20">
         <div className="w-full max-w-2xl mx-auto">
-          {/* Logo mobile — empilé verticalement */}
+          {/* Logo mobile */}
           <div className="mb-8 flex flex-col items-center gap-3 md:hidden">
-            <BrandLockup variant="on-light" size="md" showWordmark={false} />
-            <div className="text-center leading-tight">
-              <span className="block text-base font-extrabold text-neutral-900">
-                Saint Pierre
-              </span>
-              <span className="block text-xs font-semibold uppercase tracking-wider text-neutral-500">
-                Immobilier
-              </span>
-            </div>
+            <BrandLockup variant="on-light" size="md" showWordmark />
           </div>
 
           {showBack && onBack && (

@@ -533,7 +533,6 @@ export default function LandingPage() {
             </span>
             <span className="hidden leading-tight sm:block">
               <strong className="block text-[17px] font-extrabold tracking-[-0.04em] text-neutral-950">Loka</strong>
-              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-neutral-500">Gestion locative · Bénin</span>
             </span>
             <span className="sm:hidden leading-tight">
               <strong className="block text-[17px] font-extrabold tracking-[-0.04em] text-neutral-950">Loka</strong>

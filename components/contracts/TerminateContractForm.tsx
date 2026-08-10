@@ -12,6 +12,7 @@ import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { motion } from "framer-motion"
 import { ArrowLeft, CheckCircle, Plus, Trash } from "@phosphor-icons/react"
 import { Select } from "@/components/ui/select"
+import { fetchJson } from "@/lib/api/fetchJson"
 
 type FormData = {
   deductions: Array<{
@@ -45,6 +46,7 @@ export function TerminateContractForm({
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [warning, setWarning] = useState("")
   const [totalDeductions, setTotalDeductions] = useState(0)
 
   const form = useForm<FormData>({
@@ -79,19 +81,27 @@ export function TerminateContractForm({
 
     setIsSubmitting(true)
     setError("")
+    setWarning("")
 
     try {
-      const response = await fetch(`/api/contracts/${contractId}/terminate`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
+      const result = await fetchJson<{ warning?: string }>(
+        `/api/contracts/${contractId}/terminate`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+          fallbackMessage: "Erreur lors de la résiliation du contrat",
+        }
+      )
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(
-          errorData.error || "Erreur lors de la résiliation du contrat"
-        )
+      // Le contrat est résilié mais une étape best-effort a échoué.
+      if (result?.warning) {
+        setWarning(result.warning)
+        setTimeout(() => {
+          router.push("/contrats")
+          router.refresh()
+        }, 4000)
+        return
       }
 
       router.push("/contrats")
@@ -116,6 +126,12 @@ export function TerminateContractForm({
         >
           {error}
         </motion.div>
+      )}
+
+      {warning && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+          {warning}
+        </div>
       )}
 
       {/* Warning */}

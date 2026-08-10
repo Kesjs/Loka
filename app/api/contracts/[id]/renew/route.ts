@@ -11,6 +11,7 @@ import { ContractRepository } from "@/lib/db/repositories/ContractRepository"
 import { PropertyRepository } from "@/lib/db/repositories/PropertyRepository"
 import { GuaranteeRepository } from "@/lib/db/repositories/GuaranteeRepository"
 import { AlertRepository } from "@/lib/db/repositories/AlertRepository"
+import { apiErrorResponse } from "@/lib/api/errorHandler"
 
 export async function PUT(
   request: NextRequest,
@@ -67,13 +68,6 @@ export async function PUT(
       { status: 200 }
     )
   } catch (error) {
-    console.error("Error renewing contract:", error)
-    const message =
-      error instanceof Error ? error.message : "Erreur lors du renouvellement du contrat"
-
-    return NextResponse.json(
-      { error: message },
-      { status: 400 }
-    )
+    return apiErrorResponse(error, "Erreur lors du renouvellement du contrat")
   }
 }

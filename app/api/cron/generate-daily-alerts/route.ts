@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Cron job error:', error)
     const errorResponse = handleApiError(error)
-    return NextResponse.json(errorResponse, { status: 500 })
+    return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
   }
 }
 

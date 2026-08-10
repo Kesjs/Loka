@@ -8,6 +8,7 @@
 
 import { useState } from 'react'
 import { useAlerts } from '@/lib/hooks/useAlerts'
+import { fetchJson } from '@/lib/api/fetchJson'
 import { AlertNotification } from '@/components/alerts/AlertNotification'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
@@ -16,8 +17,9 @@ import { Bell, Warning, Info, CheckCircle, Trash, ArrowLeft, WarningCircle } fro
 type FilterType = 'all' | 'unread' | 'high' | 'medium' | 'low'
 
 export default function NotificationsPage() {
-  const { data: alerts = [], isLoading, refetch } = useAlerts()
+  const { data: alerts = [], isLoading, error: loadError, refetch } = useAlerts()
   const [filter, setFilter] = useState<FilterType>('all')
+  const [actionError, setActionError] = useState('')
 
   // Filter alerts
   const filteredAlerts = alerts.filter((alert) => {
@@ -41,32 +43,50 @@ export default function NotificationsPage() {
 
     if (unreadIds.length === 0) return
 
-    try {
-      for (const id of unreadIds) {
-        await fetch(`/api/alerts/${id}`, {
+    setActionError('')
+    const results = await Promise.allSettled(
+      unreadIds.map((id) =>
+        fetchJson(`/api/alerts/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ is_read: true }),
+          fallbackMessage: "L'alerte n'a pas pu être marquée comme lue.",
         })
-      }
-      refetch()
-    } catch (error) {
-      console.error('Erreur lors du marquage des alertes:', error)
+      )
+    )
+    refetch()
+
+    const failures = results.filter((r) => r.status === 'rejected')
+    if (failures.length > 0) {
+      failures.forEach((f) =>
+        console.error('Erreur lors du marquage des alertes:', (f as PromiseRejectedResult).reason)
+      )
+      setActionError(
+        `${failures.length} alerte(s) n'ont pas pu être marquées comme lues.`
+      )
     }
   }
 
   const handleDeleteAll = async () => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer toutes les alertes ?')) return
 
-    try {
-      for (const alert of alerts) {
-        await fetch(`/api/alerts/${alert.id}`, {
+    setActionError('')
+    const results = await Promise.allSettled(
+      alerts.map((alert) =>
+        fetchJson(`/api/alerts/${alert.id}`, {
           method: 'DELETE',
+          fallbackMessage: "L'alerte n'a pas pu être supprimée.",
         })
-      }
-      refetch()
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error)
+      )
+    )
+    refetch()
+
+    const failures = results.filter((r) => r.status === 'rejected')
+    if (failures.length > 0) {
+      failures.forEach((f) =>
+        console.error('Erreur lors de la suppression:', (f as PromiseRejectedResult).reason)
+      )
+      setActionError(`${failures.length} alerte(s) n'ont pas pu être supprimées.`)
     }
   }
 
@@ -93,6 +113,17 @@ export default function NotificationsPage() {
           </Link>
         </div>
       </div>
+
+      {(loadError || actionError) && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+          <p className="text-red-900 text-sm">
+            {actionError ||
+              (loadError instanceof Error
+                ? loadError.message
+                : 'Impossible de charger les alertes.')}
+          </p>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -168,6 +199,21 @@ export default function NotificationsPage() {
           <div className="p-8 text-center">
             <div className="inline-block animate-spin text-3xl">⟳</div>
             <p className="text-gray-600 mt-4">Chargement des alertes...</p>
+          </div>
+        ) : loadError ? (
+          <div className="p-8 text-center">
+            <WarningCircle size={64} weight="thin" className="mx-auto text-red-300 mb-4" />
+            <p className="text-gray-600">
+              {loadError instanceof Error
+                ? loadError.message
+                : 'Impossible de charger les alertes.'}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-4 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+            >
+              Réessayer
+            </button>
           </div>
         ) : filteredAlerts.length === 0 ? (
           <div className="p-8 text-center">

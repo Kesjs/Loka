@@ -7,6 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { queryKeys, queryConfig } from "@/lib/react-query"
+import { assertOk } from "@/lib/api/fetchJson"
 
 export interface LogementData {
   id: string
@@ -38,7 +39,7 @@ export function useLogements(
       const response = await fetch(
         `/api/logements?proprietaire_id=${proprietaireId}&page=${page}&pageSize=${pageSize}`
       )
-      if (!response.ok) throw new Error("Failed to fetch logements")
+      await assertOk(response, "Failed to fetch logements")
       return response.json()
     },
     ...queryConfig.paginated,
@@ -55,7 +56,7 @@ export function useLogementStats(proprietaireId: string) {
       const response = await fetch(
         `/api/logements/stats?proprietaire_id=${proprietaireId}`
       )
-      if (!response.ok) throw new Error("Failed to fetch logement stats")
+      await assertOk(response, "Failed to fetch logement stats")
       return response.json()
     },
     ...queryConfig.dynamic,
@@ -72,7 +73,7 @@ export function useLogementsByImmeuble(immeubleId: string) {
       const response = await fetch(
         `/api/logements?immeuble_id=${immeubleId}`
       )
-      if (!response.ok) throw new Error("Failed to fetch logements")
+      await assertOk(response, "Failed to fetch logements")
       return response.json()
     },
     ...queryConfig.static,
@@ -87,7 +88,7 @@ export function useLogement(id: string) {
     queryKey: queryKeys.logement(id),
     queryFn: async (): Promise<LogementData> => {
       const response = await fetch(`/api/logements/${id}`)
-      if (!response.ok) throw new Error("Failed to fetch logement")
+      await assertOk(response, "Failed to fetch logement")
       return response.json()
     },
     ...queryConfig.static,
@@ -108,7 +109,7 @@ export function useCreateLogement() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to create logement")
+      await assertOk(response, "Failed to create logement")
       return response.json()
     },
     onSuccess: (newLogement) => {
@@ -139,7 +140,7 @@ export function useUpdateLogement(id: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to update logement")
+      await assertOk(response, "Failed to update logement")
       return response.json()
     },
     onSuccess: (updatedLogement) => {
@@ -168,7 +169,7 @@ export function useDeleteLogement() {
       const response = await fetch(`/api/logements/${id}`, {
         method: "DELETE",
       })
-      if (!response.ok) throw new Error("Failed to delete logement")
+      await assertOk(response, "Failed to delete logement")
     },
     onSuccess: (_, id) => {
       // Remove from cache

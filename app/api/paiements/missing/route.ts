@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { PaymentRepository } from "@/lib/db/repositories/PaymentRepository"
+import { apiErrorResponse } from "@/lib/api/errorHandler"
 
 /**
  * GET /api/paiements/missing?proprietaire_id=xxx&month=2024-08
@@ -50,10 +51,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(missing, { status: 200 })
   } catch (error) {
-    console.error("GET /api/paiements/missing error:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch missing payments" },
-      { status: 500 }
-    )
+    return apiErrorResponse(error, "Failed to fetch missing payments")
   }
 }

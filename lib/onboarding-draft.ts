@@ -29,11 +29,15 @@ export async function loadOnboardingDraft(
 
   // 1. Essayer de charger depuis la DB
   try {
-    const { data: draftData } = await supabase
+    const { data: draftData, error: loadError } = await supabase
       .from("onboarding_drafts")
       .select("step, data")
       .eq("user_id", user.id)
       .maybeSingle();
+
+    if (loadError) {
+      console.warn("⚠️ Erreur lors du chargement de la DB:", loadError);
+    }
 
     if (draftData) {
       console.log("✅ Brouillon chargé depuis la DB");
@@ -145,10 +149,14 @@ export async function deleteDraft(
 
   // Supprimer de la DB
   try {
-    await supabase
+    const { error: deleteError } = await supabase
       .from("onboarding_drafts")
       .delete()
       .eq("user_id", user.id);
+
+    if (deleteError) {
+      console.warn("⚠️ Erreur suppression DB:", deleteError);
+    }
   } catch (err) {
     console.warn("⚠️ Erreur suppression DB:", err);
   }

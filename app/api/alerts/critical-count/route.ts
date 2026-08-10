@@ -24,6 +24,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ count })
   } catch (error) {
     const errorResponse = handleApiError(error)
-    return NextResponse.json(errorResponse, { status: 500 })
+    return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
   }
 }

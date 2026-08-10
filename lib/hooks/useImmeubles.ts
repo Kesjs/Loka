@@ -7,6 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { queryKeys, queryConfig } from "@/lib/react-query"
+import { assertOk } from "@/lib/api/fetchJson"
 
 export interface ImmeubleData {
   id: string
@@ -39,7 +40,7 @@ export function useImmeubles(
       const response = await fetch(
         `/api/immeubles?proprietaire_id=${proprietaireId}&page=${page}&pageSize=${pageSize}`
       )
-      if (!response.ok) throw new Error("Failed to fetch immeubles")
+      await assertOk(response, "Failed to fetch immeubles")
       return response.json()
     },
     ...queryConfig.paginated,
@@ -54,7 +55,7 @@ export function useImmeuble(id: string) {
     queryKey: queryKeys.immeuble(id),
     queryFn: async (): Promise<ImmeubleData> => {
       const response = await fetch(`/api/immeubles/${id}`)
-      if (!response.ok) throw new Error("Failed to fetch immeuble")
+      await assertOk(response, "Failed to fetch immeuble")
       return response.json()
     },
     ...queryConfig.static,
@@ -75,7 +76,7 @@ export function useCreateImmeuble() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to create immeuble")
+      await assertOk(response, "Failed to create immeuble")
       return response.json()
     },
     onSuccess: (newImmeuble) => {
@@ -103,7 +104,7 @@ export function useUpdateImmeuble(id: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to update immeuble")
+      await assertOk(response, "Failed to update immeuble")
       return response.json()
     },
     onSuccess: (updatedImmeuble) => {
@@ -129,7 +130,7 @@ export function useDeleteImmeuble() {
       const response = await fetch(`/api/immeubles/${id}`, {
         method: "DELETE",
       })
-      if (!response.ok) throw new Error("Failed to delete immeuble")
+      await assertOk(response, "Failed to delete immeuble")
     },
     onSuccess: (_, id) => {
       queryClient.removeQueries({

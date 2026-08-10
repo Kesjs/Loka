@@ -81,6 +81,29 @@ export function withErrorHandlerSync(
 }
 
 /**
+ * Build an error response preserving the status code and message of known
+ * `ApplicationError`s. Unexpected errors are logged and answered with
+ * `fallbackMessage` so internals are never exposed but never lost either.
+ */
+export function apiErrorResponse(error: unknown, fallbackMessage: string) {
+  const { message, code, statusCode, details } = handleApiError(error)
+  const isApplicationError = error instanceof ApplicationError
+
+  if (!isApplicationError) {
+    console.error("[API Error]", error)
+  }
+
+  return NextResponse.json(
+    {
+      error: isApplicationError ? message : fallbackMessage,
+      code,
+      details: isApplicationError ? details : undefined,
+    },
+    { status: statusCode }
+  )
+}
+
+/**
  * Success response formatter
  */
 export function successResponse<T>(data: T, statusCode: number = 200) {

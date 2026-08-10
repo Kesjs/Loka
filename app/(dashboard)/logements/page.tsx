@@ -12,6 +12,7 @@ import { PropertyRow } from '@/components/logements/PropertyRow';
 import { cn } from '@/lib/utils';
 import { Logement } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
+import { fetchJson } from '@/lib/api/fetchJson';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'nom' | 'loyer' | 'surface';
@@ -50,9 +51,13 @@ export default function LogementsPage() {
           .select('id, nom')
           .order('nom', { ascending: true });
 
-        if (!immeublesError && immeublesData) {
-          setImmeubles(immeublesData);
+        if (immeublesError) {
+          throw new Error(
+            `Impossible de charger les immeubles : ${immeublesError.message}`
+          );
         }
+
+        setImmeubles(immeublesData ?? []);
 
         // Fetch logements with filters
         const params = new URLSearchParams();
@@ -62,15 +67,21 @@ export default function LogementsPage() {
           params.append('amenities', JSON.stringify(filters.amenities));
         }
 
-        const logementsRes = await fetch(`/api/logements?${params.toString()}`);
-        if (logementsRes.ok) {
-          const logementsData = await logementsRes.json();
-          setLogements(logementsData.logements || []);
-        }
+        const logementsData = await fetchJson<{ logements?: Logement[] }>(
+          `/api/logements?${params.toString()}`,
+          { fallbackMessage: 'Erreur lors du chargement des logements' }
+        );
+        setLogements(logementsData.logements || []);
+        setError('');
 
         setLoading(false);
       } catch (err) {
-        setError('Erreur lors du chargement des logements');
+        console.error('Erreur lors du chargement des logements:', err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Erreur lors du chargement des logements'
+        );
         setLoading(false);
       }
     }

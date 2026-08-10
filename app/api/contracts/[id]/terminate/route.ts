@@ -11,6 +11,7 @@ import { ContractRepository } from "@/lib/db/repositories/ContractRepository"
 import { PropertyRepository } from "@/lib/db/repositories/PropertyRepository"
 import { GuaranteeRepository } from "@/lib/db/repositories/GuaranteeRepository"
 import { AlertRepository } from "@/lib/db/repositories/AlertRepository"
+import { apiErrorResponse } from "@/lib/api/errorHandler"
 
 export async function PUT(
   request: NextRequest,
@@ -50,6 +51,7 @@ export async function PUT(
 
     // Process guarantee return
     let guaranteeResult = null
+    let guaranteeWarning: string | null = null
     try {
       guaranteeResult = await guaranteeService.processReturn(
         id,
@@ -58,8 +60,12 @@ export async function PUT(
         user.id
       )
     } catch (error) {
-      // Continue even if guarantee processing fails
+      // Continue even if guarantee processing fails, but tell the caller
       console.error("Error processing guarantee:", error)
+      guaranteeWarning =
+        error instanceof Error
+          ? `Le dépôt de garantie n'a pas pu être traité : ${error.message}`
+          : "Le dépôt de garantie n'a pas pu être traité."
     }
 
     // TODO: Send termination and guarantee return email to tenant
@@ -69,17 +75,11 @@ export async function PUT(
         success: true,
         message: "Contrat résilié avec succès",
         guarantee: guaranteeResult,
+        ...(guaranteeWarning ? { warning: guaranteeWarning } : {}),
       },
       { status: 200 }
     )
   } catch (error) {
-    console.error("Error terminating contract:", error)
-    const message =
-      error instanceof Error ? error.message : "Erreur lors de la résiliation du contrat"
-
-    return NextResponse.json(
-      { error: message },
-      { status: 400 }
-    )
+    return apiErrorResponse(error, "Erreur lors de la résiliation du contrat")
   }
 }

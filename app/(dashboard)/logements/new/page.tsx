@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { PhotoUploadZone } from "@/components/logements/PhotoUploadZone";
 import { AmenitiesSelect } from "@/components/logements/AmenitiesSelect";
 import { mapDbError } from "@/lib/db-errors";
+import { fetchJson } from "@/lib/api/fetchJson";
 import { cn } from "@/lib/utils";
 
 const logementTypes = [
@@ -54,6 +55,7 @@ function NewLogementForm() {
   const [primaryPhotoIndex, setPrimaryPhotoIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [saved, setSaved] = useState(false);
 
@@ -65,6 +67,7 @@ function NewLogementForm() {
         .order("nom", { ascending: true });
 
       if (fetchError) {
+        console.error("Erreur de chargement des immeubles:", fetchError);
         setError("Impossible de charger les immeubles. Réessayez plus tard.");
         return;
       }
@@ -138,12 +141,14 @@ function NewLogementForm() {
         .single();
 
       if (insertError) {
+        console.error("Erreur de création du logement:", insertError);
         setError(mapDbError(insertError));
         setLoading(false);
         return;
       }
 
       // 3. Upload photos after logement is created
+      let photoWarning = "";
       if (selectedFiles.length > 0 && logement) {
         try {
           const uploadFormData = new FormData();
@@ -153,24 +158,28 @@ function NewLogementForm() {
           // Set primary if explicitly selected
           uploadFormData.append("setAsPrimary", primaryPhotoIndex === 0 ? "true" : "false");
 
-          const uploadResponse = await fetch(`/api/logements/${logement.id}/upload-photo`, {
+          await fetchJson(`/api/logements/${logement.id}/upload-photo`, {
             method: "POST",
             body: uploadFormData,
+            fallbackMessage: "L'envoi des photos a échoué.",
           });
-
-          if (!uploadResponse.ok) {
-            console.error("Photo upload failed, but logement created successfully");
-          }
         } catch (photoError) {
+          // Le logement reste créé même si les photos échouent.
           console.error("Photo upload error:", photoError);
-          // Don't fail the entire form if photos fail
+          photoWarning =
+            photoError instanceof Error
+              ? `Logement créé, mais les photos n'ont pas pu être envoyées : ${photoError.message}`
+              : "Logement créé, mais les photos n'ont pas pu être envoyées.";
+          setWarning(photoWarning);
         }
       }
 
       setSaved(true);
       setLoading(false);
-      setTimeout(() => router.push("/logements"), 500);
+      // Laisser le temps de lire l'avertissement avant de quitter la page.
+      setTimeout(() => router.push("/logements"), photoWarning ? 4000 : 500);
     } catch (err) {
+      console.error("Erreur de création du logement:", err);
       setError("Une erreur est survenue lors de la création du logement.");
       setLoading(false);
     }
@@ -191,6 +200,7 @@ function NewLogementForm() {
 
       <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
         {error && <div className="mb-5 rounded-2xl bg-danger-50 px-4 py-3 text-sm text-danger-700">{error}</div>}
+        {warning && <div className="mb-5 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">{warning}</div>}
         {saved && (
           <div className="mb-5 flex items-center gap-3 rounded-2xl bg-success-50 px-4 py-3 text-sm text-success-700">
             <CheckCircle size={18} />

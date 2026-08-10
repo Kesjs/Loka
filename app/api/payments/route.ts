@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     const errorResponse = handleApiError(error)
-    return NextResponse.json(errorResponse, { status: 500 })
+    return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
   }
 }
 
@@ -63,6 +63,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(payment, { status: 201 })
   } catch (error) {
     const errorResponse = handleApiError(error)
-    return NextResponse.json(errorResponse, { status: 500 })
+    return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
   }
 }

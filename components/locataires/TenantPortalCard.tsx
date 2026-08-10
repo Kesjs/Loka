@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { CircleNotch, PaperPlaneRight, CheckCircle, EnvelopeSimple } from "@phosphor-icons/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { fetchJson } from "@/lib/api/fetchJson";
 
 interface TenantPortalCardProps {
   locataireId?: string;
@@ -43,13 +44,14 @@ export function TenantPortalCard({
         .eq("id", locataireId);
 
       if (dbError) {
+        console.error("Erreur de génération du token d'invitation:", dbError);
         setErrorMsg("Impossible de générer le lien d'invitation.");
         setSending(false);
         return;
       }
 
       // Appeler la route API d'envoi Brevo
-      const res = await fetch("/api/tenant/invite", {
+      await fetchJson("/api/tenant/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -58,17 +60,17 @@ export function TenantPortalCard({
           email: locataireEmail || "locataire@exemple.bj",
           token,
         }),
+        fallbackMessage: "L'invitation n'a pas pu être envoyée.",
       });
-
-      if (!res.ok) {
-        // Mode simulation si pas de clé Brevo configurée
-        console.log("Invitation simulée avec le token:", token);
-      }
 
       setSent(true);
     } catch (err) {
       console.error("Erreur d'invitation portail:", err);
-      setErrorMsg("Une erreur est survenue lors de l'envoi.");
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Une erreur est survenue lors de l'envoi."
+      );
     } finally {
       setSending(false);
     }

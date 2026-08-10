@@ -13,6 +13,7 @@ import { PhotoManager } from "@/components/logements/PhotoManager";
 import { AmenitiesSelect } from "@/components/logements/AmenitiesSelect";
 import { PhotoUploadZone } from "@/components/logements/PhotoUploadZone";
 import { mapDbError } from "@/lib/db-errors";
+import { fetchJson } from "@/lib/api/fetchJson";
 import { cn } from "@/lib/utils";
 
 const logementTypes = [
@@ -56,6 +57,7 @@ export default function EditLogementPage() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [saved, setSaved] = useState(false);
 
@@ -73,6 +75,9 @@ export default function EditLogementPage() {
       setImmeubles(immeublesData ?? []);
 
       if (fetchError || !logement) {
+        if (fetchError) {
+          console.error("Erreur de chargement du logement:", fetchError);
+        }
         setError("Logement introuvable.");
         setInitialLoading(false);
         return;
@@ -97,13 +102,18 @@ export default function EditLogementPage() {
       setInitialLoading(false);
     }
 
-    loadData();
+    loadData().catch((err) => {
+      console.error("Erreur de chargement du logement:", err);
+      setError("Erreur lors du chargement du logement.");
+      setInitialLoading(false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setWarning("");
 
     const nextFieldErrors: FieldErrors = {};
     if (!nom.trim()) nextFieldErrors.nom = "Le nom du logement est requis.";
@@ -122,6 +132,7 @@ export default function EditLogementPage() {
 
     try {
       // 1. Upload new photos if any
+      let photoWarning = "";
       if (selectedFiles.length > 0) {
         try {
           const uploadFormData = new FormData();
@@ -130,16 +141,19 @@ export default function EditLogementPage() {
           });
           uploadFormData.append("setAsPrimary", "false");
 
-          const uploadResponse = await fetch(`/api/logements/${params.id}/upload-photo`, {
+          await fetchJson(`/api/logements/${params.id}/upload-photo`, {
             method: "POST",
             body: uploadFormData,
+            fallbackMessage: "L'envoi des photos a échoué.",
           });
-
-          if (!uploadResponse.ok) {
-            console.error("Photo upload failed during edit");
-          }
         } catch (photoError) {
+          // Les métadonnées sont mises à jour même si les photos échouent.
           console.error("Photo upload error:", photoError);
+          photoWarning =
+            photoError instanceof Error
+              ? `Les photos n'ont pas pu être envoyées : ${photoError.message}`
+              : "Les photos n'ont pas pu être envoyées.";
+          setWarning(photoWarning);
         }
       }
 
@@ -163,6 +177,7 @@ export default function EditLogementPage() {
         .eq("id", params.id);
 
       if (updateError) {
+        console.error("Erreur de mise à jour du logement:", updateError);
         setError(mapDbError(updateError));
         setLoading(false);
         return;
@@ -170,8 +185,10 @@ export default function EditLogementPage() {
 
       setSaved(true);
       setLoading(false);
-      setTimeout(() => router.push(`/logements/${params.id}`), 500);
+      // Laisser le temps de lire l'avertissement avant de quitter la page.
+      setTimeout(() => router.push(`/logements/${params.id}`), photoWarning ? 4000 : 500);
     } catch (err) {
+      console.error("Erreur de mise à jour du logement:", err);
       setError("Une erreur est survenue lors de la mise à jour du logement.");
       setLoading(false);
     }
@@ -207,6 +224,7 @@ export default function EditLogementPage() {
 
       <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
         {error && <div className="mb-5 rounded-2xl bg-danger-50 px-4 py-3 text-sm text-danger-700">{error}</div>}
+        {warning && <div className="mb-5 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">{warning}</div>}
         {saved && (
           <div className="mb-5 flex items-center gap-3 rounded-2xl bg-success-50 px-4 py-3 text-sm text-success-700">
             <CheckCircle size={18} />

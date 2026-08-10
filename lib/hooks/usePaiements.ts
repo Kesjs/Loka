@@ -7,6 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { queryKeys, queryConfig } from "@/lib/react-query"
+import { assertOk } from "@/lib/api/fetchJson"
 
 export interface PaiementData {
   id: string
@@ -41,7 +42,7 @@ export function usePaiements(
       const response = await fetch(
         `/api/paiements?proprietaire_id=${proprietaireId}&page=${page}&pageSize=${pageSize}`
       )
-      if (!response.ok) throw new Error("Failed to fetch paiements")
+      await assertOk(response, "Failed to fetch paiements")
       return response.json()
     },
     ...queryConfig.paginated,
@@ -61,7 +62,7 @@ export function usePaiementsRecent(
       const response = await fetch(
         `/api/paiements/recent?proprietaire_id=${proprietaireId}&limit=${limit}`
       )
-      if (!response.ok) throw new Error("Failed to fetch recent paiements")
+      await assertOk(response, "Failed to fetch recent paiements")
       return response.json()
     },
     ...queryConfig.dynamic,
@@ -78,7 +79,7 @@ export function usePaiementsMissing(proprietaireId: string) {
       const response = await fetch(
         `/api/paiements/missing?proprietaire_id=${proprietaireId}`
       )
-      if (!response.ok) throw new Error("Failed to fetch missing paiements")
+      await assertOk(response, "Failed to fetch missing paiements")
       return response.json()
     },
     ...queryConfig.dynamic,
@@ -95,7 +96,7 @@ export function usePaiementsStats(proprietaireId: string) {
       const response = await fetch(
         `/api/paiements/stats?proprietaire_id=${proprietaireId}`
       )
-      if (!response.ok) throw new Error("Failed to fetch paiements stats")
+      await assertOk(response, "Failed to fetch paiements stats")
       return response.json()
     },
     ...queryConfig.dynamic,
@@ -110,7 +111,7 @@ export function usePaiement(id: string) {
     queryKey: queryKeys.paiement(id),
     queryFn: async (): Promise<PaiementData> => {
       const response = await fetch(`/api/paiements/${id}`)
-      if (!response.ok) throw new Error("Failed to fetch paiement")
+      await assertOk(response, "Failed to fetch paiement")
       return response.json()
     },
     ...queryConfig.static,
@@ -131,7 +132,7 @@ export function useRecordPaiement(proprietaireId: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to record paiement")
+      await assertOk(response, "Failed to record paiement")
       return response.json()
     },
     onSuccess: (newPaiement) => {
@@ -160,7 +161,7 @@ export function useUpdatePaiement(id: string, proprietaireId: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
-      if (!response.ok) throw new Error("Failed to update paiement")
+      await assertOk(response, "Failed to update paiement")
       return response.json()
     },
     onSuccess: (updatedPaiement) => {
@@ -186,7 +187,7 @@ export function useDeletePaiement(proprietaireId: string) {
       const response = await fetch(`/api/paiements/${id}`, {
         method: "DELETE",
       })
-      if (!response.ok) throw new Error("Failed to delete paiement")
+      await assertOk(response, "Failed to delete paiement")
     },
     onSuccess: (_, id) => {
       queryClient.removeQueries({

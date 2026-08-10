@@ -7,6 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { queryKeys, queryConfig } from "@/lib/react-query"
+import { assertOk } from "@/lib/api/fetchJson"
 
 export interface AlerteData {
   id: string
@@ -36,7 +37,7 @@ export function useAlertes(proprietaireId: string) {
       const response = await fetch(
         `/api/alertes?proprietaire_id=${proprietaireId}`
       )
-      if (!response.ok) throw new Error("Failed to fetch alertes")
+      await assertOk(response, "Failed to fetch alertes")
       return response.json()
     },
     ...queryConfig.realTime,
@@ -53,7 +54,7 @@ export function useAlertesUnread(proprietaireId: string) {
       const response = await fetch(
         `/api/alertes/unread?proprietaire_id=${proprietaireId}`
       )
-      if (!response.ok) throw new Error("Failed to fetch unread alertes")
+      await assertOk(response, "Failed to fetch unread alertes")
       return response.json()
     },
     ...queryConfig.realTime,
@@ -70,7 +71,7 @@ export function useAlertesCritical(proprietaireId: string) {
       const response = await fetch(
         `/api/alertes/critical-count?proprietaire_id=${proprietaireId}`
       )
-      if (!response.ok) throw new Error("Failed to fetch critical alerts count")
+      await assertOk(response, "Failed to fetch critical alerts count")
       const data = await response.json()
       return data.count || 0
     },
@@ -91,7 +92,7 @@ export function useMarkAlertRead(id: string, proprietaireId: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_read: true }),
       })
-      if (!response.ok) throw new Error("Failed to mark alert as read")
+      await assertOk(response, "Failed to mark alert as read")
       return response.json()
     },
     onSuccess: () => {
@@ -121,7 +122,7 @@ export function useMarkAlertsRead(proprietaireId: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids, is_read: true }),
       })
-      if (!response.ok) throw new Error("Failed to mark alerts as read")
+      await assertOk(response, "Failed to mark alerts as read")
       return response.json()
     },
     onSuccess: () => {
@@ -149,7 +150,7 @@ export function useDeleteAlerte(id: string, proprietaireId: string) {
       const response = await fetch(`/api/alertes/${id}`, {
         method: "DELETE",
       })
-      if (!response.ok) throw new Error("Failed to delete alerte")
+      await assertOk(response, "Failed to delete alerte")
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

@@ -10,7 +10,7 @@ import {
   Lock,
   CheckCircle,
   CircleNotch,
-  Info,
+  Check,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -46,6 +46,16 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
     }
     return { valid: true };
   }
+
+  // Critères affichés en temps réel sous le champ mot de passe
+  const passwordCriteria = [
+    { label: "8 caractères minimum", met: password.length >= 8 },
+    { label: "Une majuscule", met: /[A-Z]/.test(password) },
+    { label: "Une minuscule", met: /[a-z]/.test(password) },
+    { label: "Un chiffre", met: /\d/.test(password) },
+    { label: "Un symbole (!@#$...)", met: /[!@#$%^&*(),.?":{}|<>]/.test(password) },
+  ];
+  const passwordFocused = password.length > 0;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -176,9 +186,27 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        <p className="text-xs text-neutral-500">
-          {AUTH_MESSAGES.hints.passwordRequirements}
-        </p>
+        {passwordFocused && (
+          <ul className="space-y-1 pt-1">
+            {passwordCriteria.map((criterion) => (
+              <li
+                key={criterion.label}
+                className={`flex items-center gap-1.5 text-xs transition-colors ${
+                  criterion.met ? "text-success-600" : "text-neutral-400"
+                }`}
+              >
+                <span
+                  className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors ${
+                    criterion.met ? "bg-success-100" : "bg-neutral-100"
+                  }`}
+                >
+                  {criterion.met && <Check size={9} weight="bold" className="text-success-600" />}
+                </span>
+                {criterion.label}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Confirmer mot de passe */}
@@ -211,12 +239,6 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             {showConfirmPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
           </button>
         </div>
-      </div>
-
-      {/* Note de sécurité */}
-      <div className="flex items-start gap-2 rounded-lg bg-primary-50 px-3 py-2.5">
-        <Info size={16} className="text-primary-600 mt-0.5 shrink-0" weight="fill" />
-        <p className="text-xs text-primary-700">{AUTH_MESSAGES.hints.securityNote}</p>
       </div>
 
       {/* Bouton */}

@@ -57,7 +57,8 @@ type FaqItem = {
 type PricingPlan = {
   id: "starter" | "pro" | "agency";
   name: string;
-  price: string;
+  priceMonthly: string;
+  priceAnnual: string;
   unit?: string;
   description: string;
   features: readonly string[];
@@ -65,6 +66,8 @@ type PricingPlan = {
   href: string;
   highlighted?: boolean;
 };
+
+type BillingPeriod = "monthly" | "annual";
 
 const proofStats = [
   { id: "occupied", value: "24/25", label: "logements occupés" },
@@ -140,7 +143,8 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "starter",
     name: "Starter",
-    price: "Gratuit",
+    priceMonthly: "Gratuit",
+    priceAnnual: "Gratuit",
     description: "Pour débuter avec 1 à 3 logements.",
     features: ["Suivi des règlements", "Quittances PDF standard", "Historique locataire"],
     cta: "Commencer gratuitement",
@@ -149,8 +153,9 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "pro",
     name: "Pro",
-    price: "9.900",
-    unit: "FCFA / mois",
+    priceMonthly: "9.900",
+    priceAnnual: "79.200",
+    unit: "FCFA",
     description: "Pour les propriétaires indépendants.",
     features: ["Jusqu'à 20 logements", "Logo & en-tête personnalisés", "Relances SMS & WhatsApp", "Portail locataire actif"],
     cta: "Essai gratuit 14 jours",
@@ -160,8 +165,9 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "agency",
     name: "Agence",
-    price: "29.900",
-    unit: "FCFA / mois",
+    priceMonthly: "29.900",
+    priceAnnual: "239.200",
+    unit: "FCFA",
     description: "Pour les gestionnaires et agences.",
     features: ["Logements illimités", "Marque blanche complète", "Calcul des commissions", "Accès multi-utilisateurs"],
     cta: "Parler à Loka",
@@ -228,7 +234,7 @@ const footerGroups = [
     title: "Contact",
     links: [
       { label: "support@loka.com", href: "mailto:support@loka.com" },
-      { label: "+229 95 12 34 56", href: "tel:+22995123456" },
+      { label: "+229 46279139", href: "tel:+22946279139" },
     ],
   },
 ] as const;
@@ -476,8 +482,10 @@ function FaqItemRow({ item, isOpen, onToggle }: { item: FaqItem; isOpen: boolean
 
 export default function LandingPage() {
   const [logementsCount, setLogementsCount] = useState(15);
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
   const [openFaq, setOpenFaq] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedPlanComparison, setSelectedPlanComparison] = useState<string | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const { scrollY, scrollYProgress } = useScroll();
   const shouldReduceMotion = useReducedMotion();
@@ -766,32 +774,124 @@ export default function LandingPage() {
               <h2 id="pricing-title" className="mt-5 text-4xl font-bold leading-[1.02] tracking-[-0.06em] text-neutral-950 sm:text-5xl">Commencez petit. Grandissez sereinement.</h2>
               <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-neutral-600">Des plans simples à comprendre pour suivre vos loyers aujourd'hui et évoluer quand votre portefeuille grandit.</p>
             </Reveal>
-            <div className="mt-14 grid items-stretch gap-5 lg:grid-cols-3 lg:gap-6">
-              {pricingPlans.map((plan, index) => (
-                <motion.div
-                  key={plan.id}
-                  initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 22 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.15 }}
-                  transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : index * 0.07, ease: "easeOut" }}
-                  whileHover={shouldReduceMotion ? undefined : { y: -5 }}
-                  className={`relative flex flex-col rounded-[24px] border bg-white p-6 shadow-[0_18px_50px_rgba(30,41,59,0.08)] sm:p-7 ${plan.highlighted ? "border-2 border-primary-600 shadow-[0_24px_60px_rgba(79,70,229,0.16)] lg:-mt-4 lg:mb-4" : "border-neutral-200"}`}
+
+            {/* Toggle Annuel/Mensuel */}
+            <Reveal className="mx-auto mt-10 flex justify-center">
+              <div className="inline-flex items-center gap-4 rounded-full border border-neutral-200 bg-white p-1 shadow-sm">
+                <button
+                  onClick={() => setBillingPeriod("monthly")}
+                  className={`rounded-full px-6 py-2.5 text-sm font-bold transition-all ${
+                    billingPeriod === "monthly"
+                      ? "bg-primary-800 text-white shadow-md"
+                      : "text-neutral-600 hover:text-neutral-900"
+                  }`}
                 >
-                  {plan.highlighted ? <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white">Le plus choisi</span> : null}
-                  <span className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-extrabold ${plan.highlighted ? "bg-primary-50 text-primary-800" : "bg-neutral-100 text-neutral-600"}`}>{plan.name}</span>
-                  <div className="mt-6">
-                    <p className="text-3xl font-bold tracking-[-0.05em] text-neutral-950 sm:text-4xl">{plan.price} {plan.unit ? <span className="text-xs font-semibold tracking-normal text-neutral-500">{plan.unit}</span> : null}</p>
-                    <p className="mt-2 text-sm leading-6 text-neutral-500">{plan.description}</p>
-                  </div>
-                  <ul className="mt-6 flex-1 space-y-3 border-t border-neutral-200 pt-6 text-sm text-neutral-700">
-                    {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2.5"><CheckCircle size={17} className="mt-0.5 shrink-0 text-primary-700" aria-hidden="true" />{feature}</li>)}
-                  </ul>
-                  <Button asChild size="lg" className={`mt-8 min-h-12 w-full rounded-lg text-sm font-bold ${plan.highlighted ? "bg-primary-600 text-white hover:bg-primary-700" : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"}`}>
-                    <Link href={plan.href}>{plan.cta}{plan.highlighted ? <ArrowRight size={17} weight="bold" aria-hidden="true" /> : null}</Link>
-                  </Button>
-                </motion.div>
-              ))}
+                  Mensuel
+                </button>
+                <button
+                  onClick={() => setBillingPeriod("annual")}
+                  className={`relative rounded-full px-6 py-2.5 text-sm font-bold transition-all ${
+                    billingPeriod === "annual"
+                      ? "bg-primary-800 text-white shadow-md"
+                      : "text-neutral-600 hover:text-neutral-900"
+                  }`}
+                >
+                  Annuel
+                  {billingPeriod === "annual" && (
+                    <span className="absolute -top-2 -right-2 inline-flex items-center gap-1 rounded-full bg-success-600 px-2 py-0.5 text-[10px] font-black text-white">
+                      <CheckCircle size={12} weight="fill" aria-hidden="true" />
+                      -20%
+                    </span>
+                  )}
+                </button>
+              </div>
+            </Reveal>
+
+            {/* Pricing Cards */}
+            <div className="mt-14 grid items-stretch gap-5 lg:grid-cols-3 lg:gap-6">
+              {pricingPlans.map((plan, index) => {
+                const price = billingPeriod === "monthly" ? plan.priceMonthly : plan.priceAnnual;
+                const period = billingPeriod === "monthly" ? "/ mois" : "/ année";
+                
+                return (
+                  <motion.div
+                    key={plan.id}
+                    initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 22 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.15 }}
+                    transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : index * 0.07, ease: "easeOut" }}
+                    whileHover={shouldReduceMotion ? undefined : { y: -5 }}
+                    onClick={() => setSelectedPlanComparison(selectedPlanComparison === plan.id ? null : plan.id)}
+                    className={`relative flex cursor-pointer flex-col rounded-[24px] border bg-white p-6 shadow-[0_18px_50px_rgba(30,41,59,0.08)] transition-all sm:p-7 ${plan.highlighted ? "border-2 border-primary-600 shadow-[0_24px_60px_rgba(79,70,229,0.16)] lg:-mt-4 lg:mb-4" : "border-neutral-200"} ${selectedPlanComparison === plan.id ? "ring-2 ring-primary-600" : ""}`}
+                  >
+                    {plan.highlighted ? <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white">Le plus choisi</span> : null}
+                    <span className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-extrabold ${plan.highlighted ? "bg-primary-50 text-primary-800" : "bg-neutral-100 text-neutral-600"}`}>{plan.name}</span>
+                    <div className="mt-6">
+                      <div className="flex items-baseline gap-1">
+                        <p className="text-3xl font-bold tracking-[-0.05em] text-neutral-950 sm:text-4xl">{price}</p>
+                        {price !== "Gratuit" && <span className="text-xs font-semibold text-neutral-500">{plan.unit}</span>}
+                      </div>
+                      {price !== "Gratuit" && <p className="text-xs text-neutral-500">{period}</p>}
+                      <p className="mt-2 text-sm leading-6 text-neutral-500">{plan.description}</p>
+                    </div>
+                    <ul className="mt-6 flex-1 space-y-3 border-t border-neutral-200 pt-6 text-sm text-neutral-700">
+                      {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2.5"><CheckCircle size={17} className="mt-0.5 shrink-0 text-primary-700" aria-hidden="true" />{feature}</li>)}
+                    </ul>
+                    <Button asChild size="lg" className={`mt-8 min-h-12 w-full rounded-lg text-sm font-bold ${plan.highlighted ? "bg-primary-600 text-white hover:bg-primary-700" : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"}`}>
+                      <Link href={plan.href}>{plan.cta}{plan.highlighted ? <ArrowRight size={17} weight="bold" aria-hidden="true" /> : null}</Link>
+                    </Button>
+                  </motion.div>
+                );
+              })}
             </div>
+
+            {/* Comparatif Table */}
+            {selectedPlanComparison && (
+              <Reveal className="mt-16">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="overflow-x-auto rounded-[24px] border border-neutral-200 bg-white shadow-lg"
+                >
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-neutral-200 bg-neutral-50">
+                        <th className="px-6 py-4 text-left font-bold text-neutral-900">Fonctionnalité</th>
+                        {pricingPlans.map((plan) => (
+                          <th
+                            key={plan.id}
+                            className={`px-6 py-4 text-center font-bold ${selectedPlanComparison === plan.id ? "bg-primary-50 text-primary-800" : "text-neutral-600"}`}
+                          >
+                            {plan.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Extraction unique features */}
+                      {Array.from(new Set(pricingPlans.flatMap((p) => p.features))).map((feature) => (
+                        <tr key={feature} className="border-b border-neutral-100 hover:bg-neutral-50">
+                          <td className="px-6 py-4 font-medium text-neutral-700">{feature}</td>
+                          {pricingPlans.map((plan) => (
+                            <td
+                              key={plan.id}
+                              className={`px-6 py-4 text-center ${selectedPlanComparison === plan.id ? "bg-primary-50" : ""}`}
+                            >
+                              {plan.features.includes(feature) ? (
+                                <CheckCircle size={20} className="mx-auto text-success-600" weight="fill" aria-label="Inclus" />
+                              ) : (
+                                <XCircle size={20} className="mx-auto text-neutral-300" weight="fill" aria-label="Non inclus" />
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </motion.div>
+              </Reveal>
+            )}
           </div>
         </section>
 

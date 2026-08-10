@@ -153,7 +153,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading || success}
-            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-4 text-sm transition-all placeholder:text-neutral-400 focus:outline-none focus:border-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
+            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-4 text-sm transition-all placeholder:text-neutral-400 focus:outline-none focus-visible:outline-none focus:border-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
             placeholder={AUTH_MESSAGES.placeholders.email}
           />
         </div>
@@ -177,7 +177,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             onChange={(e) => setPassword(e.target.value)}
             onBlur={() => setPasswordBlurred(true)}
             disabled={loading || success}
-            className={`h-11 w-full rounded-lg border pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:outline-none disabled:bg-neutral-100 disabled:text-neutral-500 ${
+            className={`h-11 w-full rounded-lg border pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:outline-none focus-visible:outline-none disabled:bg-neutral-100 disabled:text-neutral-500 ${
               passwordAllValid
                 ? "border-success-500"
                 : passwordShowInvalid
@@ -236,7 +236,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             disabled={loading || success}
-            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:outline-none focus:border-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
+            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:outline-none focus-visible:outline-none focus:border-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
             placeholder={AUTH_MESSAGES.placeholders.confirmPassword}
           />
           <button

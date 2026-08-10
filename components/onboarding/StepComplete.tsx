@@ -100,6 +100,7 @@ export default function StepComplete({ onFinish, loading, error, data }: StepCom
           {role === "gestionnaire" && "Votre espace gestionnaire est configuré. Accédez à vos propriétaires et à leur suivi de loyers."}
           {role === "proprietaire" && "Votre tableau de bord propriétaire est prêt. Suivez vos loyers, locataires et contrats en un coup d'œil."}
           {role === "autre" && "Votre espace est configuré et prêt à l'emploi."}
+          {/* Note: Le rôle "proprietaire" lors de l'onboarding est mappé à "individuel" dans organisations.type en base */}
         </div>
       </div>
 

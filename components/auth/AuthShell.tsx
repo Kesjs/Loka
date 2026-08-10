@@ -140,54 +140,10 @@ export default function AuthShell({
 
           {/* Section basse : Preuve sociale avec vraies photos d'avatars africains & micro-badges */}
           <div className="space-y-4 border-t border-slate-800/90 pt-6">
-            {/* Stack d'avatars africains réels & message de confiance */}
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2 shrink-0">
-                <Image
-                  src="/auth/avatar-1.png"
-                  alt="Utilisateur Loka"
-                  width={36}
-                  height={36}
-                  className="h-9 w-9 rounded-full object-cover ring-2 ring-neutral-950"
-                />
-                <Image
-                  src="/auth/avatar-2.png"
-                  alt="Utilisateur Loka"
-                  width={36}
-                  height={36}
-                  className="h-9 w-9 rounded-full object-cover ring-2 ring-neutral-950"
-                />
-                <Image
-                  src="/auth/avatar-3.png"
-                  alt="Utilisateur Loka"
-                  width={36}
-                  height={36}
-                  className="h-9 w-9 rounded-full object-cover ring-2 ring-neutral-950"
-                />
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 text-[10px] font-bold text-primary-300 ring-2 ring-neutral-950 border border-slate-700">
-                  +500
-                </div>
-              </div>
-              <p className="text-xs font-medium leading-snug text-slate-300">
-                <span className="font-bold text-white">+500 bailleurs & agences</span> à Cotonou, Calavi & Porto-Novo.
-              </p>
-            </div>
+            {/* Stack d'avatars africains réels — les chiffres peuvent être ajoutés une fois vérifiés */}
 
-            {/* Micro-badges de réassurance sobres */}
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/90 px-2.5 py-2 text-[11px] text-slate-300">
-                <ShieldCheck size={14} className="text-emerald-400 shrink-0" weight="fill" />
-                <span className="truncate">Normes ARCEP</span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/90 px-2.5 py-2 text-[11px] text-slate-300">
-                <Lightning size={14} className="text-amber-400 shrink-0" weight="fill" />
-                <span className="truncate">Quittances 1-Clic</span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/90 px-2.5 py-2 text-[11px] text-slate-300">
-                <TrendUp size={14} className="text-primary-400 shrink-0" weight="bold" />
-                <span className="truncate">99% Collectés</span>
-              </div>
-            </div>
+            {/* Micro-badges de réassurance sobres — à restaurer avec vraies données */}
+            {/* Actuellement retiré (D.3) en attente de données vérifiées de Kennedy */}
           </div>
         </div>
       </div>

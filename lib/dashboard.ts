@@ -2,39 +2,21 @@
  * lib/dashboard.ts
  * 
  * Logique de récupération des données du dashboard adapté par profil.
- * Détermine le type d'organisation et prépare les données correctes.
+ * MIGRATION C.3: Ce fichier fait maintenant appel à lib/organisation-scope.ts
+ * qui est la source unique de vérité (organisations.type ENUM).
+ * 
+ * NOTE: Les anciennes fonctions getOrganisationScope & getOrganisationType sont
+ * dépréciées. Utiliser lib/organisation-scope.ts à la place.
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getOrganisationScope as getOrgScopeFromOrgScope } from "@/lib/organisation-scope";
 
 /**
- * Type propriétaire géré (pour gestionnaire/agence)
+ * Type de profil organisation (adapté pour compatibilité)
+ * DEPRECATED: Utiliser "individuel" au lieu de "proprietaire"
  */
-export interface DashboardProprietaireGere {
-  id: string;
-  nom: string;
-  email?: string;
-  telephone?: string;
-  nbBiens: number;
-  nbLogements: number;
-  revenuMensuel: number;
-}
-
-/**
- * Type de profil organisation
- */
-export type OrganisationType = "proprietaire" | "gestionnaire" | "agence";
-
-/**
- * Scope d'organisation - détermine quelles données l'utilisateur peut voir
- */
-export interface OrganisationScope {
-  organisationType: OrganisationType;
-  organisationId: string | null;
-  userId: string;
-  proprietaireIds: string[]; // IDs des propriétaires dans le scope (user + gérés)
-  roleInterne: string; // "proprietaire", "gestionnaire", "admin"
-}
+export type OrganisationType = "individuel" | "gestionnaire" | "agence";
 
 /**
  * Données du dashboard
@@ -55,94 +37,10 @@ export interface DashboardData {
 }
 
 /**
- * Récupère le scope d'organisation de l'utilisateur
- * Détermine : type d'org, org_id, quels propriétaires sont dans le scope
- */
-export async function getOrganisationScope(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<OrganisationScope | null> {
-  try {
-    // 1. Récupérer le propriétaire pour avoir le type de profil
-    const { data: proprietaire } = await supabase
-      .from("proprietaire")
-      .select("id, profil_type, situation")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (!proprietaire) {
-      console.warn("⚠️ Propriétaire non trouvé pour user:", userId);
-      return null;
-    }
-
-    const organisationType: OrganisationType = (proprietaire.profil_type || "proprietaire") as OrganisationType;
-
-    // 2. Récupérer l'organisation de l'utilisateur
-    const { data: org } = await supabase
-      .from("organisations")
-      .select("id, type, owner_user_id")
-      .eq("owner_user_id", userId)
-      .maybeSingle();
-
-    if (!org) {
-      console.warn("⚠️ Organisation non trouvée pour user:", userId);
-      // Fallback : organisation personnelle
-      return {
-        organisationType: "proprietaire",
-        organisationId: null,
-        userId,
-        proprietaireIds: [userId],
-        roleInterne: "proprietaire",
-      };
-    }
-
-    // 3. Récupérer le rôle interne de l'utilisateur dans l'organisation
-    const { data: memberRole } = await supabase
-      .from("membres_organisation")
-      .select("role_interne")
-      .eq("organisation_id", org.id)
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    const roleInterne = memberRole?.role_interne || "proprietaire";
-
-    // 4. Déterminer le scope des propriétaires
-    // Pour "proprietaire" : juste l'utilisateur
-    // Pour "gestionnaire"/"agence" : l'utilisateur + les propriétaires gérés
-    const proprietaireIds = [userId];
-
-    if (organisationType === "gestionnaire" || organisationType === "agence") {
-      // Récupérer les propriétaires gérés
-      const { data: gerés } = await supabase
-        .from("proprietaires_geres")
-        .select("proprietaire_user_id")
-        .eq("organisation_id", org.id);
-
-      if (gerés) {
-        proprietaireIds.push(
-          ...gerés
-            .map((p: any) => p.proprietaire_user_id)
-            .filter(Boolean)
-        );
-      }
-    }
-
-    return {
-      organisationType,
-      organisationId: org.id,
-      userId,
-      proprietaireIds,
-      roleInterne,
-    };
-  } catch (error) {
-    console.error("❌ Erreur getOrganisationScope:", error);
-    return null;
-  }
-}
-
-/**
  * Récupère les données complètes pour le dashboard
  * Auto-récupère l'utilisateur depuis le contexte (Server Component)
+ * 
+ * MIGRATION C.3: Utilise maintenant getOrganisationScope de lib/organisation-scope.ts
  */
 export async function getDashboardData(): Promise<DashboardData | null> {
   try {
@@ -171,8 +69,8 @@ export async function getDashboardData(): Promise<DashboardData | null> {
       return null;
     }
 
-    // 2. Récupérer scope d'organisation
-    const scope = await getOrganisationScope(supabase, user.id);
+    // 2. Récupérer scope d'organisation depuis la source unique de vérité
+    const scope = await getOrgScopeFromOrgScope(supabase);
     if (!scope) {
       return null;
     }
@@ -247,20 +145,16 @@ export async function getDashboardData(): Promise<DashboardData | null> {
 }
 
 /**
- * Récupère juste le type de profil de l'utilisateur
+ * DEPRECATED: Cette fonction n'est plus utilisée.
+ * Utiliser getOrganisationScope de lib/organisation-scope.ts à la place.
  */
 export async function getOrganisationType(
   supabase: SupabaseClient,
   userId: string
 ): Promise<OrganisationType | null> {
   try {
-    const { data: proprietaire } = await supabase
-      .from("proprietaire")
-      .select("profil_type")
-      .eq("id", userId)
-      .maybeSingle();
-
-    return (proprietaire?.profil_type || "proprietaire") as OrganisationType;
+    const scope = await getOrgScopeFromOrgScope(supabase);
+    return scope.organisationType;
   } catch (error) {
     console.error("❌ Erreur getOrganisationType:", error);
     return null;

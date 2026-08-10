@@ -91,7 +91,27 @@ export default function TenantDashboardPage() {
           <div className="flex flex-col gap-3 shrink-0">
             {paymentSuccess ? (
               <button
-                onClick={() => alert("Téléchargement de la quittance en cours...")}
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/quittances/download", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ locataireId: "current" }),
+                    });
+                    if (response.ok) {
+                      const blob = await response.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = "quittance.pdf";
+                      a.click();
+                    } else {
+                      alert("Erreur lors du téléchargement. Contactez le support.");
+                    }
+                  } catch (error) {
+                    alert("Erreur de connexion. Vérifiez votre connexion internet.");
+                  }
+                }}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-xs font-bold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 transition-all"
               >
                 <DownloadSimple size={16} weight="bold" />
@@ -141,7 +161,25 @@ export default function TenantDashboardPage() {
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-white">{q.montant}</span>
                   <button
-                    onClick={() => alert(`Téléchargement de la quittance ${q.ref}...`)}
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(`/api/quittances/download/${q.ref}`, {
+                          method: "GET",
+                        });
+                        if (response.ok) {
+                          const blob = await response.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `quittance-${q.ref}.pdf`;
+                          a.click();
+                        } else {
+                          alert("Erreur lors du téléchargement.");
+                        }
+                      } catch (error) {
+                        alert("Erreur de connexion.");
+                      }
+                    }}
                     className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
                     title="Télécharger la quittance PDF"
                   >

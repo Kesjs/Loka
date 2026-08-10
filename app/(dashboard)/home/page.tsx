@@ -27,13 +27,13 @@ async function DashboardContent() {
           Bienvenue, {dashboard.userName}
         </h1>
         <p className="text-neutral-600">
-          {profile === "proprietaire" && "Gérez votre portefeuille immobilier"}
+          {profile === "individuel" && "Gérez votre portefeuille immobilier"}
           {profile === "gestionnaire" && "Gérez votre portefeuille de clients"}
           {profile === "agence" && "Tableau de bord de votre agence"}
         </p>
       </div>
 
-      {profile === "proprietaire" && (
+      {profile === "individuel" && (
         <DashboardIndividuel dashboard={dashboard} />
       )}
       {profile === "gestionnaire" && (

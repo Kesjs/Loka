@@ -2,6 +2,9 @@
 
 import { AgenceInfo } from "./types";
 import { Button } from "@/components/ui/button";
+import { LogoUploader } from "@/components/logos/LogoUploader";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 interface StepAgenceInfoProps {
   value: AgenceInfo | undefined;
@@ -12,6 +15,37 @@ interface StepAgenceInfoProps {
 export default function StepAgenceInfo({ value, onChange, onNext }: StepAgenceInfoProps) {
   const info = value || { nom: "", ville: "", taillePortefeuille: "1-10" };
   const isComplete = info.nom && info.ville;
+  const [organisationId, setOrganisationId] = useState<string | null>(null);
+
+  // Récupérer l'organisation ID pour l'upload logo
+  useEffect(() => {
+    const fetchOrgId = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Récupérer l'organisation associée à l'utilisateur
+          const { data: orgs } = await supabase
+            .from("organisations")
+            .select("id")
+            .eq("created_by", user.id)
+            .limit(1);
+          
+          if (orgs?.[0]) {
+            setOrganisationId(orgs[0].id);
+          } else {
+            // Sinon, utiliser l'user ID comme fallback (sera créé durant le save)
+            setOrganisationId(user.id);
+          }
+        }
+      } catch (error) {
+        console.error("Erreur récupération org ID:", error);
+      }
+    };
+    
+    fetchOrgId();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -61,6 +95,21 @@ export default function StepAgenceInfo({ value, onChange, onNext }: StepAgenceIn
             <option value="50+">50+ biens</option>
           </select>
         </div>
+
+        {/* Logo upload — C.6 */}
+        {organisationId && (
+          <div className="border-t border-neutral-200 pt-4">
+            <LogoUploader
+              organisationId={organisationId}
+              currentLogoUrl={info.logoUrl}
+              onUploadSuccess={(url) => {
+                onChange({ ...info, logoUrl: url });
+              }}
+              size="md"
+              label="Logo de votre agence (optionnel)"
+            />
+          </div>
+        )}
 
         <p className="border-t border-neutral-200 pt-3 text-xs text-neutral-500">
           <span className="text-danger-500">*</span> Champs obligatoires

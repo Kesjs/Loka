@@ -32,7 +32,21 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = pathname === "/" || pathname.startsWith("/auth");
   const isOnboardingRoute = pathname.startsWith("/onboarding");
-  const isPublicRoute = isAuthRoute;
+  
+  // Routes publiques accessibles sans authentification
+  const PUBLIC_ROUTES = [
+    "/",
+    "/contact",
+    "/a-propos",
+    "/blog",
+    "/careers",
+    "/cgu",
+    "/confidentialite",
+  ];
+  
+  const isPublicRoute = PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
 
   if (!user && !isPublicRoute) {
     return NextResponse.redirect(new URL("/", request.url));
@@ -66,5 +80,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

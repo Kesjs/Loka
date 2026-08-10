@@ -32,7 +32,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
       <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-neutral-600">Revenu mensuel</span>
-          <CurrencyCircleDollar className="w-5 h-5 text-green-600" />
+          <CurrencyCircleDollar className="w-5 h-5 text-success-600" />
         </div>
         <p className="text-2xl font-bold text-neutral-900">
           {formatCurrency(stats.revenuMensuel)}
@@ -44,12 +44,12 @@ export function StatsGrid({ stats }: StatsGridProps) {
       <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-neutral-600">Taux d'occupation</span>
-          <Percent className="w-5 h-5 text-blue-600" />
+          <Percent className="w-5 h-5 text-primary-600" />
         </div>
         <p className="text-2xl font-bold text-neutral-900">{stats.tauxOccupation}%</p>
         <div className="w-full bg-neutral-200 rounded-full h-2 mt-3">
           <div
-            className="bg-blue-600 h-2 rounded-full transition-all"
+            className="bg-primary-600 h-2 rounded-full transition-all"
             style={{ width: `${stats.tauxOccupation}%` }}
           />
         </div>
@@ -59,7 +59,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
       <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-neutral-600">Immeubles</span>
-          <Buildings className="w-5 h-5 text-orange-600" />
+          <Buildings className="w-5 h-5 text-accent-600" />
         </div>
         <p className="text-2xl font-bold text-neutral-900">{stats.nombreImmeubles}</p>
         <p className="text-xs text-neutral-500 mt-2">Dans votre portefeuille</p>
@@ -69,7 +69,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
       <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-neutral-600">Logements</span>
-          <Door className="w-5 h-5 text-purple-600" />
+          <Door className="w-5 h-5 text-neutral-600" />
         </div>
         <p className="text-2xl font-bold text-neutral-900">{stats.nombreLogements}</p>
         <p className="text-xs text-neutral-500 mt-2">Propriétés gérées</p>

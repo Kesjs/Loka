@@ -44,15 +44,12 @@ export default function LogementsPage() {
         setLoading(true);
         const supabase = createClient();
 
-        // Fetch immeubles from Supabase
-        const { data: immeublesData, error: immeublesError } = await supabase
-          .from('immeubles')
-          .select('id, nom')
-          .order('nom', { ascending: true });
-
-        if (!immeublesError && immeublesData) {
-          setImmeubles(immeublesData);
-        }
+      // Fetch immeubles via API route scoped (au lieu de requêter Supabase directement)
+      const immeublesRes = await fetch("/api/immeubles-scoped");
+      if (immeublesRes.ok) {
+        const immeublesData = await immeublesRes.json();
+        setImmeubles(immeublesData.immeubles || []);
+      }
 
         // Fetch logements with filters
         const params = new URLSearchParams();

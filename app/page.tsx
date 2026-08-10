@@ -75,6 +75,11 @@ const proofStats = [
   { id: "receipt", value: "1 clic", label: "pour la quittance" },
   { id: "benin", value: "🇧🇯", label: "pensé pour le Bénin" },
 ] as const;
+// Ces chiffres sont un exemple illustratif (portefeuille de démo), pas une
+// statistique agrégée réelle — aucune organisation n'a encore terminé
+// l'onboarding en production à ce jour. Le libellé de la section (plus bas,
+// "Ce que vous verrez, concrètement") a été choisi en conséquence : il ne
+// prétend plus être une "preuve".
 
 const timelineSteps = [
   {
@@ -106,8 +111,7 @@ const featureStories: FeatureStory[] = [
     eyebrow: "Le parcours locataire",
     title: "Le locataire paie où qu'il soit.",
     body: "Depuis son portail, il choisit MTN MoMo, Moov Money ou la carte bancaire. Vous recevez la confirmation sans appeler, vérifier ou recopier.",
-    cta: "Voir le parcours",
-    href: "#portail-locataire",
+    // Pas de CTA — c'est déjà cette section affichée (D.4 fix)
     artifact: "payment",
   },
   {
@@ -124,7 +128,7 @@ const featureStories: FeatureStory[] = [
     id: "agency",
     eyebrow: "Gérer à plusieurs",
     title: "Les agences gardent le fil.",
-    body: "Logements, commissions, reversements : une même source de vérité pour vos équipes et les propriétaires que vous accompagnez.",
+    body: "Logements et propriétaires suivis dans un même endroit, avec une vue consolidée pour vos équipes.",
     artifact: "agency",
   },
   {
@@ -157,7 +161,7 @@ const pricingPlans: PricingPlan[] = [
     priceAnnual: "79.200",
     unit: "FCFA",
     description: "Pour les propriétaires indépendants.",
-    features: ["Jusqu'à 20 logements", "Logo & en-tête personnalisés", "Relances SMS & WhatsApp", "Portail locataire actif"],
+    features: ["Jusqu'à 20 logements", "Rappels automatiques par email", "Export PDF & CSV des rapports", "Portail locataire actif"],
     cta: "Essai gratuit 14 jours",
     href: "/auth?tab=signup",
     highlighted: true,
@@ -169,7 +173,7 @@ const pricingPlans: PricingPlan[] = [
     priceAnnual: "239.200",
     unit: "FCFA",
     description: "Pour les gestionnaires et agences.",
-    features: ["Logements illimités", "Marque blanche complète", "Calcul des commissions", "Accès multi-utilisateurs"],
+    features: ["Logements illimités", "Calcul des commissions", "Accès multi-utilisateurs"],
     cta: "Parler à Loka",
     href: "/contact",
   },
@@ -194,7 +198,7 @@ const faqItems: FaqItem[] = [
   {
     id: "branding",
     question: "Puis-je utiliser mon propre logo ?",
-    answer: "Oui. Loka est une plateforme neutre : vous pouvez afficher votre marque sur vos quittances, vos documents et votre espace de gestion.",
+    answer: "C'est prévu dans notre feuille de route proche. En attendant, vos quittances portent déjà votre nom et vos coordonnées.",
   },
 ];
 
@@ -364,8 +368,8 @@ function StoryArtifact({ type }: { type: StoryArtifact }) {
           ))}
         </div>
         <div className="mt-4 flex items-center justify-between rounded-xl border border-primary-100 bg-white/70 px-4 py-3 text-xs">
-          <span className="text-neutral-500">Commissions du mois</span>
-          <span className="font-extrabold text-primary-800">8–10 % suivis</span>
+          <span className="text-neutral-500">Total portefeuille géré</span>
+          <span className="font-extrabold text-primary-800">12 logements</span>
         </div>
       </Card>
     );
@@ -679,8 +683,9 @@ export default function LandingPage() {
         <section id="preuve" aria-labelledby="proof-title" className="scroll-mt-24 border-y border-primary-100 bg-neutral-50">
           <div className="mx-auto grid max-w-[1240px] items-center gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[1.3fr_2fr] lg:px-10">
             <Reveal>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary-800">Une preuve, pas une promesse</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary-800">Ce que vous verrez, concrètement</p>
               <h2 id="proof-title" className="mt-2 max-w-xl text-2xl font-bold leading-tight tracking-[-0.045em] text-neutral-950">Vos chiffres restent visibles, vos décisions deviennent simples.</h2>
+              <p className="mt-3 max-w-xl text-xs font-semibold text-neutral-400">Exemple avec un portefeuille de 25 logements</p>
             </Reveal>
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
               {proofStats.map((stat, index) => (
@@ -798,7 +803,7 @@ export default function LandingPage() {
                   {billingPeriod === "annual" && (
                     <span className="absolute -top-2 -right-2 inline-flex items-center gap-1 rounded-full bg-success-600 px-2 py-0.5 text-[10px] font-black text-white">
                       <CheckCircle size={12} weight="fill" aria-hidden="true" />
-                      -20%
+                      4 mois offerts
                     </span>
                   )}
                 </button>
@@ -819,10 +824,9 @@ export default function LandingPage() {
                     viewport={{ once: true, amount: 0.15 }}
                     transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : index * 0.07, ease: "easeOut" }}
                     whileHover={shouldReduceMotion ? undefined : { y: -5 }}
-                    onClick={() => setSelectedPlanComparison(selectedPlanComparison === plan.id ? null : plan.id)}
-                    className={`relative flex cursor-pointer flex-col rounded-[24px] border bg-white p-6 shadow-[0_18px_50px_rgba(30,41,59,0.08)] transition-all sm:p-7 ${plan.highlighted ? "border-2 border-primary-600 shadow-[0_24px_60px_rgba(79,70,229,0.16)] lg:-mt-4 lg:mb-4" : "border-neutral-200"} ${selectedPlanComparison === plan.id ? "ring-2 ring-primary-600" : ""}`}
+                    className={`relative flex flex-col rounded-[24px] border bg-white p-6 shadow-[0_18px_50px_rgba(30,41,59,0.08)] transition-all sm:p-7 ${plan.highlighted ? "border-2 border-primary-600 shadow-[0_24px_60px_rgba(79,70,229,0.16)] lg:-mt-4 lg:mb-4" : "border-neutral-200"}`}
                   >
-                    {plan.highlighted ? <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white">Le plus choisi</span> : null}
+                    {plan.highlighted ? <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white">Recommandé</span> : null}
                     <span className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-extrabold ${plan.highlighted ? "bg-primary-50 text-primary-800" : "bg-neutral-100 text-neutral-600"}`}>{plan.name}</span>
                     <div className="mt-6">
                       <div className="flex items-baseline gap-1">
@@ -842,6 +846,17 @@ export default function LandingPage() {
                 );
               })}
             </div>
+
+            {/* Lien pour voir la comparaison (F.3) */}
+            <Reveal className="mt-8 flex justify-center">
+              <button
+                onClick={() => setSelectedPlanComparison(selectedPlanComparison ? null : "pro")}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+              >
+                {selectedPlanComparison ? "Masquer" : "Comparer les plans en détail"}
+                <ArrowRight size={16} weight="bold" aria-hidden="true" />
+              </button>
+            </Reveal>
 
             {/* Comparatif Table */}
             {selectedPlanComparison && (

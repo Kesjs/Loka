@@ -45,6 +45,7 @@ export interface AgenceInfo {
   email?: string;
   ville?: string;
   taillePortefeuille?: string;
+  logoUrl?: string; // Logo de l'agence (C.6)
 }
 
 export interface ProprietaireGere {

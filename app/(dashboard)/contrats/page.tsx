@@ -46,9 +46,9 @@ export default async function ContratsPage() {
     : { data: [] as any };
 
   // Trier les contrats par statut (C.3 Phase 5)
-  const contratsActifs = (allContrats ?? []).filter((c) => c.statut === "actif");
-  const contratsExpires = (allContrats ?? []).filter((c) => c.statut === "expire");
-  const contratsResilies = (allContrats ?? []).filter((c) => c.statut === "resilie");
+  const contratsActifs = (allContrats ?? []).filter((c: any) => c.statut === "actif");
+  const contratsExpires = (allContrats ?? []).filter((c: any) => c.statut === "expire");
+  const contratsResilies = (allContrats ?? []).filter((c: any) => c.statut === "resilie");
 
   if (!allContrats || allContrats.length === 0) {
     return (

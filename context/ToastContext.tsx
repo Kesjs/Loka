@@ -23,7 +23,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const showToast = (message: string, variant: ToastVariant) => {
     const id = Math.random().toString(36).substring(2);
-    setToasts((prev) => [...prev, { id, message, variant }]);
+    setToasts((prev) => {
+      // Un seul toast d'erreur affiché à la fois : le nouveau remplace l'ancien
+      // au lieu de s'empiler dessus (évite le spam en cas de clics répétés).
+      const withoutSameVariant = variant === "error" ? prev.filter((t) => t.variant !== "error") : prev;
+      return [...withoutSameVariant, { id, message, variant }];
+    });
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));

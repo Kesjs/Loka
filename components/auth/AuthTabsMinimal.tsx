@@ -49,31 +49,33 @@ export default function AuthTabsMinimal() {
       leftSubtitle={leftContent.subtitle}
       media={{ type: "video", src: "/auth/login.mp4", poster: "/auth/login-poster.jpg" }}
       footer={
-        <div className="text-center text-sm text-neutral-500">
-          {activeTab === "signin" ? (
-            <>
-              {AUTH_MESSAGES.hints.haveAccount}
-              <button
-                type="button"
-                onClick={() => setTab("signup")}
-                className="ml-1 font-medium text-neutral-900 hover:text-neutral-700 transition-colors underline decoration-neutral-300 underline-offset-4"
-              >
-                {AUTH_MESSAGES.hints.switchToSignUp}
-              </button>
-            </>
-          ) : (
-            <>
-              {AUTH_MESSAGES.hints.haveAccount}
-              <button
-                type="button"
-                onClick={() => setTab("signin")}
-                className="ml-1 font-medium text-neutral-900 hover:text-neutral-700 transition-colors underline decoration-neutral-300 underline-offset-4"
-              >
-                {AUTH_MESSAGES.hints.switchToSignIn}
-              </button>
-            </>
-          )}
-        </div>
+        activeTab === "forgot-password" ? undefined : (
+          <div className="text-center text-sm text-neutral-500">
+            {activeTab === "signin" ? (
+              <>
+                {AUTH_MESSAGES.hints.haveAccount}
+                <button
+                  type="button"
+                  onClick={() => setTab("signup")}
+                  className="ml-1 font-medium text-neutral-900 hover:text-neutral-700 transition-colors underline decoration-neutral-300 underline-offset-4"
+                >
+                  {AUTH_MESSAGES.hints.switchToSignUp}
+                </button>
+              </>
+            ) : (
+              <>
+                {AUTH_MESSAGES.hints.haveAccount}
+                <button
+                  type="button"
+                  onClick={() => setTab("signin")}
+                  className="ml-1 font-medium text-neutral-900 hover:text-neutral-700 transition-colors underline decoration-neutral-300 underline-offset-4"
+                >
+                  {AUTH_MESSAGES.hints.switchToSignIn}
+                </button>
+              </>
+            )}
+          </div>
+        )
       }
     >
       <AnimatePresence mode="wait">

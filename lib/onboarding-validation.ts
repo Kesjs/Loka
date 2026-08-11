@@ -317,7 +317,7 @@ export function sanitizeOnboardingData(data: OnboardingData): OnboardingData {
     proprietaireGere: data.proprietaireGere ? {
       ...data.proprietaireGere,
       nom: data.proprietaireGere.nom?.trim() || "",
-      telephone: data.proprietaireGere.telephone?.trim() || null,
+      telephone: data.proprietaireGere.telephone?.trim() || "",
     } : undefined,
   };
 }

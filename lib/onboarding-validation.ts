@@ -293,7 +293,7 @@ export function sanitizeOnboardingData(data: OnboardingData): OnboardingData {
     profil: {
       ...data.profil,
       nom: data.profil.nom?.trim() || "",
-      telephone: data.profil.telephone ? data.profil.telephone.trim() : null,
+      telephone: (data.profil.telephone?.trim() || "") as string,
     },
     bien: {
       ...data.bien,

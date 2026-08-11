@@ -150,6 +150,7 @@ export default function AuthShell({
             {rightHint && (
               <p className="mb-5 text-sm font-medium text-neutral-600">{rightHint}</p>
             )}
+            {children}
           </div>
 
           {footer && <div className="mt-8 text-neutral-500">{footer}</div>}

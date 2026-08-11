@@ -47,7 +47,9 @@ export async function saveOnboarding(
   if (propError) {
     console.error("Erreur upsert proprietaire:", propError);
     return {
-      error: "Impossible d'enregistrer votre profil. Vérifiez vos informations et réessayez.",
+      error: propError.message
+        ? `Impossible d'enregistrer votre profil : ${propError.message}`
+        : "Impossible d'enregistrer votre profil. Vérifiez vos informations et réessayez.",
     };
   }
 
@@ -84,7 +86,9 @@ export async function saveOnboarding(
   if (orgError || !org) {
     console.error("Erreur création organisation:", orgError);
     return {
-      error: "Impossible de créer votre organisation. Vérifiez les informations et réessayez.",
+      error: orgError?.message
+        ? `Impossible de créer votre organisation : ${orgError.message}`
+        : "Impossible de créer votre organisation. Vérifiez les informations et réessayez.",
     };
   }
 

@@ -35,7 +35,9 @@ export default function OnboardingPage() {
   const [finishing, setFinishing] = useState(false);
   const [finishError, setFinishError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingDraft, setPendingDraft] = useState<{ step: number; data: OnboardingData } | null>(null);
   const autoSaveFunctionRef = useRef<((step: number, data: OnboardingData) => Promise<void>) | null>(null);
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
   const stepSequence = getStepSequence(data.role, data.situation);
   const totalSteps = stepSequence.length;
@@ -47,29 +49,50 @@ export default function OnboardingPage() {
     }
   }, [totalSteps, step]);
 
-  // Charger le brouillon au montage
+  // Charger le brouillon au montage — on ne l'applique jamais silencieusement,
+  // on demande toujours à l'utilisateur s'il veut reprendre ou repartir de zéro.
   useEffect(() => {
     (async () => {
       const supabase = createClient();
+      supabaseRef.current = supabase;
       const draft = await loadOnboardingDraft(supabase);
-      
-      if (draft) {
-        setStep(draft.step);
-        setData(draft.data);
+
+      // Un brouillon "vide" (jamais avancé) ne mérite pas qu'on interrompe l'utilisateur
+      const draftIsMeaningful = draft && (draft.step > 0 || draft.data.role !== null);
+
+      if (draftIsMeaningful) {
+        setPendingDraft(draft);
       }
-      
+
       setIsLoading(false);
-      
+
       // Initialiser auto-save
       autoSaveFunctionRef.current = createAutoSaveFunction(supabase, 30000);
     })();
   }, []);
 
-  // Auto-save avec débounce
+  async function resumeDraft() {
+    if (!pendingDraft) return;
+    setStep(pendingDraft.step);
+    setData(pendingDraft.data);
+    setPendingDraft(null);
+  }
+
+  async function restartFresh() {
+    setPendingDraft(null);
+    setStep(0);
+    setData(initialOnboardingData);
+    if (supabaseRef.current) {
+      await deleteDraft(supabaseRef.current);
+    }
+  }
+
+  // Auto-save avec débounce — jamais tant que l'écran de reprise est affiché,
+  // sinon on écraserait le brouillon existant avec les données vides par défaut.
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || pendingDraft) return;
     autoSaveFunctionRef.current?.(step, data);
-  }, [step, data, isLoading]);
+  }, [step, data, isLoading, pendingDraft]);
 
   function next() {
     setStep((s) => Math.min(s + 1, totalSteps - 1));
@@ -101,10 +124,41 @@ export default function OnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="space-y-4 text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-neutral-200 border-t-primary-600 mx-auto" />
           <p className="text-neutral-600">Chargement de votre onboarding...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (pendingDraft) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white px-5">
+        <div className="w-full max-w-sm space-y-6 text-center">
+          <div className="space-y-2">
+            <h1 className="text-xl font-black text-neutral-900">Reprendre où vous en étiez ?</h1>
+            <p className="text-sm text-neutral-500">
+              Vous avez commencé votre configuration (étape {pendingDraft.step + 1}). Vous pouvez continuer ou repartir de zéro.
+            </p>
+          </div>
+          <div className="space-y-2.5">
+            <button
+              type="button"
+              onClick={resumeDraft}
+              className="w-full rounded-xl bg-primary-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-700"
+            >
+              Continuer où j&apos;en étais
+            </button>
+            <button
+              type="button"
+              onClick={restartFresh}
+              className="w-full rounded-xl border border-neutral-200 px-5 py-3 text-sm font-bold text-neutral-600 transition-colors hover:bg-neutral-50"
+            >
+              Recommencer à zéro
+            </button>
+          </div>
         </div>
       </div>
     );

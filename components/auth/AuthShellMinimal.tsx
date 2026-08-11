@@ -2,9 +2,9 @@
 
 import { ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "@phosphor-icons/react";
-import BrandLockup from "./BrandLockup";
 import AuthProgressBar from "./AuthProgressBar";
 import { AUTH_MESSAGES } from "@/lib/auth-messages";
 import { getStepContextCard } from "@/lib/auth-copy";
@@ -72,13 +72,29 @@ export default function AuthShellMinimal({
 
   return (
     <div className="flex min-h-screen bg-white md:h-screen md:flex-row md:overflow-hidden">
-      {/* Colonne gauche — formulaire 60% */}
-      <div className="flex flex-1 flex-col px-8 py-12 md:h-screen md:w-[60%] md:px-16 md:py-16 lg:px-24">
+      {/* Colonne gauche — formulaire 40% */}
+      <div className="flex flex-1 flex-col px-8 py-12 md:h-screen md:w-[40%] md:px-16 md:py-16 lg:px-24">
         <div className="w-full mx-auto md:mx-0 my-auto max-w-md">
-          {/* Logo + Header */}
-          <div className="mb-10">
-            <BrandLockup variant="on-light" size="md" showWordmark />
-          </div>
+          {/* Retour à l'accueil — animation façon Stripe */}
+          <Link
+            href="/"
+            className="group mb-10 inline-flex w-fit items-center gap-2 text-sm font-light text-neutral-500 transition-colors duration-200 hover:text-neutral-900"
+          >
+            <span className="relative flex h-4 w-4 items-center justify-center overflow-hidden">
+              <ArrowLeft
+                size={16}
+                className="absolute transition-transform duration-300 ease-out group-hover:-translate-x-5"
+              />
+              <ArrowLeft
+                size={16}
+                className="absolute translate-x-5 transition-transform duration-300 ease-out group-hover:translate-x-0"
+              />
+            </span>
+            <span className="relative">
+              Retour à l&apos;accueil
+              <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-neutral-900 transition-all duration-300 ease-out group-hover:w-full" />
+            </span>
+          </Link>
 
           {/* Texte + sous-texte — Minimalist style */}
           <motion.div
@@ -111,32 +127,27 @@ export default function AuthShellMinimal({
         </div>
       </div>
 
-      {/* Colonne droite — 40% vidéo réduite centrée */}
-      <div className="relative hidden md:flex md:w-[40%] md:h-screen md:items-center md:justify-center bg-neutral-50">
-        <div className="relative w-[80%] max-w-md aspect-[4/5] overflow-hidden rounded-2xl shadow-lg">
-          {media.type === "video" ? (
-            <video
-              src={media.src}
-              poster={media.poster}
-              className="h-full w-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-            />
-          ) : (
-            <Image
-              src={media.src}
-              alt={media.alt ?? ""}
-              fill
-              className="object-cover"
-              priority
-            />
-          )}
-          
-          {/* Subtle overlay for readability */}
-          <div className="absolute inset-0 bg-white/5" />
-        </div>
+      {/* Colonne droite — vidéo 60%, plein cadre */}
+      <div className="relative hidden md:block md:w-[60%] md:h-screen overflow-hidden bg-neutral-50">
+        {media.type === "video" ? (
+          <video
+            src={media.src}
+            poster={media.poster}
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <Image
+            src={media.src}
+            alt={media.alt ?? ""}
+            fill
+            className="object-cover"
+            priority
+          />
+        )}
       </div>
     </div>
   );

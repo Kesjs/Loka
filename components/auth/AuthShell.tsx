@@ -4,7 +4,6 @@ import { ReactNode } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Sparkle } from "@phosphor-icons/react";
-import BrandLockup from "./BrandLockup";
 import AuthProgressBar from "./AuthProgressBar";
 import { AUTH_MESSAGES } from "@/lib/auth-messages";
 import { getStepContextCard } from "@/lib/auth-copy";
@@ -79,11 +78,6 @@ export default function AuthShell({
       {/* Colonne gauche — formulaire 40% */}
       <div className="flex flex-col px-6 py-8 md:h-screen md:overflow-y-auto w-full md:w-[40%] md:px-8 md:py-10 lg:px-10">
         <div className="w-full mx-auto md:mx-0 my-auto">
-          {/* Logo + Header */}
-          <div className="mb-6 md:mb-8">
-            <BrandLockup variant="on-light" size="md" showWordmark />
-          </div>
-
           {/* Texte + sous-texte — style Claude */}
           <motion.div
             className="mb-8 space-y-2"

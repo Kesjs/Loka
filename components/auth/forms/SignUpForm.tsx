@@ -100,7 +100,6 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
       });
 
       if (authError) {
-        console.error("Supabase auth error:", authError.code, authError.message);
         setError(mapAuthError(authError.message, authError.code));
         setLoading(false);
         return;
@@ -111,8 +110,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
         router.push("/onboarding");
         router.refresh();
       }, 2000);
-    } catch (err) {
-      console.error("SignUp catch error:", err);
+    } catch {
       setError(AUTH_MESSAGES.errors.networkError);
       setLoading(false);
     }
@@ -122,9 +120,8 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {/* Erreur */}
       {error && (
-        <div className="flex items-start gap-3 rounded-lg border border-danger-100 bg-danger-50 px-4 py-3 text-sm text-danger-600 animate-[slideDown_0.3s_ease-out]">
-          <WarningCircle size={18} className="mt-0.5 shrink-0" weight="fill" />
-          <span>{error}</span>
+        <div className="rounded-xl bg-white px-4 py-3 text-sm text-red-600 shadow-sm border border-red-200/50 animate-slide-in-down">
+          {error}
         </div>
       )}
 
@@ -199,25 +196,53 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
           </button>
         </div>
         {passwordFocused && (
-          <ul className="space-y-1 pt-1">
-            {passwordCriteria.map((criterion) => (
-              <li
-                key={criterion.label}
-                className={`flex items-center gap-1.5 text-xs transition-colors ${
-                  criterion.met ? "text-success-600" : "text-neutral-400"
-                }`}
-              >
-                <span
-                  className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors ${
-                    criterion.met ? "bg-success-100" : "bg-neutral-100"
+          <div className="pt-1">
+            {/* Liste des critères — se réduit à 0 dès que tout est valide */}
+            <div
+              className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                passwordAllValid ? "grid-rows-[0fr]" : "grid-rows-[1fr]"
+              }`}
+            >
+              <ul className="space-y-1 overflow-hidden">
+                {passwordCriteria.map((criterion) => (
+                  <li
+                    key={criterion.label}
+                    className={`flex items-center gap-1.5 text-xs transition-colors ${
+                      criterion.met ? "text-success-600" : "text-neutral-400"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors ${
+                        criterion.met ? "bg-success-50" : "bg-neutral-100"
+                      }`}
+                    >
+                      {criterion.met && <Check size={9} weight="bold" className="text-success-600" />}
+                    </span>
+                    {criterion.label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Confirmation unique — prend le relais dès que tout est vert */}
+            <div
+              className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+                passwordAllValid ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+              }`}
+            >
+              <div className="overflow-hidden">
+                <div
+                  className={`flex items-center gap-1.5 text-xs font-medium text-success-600 transition-all duration-200 ease-out ${
+                    passwordAllValid ? "scale-100 opacity-100 delay-100" : "scale-90 opacity-0 delay-0"
                   }`}
                 >
-                  {criterion.met && <Check size={9} weight="bold" className="text-success-600" />}
-                </span>
-                {criterion.label}
-              </li>
-            ))}
-          </ul>
+                  <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-success-50">
+                    <Check size={9} weight="bold" className="text-success-600" />
+                  </span>
+                  Mot de passe sécurisé
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 

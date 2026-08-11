@@ -57,7 +57,8 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
       });
 
       if (authError) {
-        setError(mapAuthError(authError.message, authError.code));
+        console.error("Supabase auth error:", authError);
+        setError(mapAuthError(authError.message));
         setLoading(false);
         return;
       }
@@ -65,6 +66,7 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
       router.push("/home");
       router.refresh();
     } catch (err) {
+      console.error("SignIn catch error:", err);
       setError(AUTH_MESSAGES.errors.networkError);
       setLoading(false);
     }
@@ -74,9 +76,8 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {/* Erreur */}
       {error && (
-        <div className="flex items-start gap-3 rounded-lg border border-danger-100 bg-danger-50 px-4 py-3 text-sm text-danger-600 animate-[slideDown_0.3s_ease-out]">
-          <WarningCircle size={18} className="mt-0.5 shrink-0" weight="fill" />
-          <span>{error}</span>
+        <div className="rounded-xl bg-white px-4 py-3 text-sm text-red-600 shadow-sm border border-red-200/50 animate-slide-in-down">
+          {error}
         </div>
       )}
 
@@ -99,7 +100,7 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
-            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-4 text-sm transition-all placeholder:text-neutral-400 focus:outline-none focus-visible:outline-none focus:border-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
+            className="h-11 w-full rounded-lg bg-neutral-100 pl-10 pr-4 text-sm transition-colors placeholder:text-neutral-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
             placeholder={AUTH_MESSAGES.placeholders.email}
           />
         </div>
@@ -122,7 +123,7 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
-            className="h-11 w-full rounded-lg border border-neutral-300 pl-10 pr-10 text-sm transition-all placeholder:text-neutral-400 focus:outline-none focus-visible:outline-none focus:border-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
+            className="h-11 w-full rounded-lg bg-neutral-100 pl-10 pr-10 text-sm transition-colors placeholder:text-neutral-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500"
             placeholder={AUTH_MESSAGES.placeholders.password}
           />
           <button

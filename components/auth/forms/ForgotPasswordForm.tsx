@@ -98,9 +98,8 @@ export default function ForgotPasswordForm({ onBackToSignIn }: ForgotPasswordFor
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {/* Erreur */}
       {error && (
-        <div className="flex items-start gap-3 rounded-lg border border-danger-100 bg-danger-50 px-4 py-3 text-sm text-danger-600 animate-[slideDown_0.3s_ease-out]">
-          <WarningCircle size={18} className="mt-0.5 shrink-0" weight="fill" />
-          <span>{error}</span>
+        <div className="rounded-xl bg-white px-4 py-3 text-sm text-red-600 shadow-sm border border-red-200/50 animate-slide-in-down">
+          {error}
         </div>
       )}
 

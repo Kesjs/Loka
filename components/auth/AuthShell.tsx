@@ -83,8 +83,6 @@ export default function AuthShell({
           <div className="mb-8 md:mb-10">
             <BrandLockup variant="on-light" size="md" showWordmark />
           </div>
-            <BrandLockup variant="on-light" size="md" showWordmark />
-          </div>
 
           {/* Texte + sous-texte — style Claude */}
           <motion.div
@@ -145,8 +143,8 @@ export default function AuthShell({
             </div>
           )}
 
-          {/* Carte du formulaire — pas de border, juste le formulaire */}
-          <div className={`space-y-5 ${!showTabs && !(rightTitle || rightSubtitle) ? "" : ""}`}>
+          {/* Formulaire */}
+          <div className="space-y-5">
             {rightHint && (
               <p className="mb-5 text-sm font-medium text-neutral-600">{rightHint}</p>
             )}

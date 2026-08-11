@@ -50,7 +50,7 @@ export default function ForgotPasswordForm({ onBackToSignIn }: ForgotPasswordFor
       );
 
       if (resetError) {
-        setError(mapAuthError(resetError.message));
+        setError(mapAuthError(resetError.message, resetError.code));
         setLoading(false);
         return;
       }

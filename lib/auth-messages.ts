@@ -152,14 +152,38 @@ export const AUTH_MESSAGES = {
 
 /**
  * Mappe les erreurs Supabase vers des messages en français
+ * @param error - le message d'erreur brut renvoyé par Supabase (authError.message)
+ * @param code - le code d'erreur structuré renvoyé par Supabase (authError.code), plus fiable que le texte
  */
-export function mapAuthError(error: string | null): string {
+export function mapAuthError(error: string | null, code?: string | null): string {
+  // Le code structuré est prioritaire : il ne dépend pas de la formulation exacte du message anglais
+  if (code) {
+    const codeLower = code.toLowerCase();
+    if (codeLower === "user_already_exists") {
+      return AUTH_MESSAGES.errors.emailAlreadyExists;
+    }
+    if (codeLower === "invalid_credentials") {
+      return AUTH_MESSAGES.errors.invalidCredentials;
+    }
+    if (codeLower === "user_not_found") {
+      return AUTH_MESSAGES.errors.userNotFound;
+    }
+    if (codeLower === "over_request_rate_limit" || codeLower === "over_email_send_rate_limit") {
+      return AUTH_MESSAGES.errors.tooManyAttempts;
+    }
+  }
+
   if (!error) return AUTH_MESSAGES.errors.unknownError;
 
   const errorLower = error.toLowerCase();
 
-  // Email déjà utilisé
-  if (errorLower.includes("user already exists")) {
+  // Email déjà utilisé — Supabase renvoie "User already registered" (et parfois "already exists")
+  if (
+    errorLower.includes("user already registered") ||
+    errorLower.includes("already registered") ||
+    errorLower.includes("user already exists") ||
+    errorLower.includes("already exists")
+  ) {
     return AUTH_MESSAGES.errors.emailAlreadyExists;
   }
 

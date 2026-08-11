@@ -57,7 +57,7 @@ export default function SignInForm({ onForgotPassword }: SignInFormProps) {
       });
 
       if (authError) {
-        setError(mapAuthError(authError.message));
+        setError(mapAuthError(authError.message, authError.code));
         setLoading(false);
         return;
       }

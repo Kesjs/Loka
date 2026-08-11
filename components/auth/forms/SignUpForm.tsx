@@ -100,8 +100,8 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
       });
 
       if (authError) {
-        console.error("Supabase auth error:", authError);
-        setError(mapAuthError(authError.message));
+        console.error("Supabase auth error:", authError.code, authError.message);
+        setError(mapAuthError(authError.message, authError.code));
         setLoading(false);
         return;
       }

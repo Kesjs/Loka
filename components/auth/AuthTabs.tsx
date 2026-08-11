@@ -53,6 +53,7 @@ export default function AuthTabs() {
       showTabs
       activeTab={activeTab}
       onTabChange={setTab}
+      media={{ type: "video", src: "/auth/login.mp4", poster: "/auth/login-poster.jpg" }}
     >
       <AnimatePresence mode="wait">
         <motion.div

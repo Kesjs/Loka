@@ -6,7 +6,57 @@ export interface AuthPanelCopy {
   leftFootnote?: string;
   progressLabel: string;
   rightHint?: string;
+  visualKey?: OnboardingVisualKey;
 }
+
+/**
+ * Clé thématique de l'étape, utilisée pour choisir l'image du panneau
+ * flottant à droite (voir ONBOARDING_VISUALS plus bas). Les fichiers
+ * correspondants sont à déposer dans /public/onboarding/<clé>.jpg
+ */
+export type OnboardingVisualKey =
+  | "profil"
+  | "role"
+  | "contexte"
+  | "agence"
+  | "proprietaire"
+  | "bien"
+  | "logements"
+  | "occupation"
+  | "paiement"
+  | "termine";
+
+/**
+ * Mapping clé -> fichier image + texte alternatif.
+ * Dépose tes propres visuels dans /public/onboarding/ avec ces noms de
+ * fichiers exacts (jpg, ratio portrait recommandé ~4:5), numérotés dans
+ * l'ordre du parcours :
+ *  - img1.jpg   profil          Bienvenue / prise en main
+ *  - img2.jpg   role            Choix du rôle (propriétaire / gestionnaire / agence)
+ *  - img3.jpg   contexte        Contexte / documents de bail
+ *  - img4.jpg   agence          Agence immobilière (devanture, équipe)
+ *  - img5.jpg   proprietaire    Propriétaire géré (poignée de main, mandat)
+ *  - img6.jpg   bien            Immeuble / villa
+ *  - img7.jpg   logements       Unités / couloir de portes numérotées
+ *  - img8.jpg   occupation      État des lieux / clé dans une serrure
+ *  - img9.jpg   paiement        Encaissement / mobile money
+ *  - img10.jpg  termine         Dashboard prêt / lancement
+ */
+export const ONBOARDING_VISUALS: Record<
+  OnboardingVisualKey,
+  { src: string; alt: string }
+> = {
+  profil: { src: "/onboarding/img1.jpg", alt: "Bienvenue chez Loka" },
+  role: { src: "/onboarding/img2.jpg", alt: "Choix du rôle" },
+  contexte: { src: "/onboarding/img3.jpg", alt: "Votre contexte" },
+  agence: { src: "/onboarding/img4.jpg", alt: "Votre agence" },
+  proprietaire: { src: "/onboarding/img5.jpg", alt: "Propriétaire géré" },
+  bien: { src: "/onboarding/img6.jpg", alt: "Vos biens" },
+  logements: { src: "/onboarding/img7.jpg", alt: "Vos logements" },
+  occupation: { src: "/onboarding/img8.jpg", alt: "État des lieux" },
+  paiement: { src: "/onboarding/img9.jpg", alt: "Encaissement" },
+  termine: { src: "/onboarding/img10.jpg", alt: "C'est prêt" },
+};
 
 export interface StepContextCard {
   badge: string;
@@ -121,18 +171,21 @@ export function getOnboardingPanelCopy(
         leftSubtitle: "Ces informations apparaîtront sur vos documents officiels.",
         progressLabel: "Profil",
         rightHint: "Nom et téléphone requis pour continuer.",
+        visualKey: "profil",
       };
     case 1:
       return {
         leftTitle: "Qui êtes-vous ?",
         leftSubtitle: "Nous adaptons l'interface à votre activité.",
         progressLabel: "Rôle",
+        visualKey: "role",
       };
     case 2:
       return {
         leftTitle: "Votre contexte",
         leftSubtitle: "Pour ne vous demander que l'essentiel.",
         progressLabel: "Contexte",
+        visualKey: "contexte",
       };
     case 3:
       if (role === "agence") {
@@ -140,6 +193,7 @@ export function getOnboardingPanelCopy(
           leftTitle: "Votre agence",
           leftSubtitle: "Quelques détails pour personnaliser votre espace.",
           progressLabel: "Agence",
+          visualKey: "agence",
         };
       }
       if (role === "gestionnaire") {
@@ -147,12 +201,14 @@ export function getOnboardingPanelCopy(
           leftTitle: "Propriétaire géré",
           leftSubtitle: "Vous pourrez en ajouter d'autres plus tard.",
           progressLabel: "Propriétaire",
+          visualKey: "proprietaire",
         };
       }
       return {
         leftTitle: "Vos biens",
         leftSubtitle: "Commencez par un immeuble, le reste viendra après.",
         progressLabel: "Bien",
+        visualKey: "bien",
       };
     case 4:
       if (role === "agence") {
@@ -160,6 +216,7 @@ export function getOnboardingPanelCopy(
           leftTitle: "Propriétaire géré",
           leftSubtitle: "Premier propriétaire de votre portefeuille.",
           progressLabel: "Propriétaire",
+          visualKey: "proprietaire",
         };
       }
       return {
@@ -167,6 +224,7 @@ export function getOnboardingPanelCopy(
         leftSubtitle: "Décrivez votre premier bien immobilier.",
         progressLabel: "Bien",
         rightHint: "Vous pourrez tout modifier plus tard.",
+        visualKey: "bien",
       };
     case 5:
       if (role === "agence") {
@@ -175,6 +233,7 @@ export function getOnboardingPanelCopy(
           leftSubtitle: "Décrivez votre premier bien immobilier.",
           progressLabel: "Bien",
           rightHint: "Vous pourrez tout modifier plus tard.",
+          visualKey: "bien",
         };
       }
       return {
@@ -183,6 +242,7 @@ export function getOnboardingPanelCopy(
         progressLabel: "Logements",
         rightHint:
           "On les nomme automatiquement — vous pourrez modifier chaque nom et loyer à l'étape suivante.",
+        visualKey: "logements",
       };
     case 6:
       if (role === "agence") {
@@ -192,6 +252,7 @@ export function getOnboardingPanelCopy(
           progressLabel: "Logements",
           rightHint:
             "On les nomme automatiquement — vous pourrez modifier chaque nom et loyer à l'étape suivante.",
+          visualKey: "logements",
         };
       }
       if (!isProprietaireDebutant(role, situation)) {
@@ -200,12 +261,14 @@ export function getOnboardingPanelCopy(
           leftSubtitle: "Occupé ou vacant — modifiable à tout moment.",
           progressLabel: "Occupation",
           rightHint: "Indiquez pour chaque logement s'il est vide ou déjà loué.",
+          visualKey: "occupation",
         };
       }
       return {
         leftTitle: "C'est prêt",
         leftSubtitle: "Votre tableau de bord vous attend.",
         progressLabel: "Terminé",
+        visualKey: "termine",
       };
     case 7:
       if (role === "agence" || role === "gestionnaire") {
@@ -214,6 +277,7 @@ export function getOnboardingPanelCopy(
           leftSubtitle: "Occupé ou vacant — modifiable à tout moment.",
           progressLabel: "Occupation",
           rightHint: "Indiquez pour chaque logement s'il est vide ou déjà loué.",
+          visualKey: "occupation",
         };
       }
       if (!isProprietaireDebutant(role, situation)) {
@@ -221,12 +285,14 @@ export function getOnboardingPanelCopy(
           leftTitle: "Encaissement",
           leftSubtitle: "Comment vos locataires vous paient-ils ?",
           progressLabel: "Paiement",
+          visualKey: "paiement",
         };
       }
       return {
         leftTitle: "C'est prêt",
         leftSubtitle: "Votre tableau de bord vous attend.",
         progressLabel: "Terminé",
+        visualKey: "termine",
       };
     case 8:
       if (role === "agence") {
@@ -234,18 +300,21 @@ export function getOnboardingPanelCopy(
           leftTitle: "Encaissement",
           leftSubtitle: "Comment vos locataires vous paient-ils ?",
           progressLabel: "Paiement",
+          visualKey: "paiement",
         };
       }
       return {
         leftTitle: "C'est prêt",
         leftSubtitle: "Votre tableau de bord vous attend.",
         progressLabel: "Terminé",
+        visualKey: "termine",
       };
     default:
       return {
         leftTitle: "C'est prêt",
         leftSubtitle: "Votre tableau de bord vous attend.",
         progressLabel: "Terminé",
+        visualKey: "termine",
       };
   }
 }

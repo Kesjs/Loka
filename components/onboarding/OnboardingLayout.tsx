@@ -5,6 +5,7 @@ import AuthShell from "@/components/auth/AuthShell";
 import {
   getOnboardingPanelCopy,
   getOnboardingProgressMeta,
+  ONBOARDING_VISUALS,
 } from "@/lib/auth-copy";
 import { Role, Situation } from "./types";
 
@@ -31,6 +32,7 @@ export default function OnboardingLayout({
     totalSteps
   );
   const showBackButton = step > 0;
+  const visual = copy.visualKey ? ONBOARDING_VISUALS[copy.visualKey] : undefined;
 
   return (
     <AuthShell
@@ -42,6 +44,7 @@ export default function OnboardingLayout({
       step={step}
       role={role}
       situation={situation}
+      media={visual ? { type: "image", src: visual.src, alt: visual.alt } : undefined}
       progress={
         showProgress
           ? {

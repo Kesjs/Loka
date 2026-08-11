@@ -61,22 +61,18 @@ export default function AuthShell({
   return (
     <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row">
       {/* Panneau gauche — sticky sur desktop */}
-      <div className="relative hidden md:flex md:w-[46%] lg:w-[44%] md:sticky md:top-0 md:h-screen md:flex-shrink-0 overflow-hidden bg-gradient-to-br from-neutral-950 via-slate-900 to-primary-950 md:flex-col">
-        {/* Motif Grille Technique ultra-subtil */}
-        <div
-          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none"
-          aria-hidden
+      <div className="relative hidden md:flex md:w-[46%] lg:w-[44%] md:sticky md:top-0 md:h-screen md:flex-shrink-0 overflow-hidden md:flex-col">
+        {/* Image de fond immobilier */}
+        <Image
+          src="https://www.sporting-immobilier.fr/v2/wp-content/uploads/2017/06/AdobeStock_441937629-1.jpeg"
+          alt="Immobilier"
+          fill
+          className="object-cover"
+          priority
         />
-
-        {/* Halos Lumineux Mesh Gradient d'Arrière-Plan */}
-        <div
-          className="absolute -top-32 -left-20 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-primary-600/30 to-amber-500/20 blur-[100px] pointer-events-none"
-          aria-hidden
-        />
-        <div
-          className="absolute bottom-10 -right-20 h-[450px] w-[450px] rounded-full bg-gradient-to-bl from-emerald-500/20 to-primary-700/25 blur-[120px] pointer-events-none"
-          aria-hidden
-        />
+        
+        {/* Overlay gradient dark pour la lisibilité */}
+        <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/85 via-neutral-900/70 to-neutral-900/50 pointer-events-none" />
 
         <div className="relative z-10 flex h-full flex-col justify-between p-8 lg:p-12">
           {/* En-tête : BrandLockup & Badge Bénin */}

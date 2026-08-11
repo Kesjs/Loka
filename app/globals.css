@@ -117,7 +117,7 @@ button:focus-visible {
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline-offset: 2px;
+  outline: none;
 }
 
 /* Hover states */

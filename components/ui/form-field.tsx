@@ -33,7 +33,7 @@ export function FormField({ label, icon: IconComponent, required, error, childre
 }
 
 export const fieldInputClass =
-  "w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100";
+  "w-full rounded-2xl bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition";
 
 export const fieldInputErrorClass =
-  "w-full rounded-2xl border border-danger-400 bg-danger-50/30 px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-danger-500 focus:ring-2 focus:ring-danger-100";
+  "w-full rounded-2xl bg-danger-50/30 px-4 py-3 text-sm text-neutral-900 outline-none transition";

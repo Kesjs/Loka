@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   EnvelopeSimple,
@@ -18,22 +18,30 @@ interface ForgotPasswordFormProps {
 
 export default function ForgotPasswordFormMinimal({ onBackToSignIn }: ForgotPasswordFormProps) {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { showToast, removeToast } = useToast();
+  const errorToastId = useRef<string | null>(null);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  function clearErrorToast() {
+    if (errorToastId.current) {
+      removeToast(errorToastId.current);
+      errorToastId.current = null;
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSuccess(false);
 
     if (!email) {
-      showToast(AUTH_MESSAGES.validation.emailRequired, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.validation.emailRequired, "error");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
       return;
     }
 
@@ -46,14 +54,14 @@ export default function ForgotPasswordFormMinimal({ onBackToSignIn }: ForgotPass
       });
 
       if (authError) {
-        showToast(mapAuthError(authError.message), "error");
+        errorToastId.current = showToast(mapAuthError(authError.message), "error");
         setLoading(false);
         return;
       }
 
       setSuccess(true);
     } catch {
-      showToast(AUTH_MESSAGES.errors.networkError, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.errors.networkError, "error");
       setLoading(false);
     }
   }
@@ -83,7 +91,10 @@ export default function ForgotPasswordFormMinimal({ onBackToSignIn }: ForgotPass
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearErrorToast();
+            }}
             disabled={loading || success}
             className="w-full pl-7 pr-0 py-2 text-sm bg-transparent border-0 border-b border-neutral-300 focus:border-neutral-900 focus:outline-none focus:ring-0 transition-colors placeholder:text-neutral-400 disabled:text-neutral-500 font-light"
             placeholder={AUTH_MESSAGES.placeholders.email}

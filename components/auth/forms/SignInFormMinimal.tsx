@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Eye,
@@ -20,17 +20,25 @@ interface SignInFormProps {
 
 export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps) {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { showToast, removeToast } = useToast();
+  const errorToastId = useRef<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  function clearErrorToast() {
+    if (errorToastId.current) {
+      removeToast(errorToastId.current);
+      errorToastId.current = null;
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!email || !password) {
-      showToast(
+      errorToastId.current = showToast(
         !email && !password
           ? AUTH_MESSAGES.validation.allFieldsRequired
           : !email
@@ -42,7 +50,7 @@ export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps)
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
       return;
     }
 
@@ -57,7 +65,7 @@ export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps)
 
       if (authError) {
         console.error("Supabase auth error:", authError);
-        showToast(mapAuthError(authError.message), "error");
+        errorToastId.current = showToast(mapAuthError(authError.message), "error");
         setLoading(false);
         return;
       }
@@ -66,7 +74,7 @@ export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps)
       router.refresh();
     } catch (err) {
       console.error("SignIn catch error:", err);
-      showToast(AUTH_MESSAGES.errors.networkError, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.errors.networkError, "error");
       setLoading(false);
     }
   }
@@ -88,7 +96,10 @@ export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps)
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearErrorToast();
+            }}
             disabled={loading}
             className="w-full pl-7 pr-0 py-2 text-sm bg-transparent border-0 border-b border-neutral-300 focus:border-neutral-900 focus:outline-none focus:ring-0 transition-colors placeholder:text-neutral-400 disabled:text-neutral-500 font-light"
             placeholder={AUTH_MESSAGES.placeholders.email}
@@ -111,7 +122,10 @@ export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps)
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              clearErrorToast();
+            }}
             disabled={loading}
             className="w-full pl-7 pr-8 py-2 text-sm bg-transparent border-0 border-b border-neutral-300 focus:border-neutral-900 focus:outline-none focus:ring-0 transition-colors placeholder:text-neutral-400 disabled:text-neutral-500 font-light"
             placeholder={AUTH_MESSAGES.placeholders.password}

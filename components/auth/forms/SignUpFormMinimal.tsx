@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -25,7 +25,8 @@ interface SignUpFormProps {
 
 export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps) {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { showToast, removeToast } = useToast();
+  const errorToastId = useRef<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,6 +40,13 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
   // Email validation state
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [emailTouched, setEmailTouched] = useState(false);
+
+  function clearErrorToast() {
+    if (errorToastId.current) {
+      removeToast(errorToastId.current);
+      errorToastId.current = null;
+    }
+  }
 
   function validatePassword(pwd: string): { valid: boolean; message?: string } {
     if (pwd.length < 8) {
@@ -73,23 +81,23 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
     setSuccess(false);
 
     if (!email || !password || !confirmPassword || !fullName || !phone) {
-      showToast(AUTH_MESSAGES.validation.allFieldsRequired, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.validation.allFieldsRequired, "error");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
       return;
     }
 
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
-      showToast(passwordValidation.message || AUTH_MESSAGES.validation.passwordWeak, "error");
+      errorToastId.current = showToast(passwordValidation.message || AUTH_MESSAGES.validation.passwordWeak, "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      showToast(AUTH_MESSAGES.validation.passwordMismatch, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.validation.passwordMismatch, "error");
       return;
     }
 
@@ -110,7 +118,7 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
       });
 
       if (authError) {
-        showToast(mapAuthError(authError.message, authError.code), "error");
+        errorToastId.current = showToast(mapAuthError(authError.message, authError.code), "error");
         setLoading(false);
         return;
       }
@@ -122,7 +130,7 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
         router.refresh();
       }, 2000);
     } catch {
-      showToast(AUTH_MESSAGES.errors.networkError, "error");
+      errorToastId.current = showToast(AUTH_MESSAGES.errors.networkError, "error");
       setLoading(false);
     }
   }
@@ -145,7 +153,10 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
               type="text"
               autoComplete="name"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                clearErrorToast();
+              }}
               disabled={loading || success}
               className="w-full pl-7 pr-0 py-2 text-sm bg-transparent border-0 border-b border-neutral-300 focus:border-neutral-900 focus:outline-none focus:ring-0 transition-colors placeholder:text-neutral-400 disabled:text-neutral-500 font-light"
               placeholder="Marie Dossou"
@@ -166,7 +177,10 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
               type="tel"
               autoComplete="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                clearErrorToast();
+              }}
               disabled={loading || success}
               className="w-full pl-7 pr-0 py-2 text-sm bg-transparent border-0 border-b border-neutral-300 focus:border-neutral-900 focus:outline-none focus:ring-0 transition-colors placeholder:text-neutral-400 disabled:text-neutral-500 font-light"
               placeholder="+229 97 00 00 00"
@@ -194,6 +208,7 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
+              clearErrorToast();
               if (e.target.value.length > 0) {
                 setEmailValid(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.target.value));
               } else {
@@ -227,7 +242,10 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              clearErrorToast();
+            }}
             onBlur={() => setPasswordBlurred(true)}
             disabled={loading || success}
             className={`w-full pl-7 pr-8 py-2 text-sm bg-transparent border-0 border-b focus:outline-none focus:ring-0 transition-colors placeholder:text-neutral-400 disabled:text-neutral-500 font-light ${
@@ -249,8 +267,13 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
             {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        {passwordFocused && (
-          <div className="pt-1">
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+            passwordFocused ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="pt-1">
             <div
               className={`grid transition-[grid-template-rows] duration-300 ease-out ${
                 passwordAllValid ? "grid-rows-[0fr]" : "grid-rows-[1fr]"
@@ -299,8 +322,9 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
                 </motion.div>
               </div>
             </div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Confirmer mot de passe */}
@@ -318,7 +342,10 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
             type={showConfirmPassword ? "text" : "password"}
             autoComplete="new-password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              clearErrorToast();
+            }}
             disabled={loading || success}
             className="w-full pl-7 pr-8 py-2 text-sm bg-transparent border-0 border-b border-neutral-300 focus:border-neutral-900 focus:outline-none focus:ring-0 transition-colors placeholder:text-neutral-400 disabled:text-neutral-500 font-light"
             placeholder={AUTH_MESSAGES.placeholders.confirmPassword}

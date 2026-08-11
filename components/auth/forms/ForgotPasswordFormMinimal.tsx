@@ -6,11 +6,11 @@ import {
   EnvelopeSimple,
   CircleNotch,
   CheckCircle,
-  WarningCircle,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { mapAuthError, AUTH_MESSAGES } from "@/lib/auth-messages";
+import { useToast } from "@/context/ToastContext";
 
 interface ForgotPasswordFormProps {
   onBackToSignIn: () => void;
@@ -18,23 +18,22 @@ interface ForgotPasswordFormProps {
 
 export default function ForgotPasswordFormMinimal({ onBackToSignIn }: ForgotPasswordFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
     setSuccess(false);
 
     if (!email) {
-      setError(AUTH_MESSAGES.validation.emailRequired);
+      showToast(AUTH_MESSAGES.validation.emailRequired, "error");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError(AUTH_MESSAGES.validation.emailInvalid);
+      showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
       return;
     }
 
@@ -47,28 +46,20 @@ export default function ForgotPasswordFormMinimal({ onBackToSignIn }: ForgotPass
       });
 
       if (authError) {
-        setError(mapAuthError(authError.message));
+        showToast(mapAuthError(authError.message), "error");
         setLoading(false);
         return;
       }
 
       setSuccess(true);
     } catch {
-      setError(AUTH_MESSAGES.errors.networkError);
+      showToast(AUTH_MESSAGES.errors.networkError, "error");
       setLoading(false);
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      {/* Erreur */}
-      {error && (
-        <div className="flex items-center gap-2 text-sm text-danger-600 font-light bg-danger-50 px-3 py-2 rounded-lg">
-          <WarningCircle size={16} />
-          {error}
-        </div>
-      )}
-
       {/* Succès */}
       {success && (
         <div className="flex items-center gap-2 text-sm text-neutral-700 font-light">

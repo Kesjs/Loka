@@ -78,7 +78,7 @@ export default function AuthShellMinimal({
           {/* Retour à l'accueil — animation façon Stripe */}
           <Link
             href="/"
-            className="group mb-10 inline-flex w-fit items-center gap-2 text-sm font-light text-neutral-500 transition-colors duration-200 hover:text-neutral-900"
+            className="group mb-10 inline-flex w-fit items-center gap-2 text-sm font-light text-neutral-500 no-underline transition-colors duration-200 hover:text-neutral-900 hover:no-underline"
           >
             <span className="relative flex h-4 w-4 items-center justify-center overflow-hidden">
               <ArrowLeft

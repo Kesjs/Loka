@@ -11,13 +11,13 @@ import {
   CheckCircle,
   CircleNotch,
   Check,
-  WarningCircle,
   User,
   Phone,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { mapAuthError, AUTH_MESSAGES } from "@/lib/auth-messages";
+import { useToast } from "@/context/ToastContext";
 
 interface SignUpFormProps {
   onSwitchToSignIn: () => void;
@@ -25,6 +25,7 @@ interface SignUpFormProps {
 
 export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,7 +34,6 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   // Email validation state
@@ -70,27 +70,26 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
     setSuccess(false);
 
     if (!email || !password || !confirmPassword || !fullName || !phone) {
-      setError(AUTH_MESSAGES.validation.allFieldsRequired);
+      showToast(AUTH_MESSAGES.validation.allFieldsRequired, "error");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError(AUTH_MESSAGES.validation.emailInvalid);
+      showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
       return;
     }
 
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
-      setError(passwordValidation.message || AUTH_MESSAGES.validation.passwordWeak);
+      showToast(passwordValidation.message || AUTH_MESSAGES.validation.passwordWeak, "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError(AUTH_MESSAGES.validation.passwordMismatch);
+      showToast(AUTH_MESSAGES.validation.passwordMismatch, "error");
       return;
     }
 
@@ -111,40 +110,25 @@ export default function SignUpFormMinimal({ onSwitchToSignIn }: SignUpFormProps)
       });
 
       if (authError) {
-        setError(mapAuthError(authError.message, authError.code));
+        showToast(mapAuthError(authError.message, authError.code), "error");
         setLoading(false);
         return;
       }
 
       setSuccess(true);
+      showToast("Compte créé — redirection en cours…", "success");
       setTimeout(() => {
         router.push("/onboarding");
         router.refresh();
       }, 2000);
     } catch {
-      setError(AUTH_MESSAGES.errors.networkError);
+      showToast(AUTH_MESSAGES.errors.networkError, "error");
       setLoading(false);
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      {/* Erreur */}
-      {error && (
-        <div className="flex items-center gap-2 text-xs text-danger-600 font-light bg-danger-50 px-3 py-1.5 rounded-lg">
-          <WarningCircle size={14} />
-          {error}
-        </div>
-      )}
-
-      {/* Succès */}
-      {success && (
-        <div className="flex items-center gap-2 text-sm text-neutral-700 font-light">
-          <CheckCircle size={16} className="text-neutral-900" weight="fill" />
-          <span>Compte créé — redirection en cours…</span>
-        </div>
-      )}
-
       {/* Nom et Téléphone - Layout horizontal */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

@@ -8,11 +8,11 @@ import {
   EnvelopeSimple,
   Lock,
   CircleNotch,
-  WarningCircle,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { mapAuthError, AUTH_MESSAGES } from "@/lib/auth-messages";
+import { useToast } from "@/context/ToastContext";
 
 interface SignInFormProps {
   onForgotPassword: () => void;
@@ -20,29 +20,29 @@ interface SignInFormProps {
 
 export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
 
     if (!email || !password) {
-      setError(
+      showToast(
         !email && !password
           ? AUTH_MESSAGES.validation.allFieldsRequired
           : !email
           ? AUTH_MESSAGES.validation.emailRequired
-          : AUTH_MESSAGES.validation.passwordRequired
+          : AUTH_MESSAGES.validation.passwordRequired,
+        "error"
       );
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError(AUTH_MESSAGES.validation.emailInvalid);
+      showToast(AUTH_MESSAGES.validation.emailInvalid, "error");
       return;
     }
 
@@ -57,7 +57,7 @@ export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps)
 
       if (authError) {
         console.error("Supabase auth error:", authError);
-        setError(mapAuthError(authError.message));
+        showToast(mapAuthError(authError.message), "error");
         setLoading(false);
         return;
       }
@@ -66,21 +66,13 @@ export default function SignInFormMinimal({ onForgotPassword }: SignInFormProps)
       router.refresh();
     } catch (err) {
       console.error("SignIn catch error:", err);
-      setError(AUTH_MESSAGES.errors.networkError);
+      showToast(AUTH_MESSAGES.errors.networkError, "error");
       setLoading(false);
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      {/* Erreur */}
-      {error && (
-        <div className="flex items-center gap-2 text-sm text-danger-600 font-light bg-danger-50 px-3 py-2 rounded-lg">
-          <WarningCircle size={16} />
-          {error}
-        </div>
-      )}
-
       {/* Email */}
       <div className="space-y-2">
         <label htmlFor="signin-email" className="text-sm font-light text-neutral-700">

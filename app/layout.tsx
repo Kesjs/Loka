@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { QueryProvider } from "@/components/providers/QueryProvider"
+import { ToastProvider } from "@/context/ToastContext"
+import { Toast } from "@/components/ui/Toast"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,7 +24,10 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${inter.variable} font-sans antialiased`}>
         <QueryProvider>
-          {children}
+          <ToastProvider>
+            {children}
+            <Toast />
+          </ToastProvider>
         </QueryProvider>
       </body>
     </html>

@@ -27,6 +27,11 @@ import {
   deleteDraft,
   createAutoSaveFunction,
 } from "@/lib/onboarding-draft";
+import {
+  validateOnboardingData,
+  sanitizeOnboardingData,
+  formatValidationErrors,
+} from "@/lib/onboarding-validation";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -106,18 +111,39 @@ export default function OnboardingPage() {
     setFinishing(true);
     setFinishError("");
 
+    // 1. Validation côté client avant soumission
+    const validationResult = validateOnboardingData(data);
+    
+    if (!validationResult.valid) {
+      const errorMessage = formatValidationErrors(validationResult.errors);
+      setFinishError(errorMessage);
+      setFinishing(false);
+      
+      // Scroll vers le haut pour voir l'erreur
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    // 2. Sanitize les données avant envoi
+    const sanitizedData = sanitizeOnboardingData(data);
+
+    // 3. Sauvegarder en base de données
     const supabase = createClient();
-    const { error } = await saveOnboarding(supabase, data);
+    const { error } = await saveOnboarding(supabase, sanitizedData);
 
     if (error) {
       setFinishError(error);
       setFinishing(false);
+      
+      // Scroll vers le haut pour voir l'erreur
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    // Supprimer le brouillon après complétion réussie
+    // 4. Supprimer le brouillon après complétion réussie
     await deleteDraft(supabase);
 
+    // 5. Redirection vers le dashboard
     router.push("/home");
     router.refresh();
   }
@@ -138,7 +164,7 @@ export default function OnboardingPage() {
       <div className="flex min-h-screen items-center justify-center bg-white px-5">
         <div className="w-full max-w-sm space-y-6 text-center">
           <div className="space-y-2">
-            <h1 className="text-xl font-black text-neutral-900">Reprendre où vous en étiez ?</h1>
+            <h1 className="text-xl font-bold text-neutral-900">Reprendre où vous en étiez ?</h1>
             <p className="text-sm text-neutral-500">
               Vous avez commencé votre configuration (étape {pendingDraft.step + 1}). Vous pouvez continuer ou repartir de zéro.
             </p>

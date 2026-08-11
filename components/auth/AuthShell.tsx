@@ -75,90 +75,39 @@ export default function AuthShell({
   const stepCard = step !== undefined ? getStepContextCard(step, role, situation) : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white md:h-screen md:flex-row md:overflow-hidden">
-      {/* Colonne gauche — hero + formulaire, fond blanc, scroll interne seulement si le contenu dépasse */}
-      <div className="flex flex-1 flex-col px-5 pb-12 pt-8 md:h-screen md:overflow-y-auto md:px-10 md:pt-10 lg:px-16 xl:px-20">
-        <div className="w-full max-w-md mx-auto md:mx-0 md:max-w-lg md:my-auto md:py-8">
-          {/* En-tête : logo + badge, toujours visible (mobile et desktop) */}
-          <div className="mb-8 flex items-center justify-between md:mb-10">
+    <div className="flex min-h-screen bg-white md:h-screen md:flex-row md:overflow-hidden">
+      {/* Colonne gauche — formulaire 55% */}
+      <div className="flex flex-1 flex-col px-6 py-8 md:h-screen md:overflow-y-auto md:w-[55%] md:px-12 md:py-12 lg:px-16">
+        <div className="w-full mx-auto md:mx-0 my-auto">
+          {/* Logo + Header */}
+          <div className="mb-8 md:mb-10">
             <BrandLockup variant="on-light" size="md" showWordmark />
-            <span className="hidden items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-700 sm:inline-flex">
-              <Sparkle size={12} weight="fill" className="text-amber-500" />
-              Bénin 🇧🇯
-            </span>
+          </div>
+            <BrandLockup variant="on-light" size="md" showWordmark />
           </div>
 
-          {showBack && onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="mb-5 inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 transition-colors hover:text-neutral-900"
-            >
-              <ArrowLeft size={16} weight="bold" />
-              Retour
-            </button>
-          )}
-
-          {/* Titre hero + sous-titre */}
+          {/* Texte + sous-texte — style Claude */}
           <motion.div
-            className="space-y-2.5"
-            initial={{ opacity: 0, y: 12 }}
+            className="mb-10 space-y-3"
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
             key={leftTitle}
           >
-            <h1 className="text-3xl font-black leading-tight tracking-tight text-neutral-900 lg:text-[2.75rem]">
+            <h1 className="text-4xl font-bold tracking-tight text-neutral-900">
               {leftTitle}
             </h1>
-            <p className="text-base leading-relaxed text-neutral-500">
+            <p className="text-base text-neutral-600">
               {leftSubtitle}
             </p>
             {leftFootnote && (
-              <p className="text-xs text-neutral-400">{leftFootnote}</p>
+              <p className="text-xs text-neutral-500">{leftFootnote}</p>
             )}
           </motion.div>
 
-          {/* Carte contextuelle façon "grande boîte" premium */}
-          {stepCard && (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={stepCard.badge}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="mt-6 rounded-2xl border border-neutral-200 bg-neutral-50 p-4"
-              >
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-primary-600">
-                  {stepCard.badge}
-                </span>
-                <p className="mt-2 text-sm leading-snug text-neutral-600">{stepCard.description}</p>
-                {stepCard.highlightLabel && stepCard.highlightValue && (
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-xs font-medium text-neutral-500">{stepCard.highlightLabel}</span>
-                    <span className="rounded-md bg-white px-2.5 py-1 text-xs font-bold text-neutral-900 border border-neutral-200">
-                      {stepCard.highlightValue}
-                    </span>
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          )}
-
-          {progress && (
-            <div className="mt-6">
-              <AuthProgressBar
-                current={progress.current}
-                total={progress.total}
-                label={progress.label}
-                percent={progress.percent}
-              />
-            </div>
-          )}
-
           {/* Onglets connexion/inscription */}
           {showTabs && activeTab && onTabChange && (
-            <div className="mb-6 mt-7 flex gap-2 border-b border-neutral-200">
+            <div className="mb-8 mt-8 flex gap-6 border-b border-neutral-200">
               {[
                 { id: "signin", label: AUTH_MESSAGES.navigation.signIn },
                 { id: "signup", label: AUTH_MESSAGES.navigation.signUp },
@@ -166,7 +115,7 @@ export default function AuthShell({
                 <button
                   key={tab.id}
                   onClick={() => onTabChange(tab.id as AuthTab)}
-                  className={`relative px-4 py-3 text-base font-bold transition-colors ${
+                  className={`relative px-1 py-3 text-sm font-bold transition-colors ${
                     activeTab === tab.id
                       ? "text-neutral-900"
                       : "text-neutral-400 hover:text-neutral-600"
@@ -176,7 +125,7 @@ export default function AuthShell({
                   {activeTab === tab.id && (
                     <motion.div
                       layoutId="tabUnderline"
-                      className="absolute bottom-0 left-4 right-4 h-0.5 bg-primary-500"
+                      className="absolute bottom-0 left-1 right-1 h-1 bg-primary-600 rounded-t"
                       transition={{ duration: 0.3 }}
                     />
                   )}
@@ -188,7 +137,7 @@ export default function AuthShell({
           {(rightTitle || rightSubtitle) && !showTabs && (
             <div className="mb-6 mt-7">
               {rightTitle && (
-                <h2 className="text-2xl font-black tracking-tight text-neutral-900">{rightTitle}</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-neutral-900">{rightTitle}</h2>
               )}
               {rightSubtitle && (
                 <p className="mt-1.5 text-sm text-neutral-500">{rightSubtitle}</p>
@@ -196,21 +145,20 @@ export default function AuthShell({
             </div>
           )}
 
-          {/* Carte du formulaire */}
-          <div className={`rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8 ${!showTabs && !(rightTitle || rightSubtitle) ? "mt-7" : ""}`}>
+          {/* Carte du formulaire — pas de border, juste le formulaire */}
+          <div className={`space-y-5 ${!showTabs && !(rightTitle || rightSubtitle) ? "" : ""}`}>
             {rightHint && (
               <p className="mb-5 text-sm font-medium text-neutral-600">{rightHint}</p>
             )}
-            {children}
           </div>
 
-          {footer && <div className="mt-6 text-neutral-500">{footer}</div>}
+          {footer && <div className="mt-8 text-neutral-500">{footer}</div>}
         </div>
       </div>
 
-      {/* Colonne droite — média flottant, isolé, sans texte ni overlay */}
-      <div className="relative hidden md:flex md:w-[46%] lg:w-[44%] md:h-screen md:flex-shrink-0 md:items-center md:justify-center bg-neutral-50 p-6 lg:p-10">
-        <div className="relative h-full w-full overflow-hidden rounded-[2rem] shadow-2xl ring-1 ring-neutral-200">
+      {/* Colonne droite — 45% vidéo/image avec radius et shadow */}
+      <div className="relative hidden md:flex md:w-[45%] md:h-screen md:items-center md:justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 p-8">
+        <div className="relative h-full w-full max-h-[600px] md:max-h-full overflow-hidden rounded-3xl shadow-2xl ring-1 ring-neutral-200/50">
           {media.type === "video" ? (
             <video
               src={media.src}

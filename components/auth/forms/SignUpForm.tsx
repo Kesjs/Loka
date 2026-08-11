@@ -117,7 +117,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {/* Erreur */}
       {error && (
         <div className="rounded-xl bg-white px-4 py-3 text-sm text-red-600 shadow-sm border border-red-200/50 animate-slide-in-down">
@@ -136,7 +136,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
       )}
 
       {/* Email */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <label htmlFor="signup-email" className="text-sm font-medium text-neutral-700">
           {AUTH_MESSAGES.labels.email}
         </label>
@@ -159,7 +159,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
       </div>
 
       {/* Mot de passe */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <label htmlFor="signup-password" className="text-sm font-medium text-neutral-700">
           {AUTH_MESSAGES.labels.password}
         </label>
@@ -247,7 +247,7 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
       </div>
 
       {/* Confirmer mot de passe */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <label htmlFor="signup-confirm" className="text-sm font-medium text-neutral-700">
           {AUTH_MESSAGES.labels.confirmPassword}
         </label>

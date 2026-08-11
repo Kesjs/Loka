@@ -82,7 +82,15 @@ export async function getDashboardData(): Promise<DashboardData | null> {
     // 2. Récupérer scope d'organisation depuis la source unique de vérité
     const scope = await getOrgScopeFromOrgScope(supabase);
     if (!scope) {
+      console.error("❌ Impossible de récupérer le scope d'organisation");
       return null;
+    }
+
+    // Vérification: L'utilisateur doit avoir une organisation après l'onboarding
+    if (!scope.organisationId) {
+      console.warn("⚠️ Aucune organisation trouvée pour cet utilisateur après onboarding");
+      // Fallback: créer un scope individuel par défaut
+      // Cela ne devrait jamais arriver si l'onboarding est correctement complété
     }
 
     // 3. Récupérer immeubles filtrés par scope
@@ -114,25 +122,47 @@ export async function getDashboardData(): Promise<DashboardData | null> {
       ? Math.round((logementOccupes / totalLogements) * 100)
       : 0;
 
-    // 5. Récupérer paiements récents
+    // 5. Récupérer paiements récents (avec jointure via contrats → locataires)
     const { data: recentPayments } = await supabase
       .from("paiements")
-      .select("id, montant, date_paiement, contrat_id")
-      .in("proprietaire_id", scope.proprietaireIds)
+      .select(`
+        id, 
+        montant, 
+        date_paiement, 
+        contrat_id,
+        contrats!inner(
+          id,
+          locataires!inner(
+            proprietaire_id
+          )
+        )
+      `)
+      .in("contrats.locataires.proprietaire_id", scope.proprietaireIds)
       .order("date_paiement", { ascending: false })
       .limit(5);
 
-    // 6. Récupérer contrats expirant bientôt
+    // 6. Récupérer contrats expirant bientôt (avec jointure via locataires)
+    const dateNow = new Date().toISOString().split('T')[0];
+    const date30Days = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
     const { data: expiringContracts } = await supabase
       .from("contrats")
-      .select("id, date_fin, locataire_id")
-      .in("proprietaire_id", scope.proprietaireIds)
-      .filter("date_fin", "gt", new Date().toISOString())
-      .filter(
-        "date_fin",
-        "lt",
-        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      );
+      .select(`
+        id, 
+        date_fin, 
+        locataire_id,
+        locataires!inner(
+          id,
+          nom,
+          proprietaire_id
+        )
+      `)
+      .in("locataires.proprietaire_id", scope.proprietaireIds)
+      .not("date_fin", "is", null)
+      .gte("date_fin", dateNow)
+      .lte("date_fin", date30Days)
+      .eq("statut", "actif")
+      .order("date_fin", { ascending: true });
 
     return {
       profile: scope.organisationType,

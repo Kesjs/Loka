@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import OnboardingLayout from "@/components/onboarding/OnboardingLayout";
-import StepWelcome from "@/components/onboarding/StepWelcome";
 import StepRole from "@/components/onboarding/StepRole";
 import StepSituation from "@/components/onboarding/StepSituation";
 import StepAgenceInfo from "@/components/onboarding/StepAgenceInfo";
@@ -67,6 +66,19 @@ export default function OnboardingPage() {
 
       if (draftIsMeaningful) {
         setPendingDraft(draft);
+      }
+
+      // Récupérer les infos utilisateur depuis Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setData((d) => ({
+          ...d,
+          profil: {
+            nom: user.user_metadata?.full_name || user.email?.split("@")[0] || "",
+            telephone: user.user_metadata?.phone || "",
+            email: user.email || "",
+          },
+        }));
       }
 
       setIsLoading(false);
@@ -144,7 +156,7 @@ export default function OnboardingPage() {
     await deleteDraft(supabase);
 
     // 5. Redirection vers le dashboard
-    router.push("/home");
+    router.push("/dashboard/home");
     router.refresh();
   }
 
@@ -190,19 +202,10 @@ export default function OnboardingPage() {
     );
   }
 
-  const currentStepType: StepType = stepSequence[step] || "welcome";
+  const currentStepType: StepType = stepSequence[step] || "role";
 
   function renderStep() {
     switch (currentStepType) {
-      case "welcome":
-        return (
-          <StepWelcome
-            value={data.profil}
-            onChange={(v) => setData((d) => ({ ...d, profil: v }))}
-            onNext={next}
-          />
-        );
-
       case "role":
         return (
           <StepRole

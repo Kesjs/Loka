@@ -72,9 +72,11 @@ export default function StepRole({ value, onChange, onNext }: StepRoleProps) {
         })}
       </div>
 
-      <Button onClick={onNext} disabled={!value} className="w-full">
-        Continuer
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button onClick={onNext} disabled={!value} className="flex-1">
+          Continuer
+        </Button>
+      </div>
     </div>
   );
 }

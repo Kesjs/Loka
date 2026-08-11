@@ -31,8 +31,8 @@ export interface LogementData {
   nom: string;
   loyer?: string;
   occupe: boolean;
-  locataireNom?: string;
-  locataireTelephone?: string;
+  locataireNom?: string | null;
+  locataireTelephone?: string | null;
   dateDebut?: string;
   dateFin?: string;
 }
@@ -43,7 +43,7 @@ export interface AgenceInfo {
   nom: string;
   telephone?: string;
   email?: string;
-  ville?: string;
+  ville?: string | null;
   taillePortefeuille?: string;
   logoUrl?: string; // Logo de l'agence (C.6)
 }
@@ -70,10 +70,10 @@ export interface OnboardingData {
 
   bien: {
     nom: string;
-    adresse: string;
-    ville: string;
-    quartier: string;
-    repere: string;
+    adresse: string | null;
+    ville: string | null;
+    quartier: string | null;
+    repere: string | null;
     type: TypeBien | null;
     typeLocation: TypeLocation | null;
   };
@@ -98,10 +98,10 @@ export const initialOnboardingData: OnboardingData = {
   situation: null,
   bien: {
     nom: "",
-    adresse: "",
-    ville: "",
-    quartier: "",
-    repere: "",
+    adresse: null,
+    ville: null,
+    quartier: null,
+    repere: null,
     type: null,
     typeLocation: null,
   },
@@ -136,7 +136,7 @@ export function getStepSequence(
   role: Role | null,
   situation: Situation | null
 ): StepType[] {
-  const steps: StepType[] = ["welcome", "role", "situation"];
+  const steps: StepType[] = ["role", "situation"];
 
   if (!role || !situation) return steps;
 

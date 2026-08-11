@@ -1,6 +1,8 @@
 "use client";
 
 import { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { SignOut } from "@phosphor-icons/react";
 import AuthShell from "@/components/auth/AuthShell";
 import {
   getOnboardingPanelCopy,
@@ -8,6 +10,7 @@ import {
   ONBOARDING_VISUALS,
 } from "@/lib/auth-copy";
 import { Role, Situation } from "./types";
+import { createClient } from "@/lib/supabase/client";
 
 interface OnboardingLayoutProps {
   children: ReactNode;
@@ -26,6 +29,15 @@ export default function OnboardingLayout({
   situation,
   onPrev,
 }: OnboardingLayoutProps) {
+  const router = useRouter();
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth");
+    router.refresh();
+  }
+
   const copy = getOnboardingPanelCopy(step, role, situation);
   const { showProgress, current, total, percent } = getOnboardingProgressMeta(
     step,
@@ -55,6 +67,24 @@ export default function OnboardingLayout({
             }
           : undefined
       }
+      footer={step === 0 ? (
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-400 transition-colors hover:text-neutral-600"
+        >
+          <SignOut size={14} />
+          Annuler et quitter
+        </button>
+      ) : showBackButton && onPrev ? (
+        <button
+          type="button"
+          onClick={onPrev}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors hover:text-neutral-600"
+        >
+          Retour
+        </button>
+      ) : undefined}
     >
       {children}
     </AuthShell>

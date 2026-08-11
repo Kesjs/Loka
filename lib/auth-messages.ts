@@ -21,12 +21,12 @@ export const AUTH_MESSAGES = {
   leftContent: {
     signIn: {
       title: "Bienvenue",
-      subtitle: "Connectez-vous à votre compte pour gérer vos biens immobiliers.",
+      subtitle: "Accédez à votre espace",
       footnote: "Vous n'avez pas de compte ? Créez-en un en quelques minutes.",
     },
     signUp: {
-      title: "Créez votre compte",
-      subtitle: "Créez votre compte et commencez à gérer vos biens immobiliers dès aujourd'hui.",
+      title: "Créer un compte",
+      subtitle: "Simplifiez votre gestion locative",
       footnote: "Vous avez déjà un compte ? Connectez-vous directement.",
     },
     forgotPassword: {

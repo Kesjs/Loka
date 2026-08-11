@@ -5,19 +5,19 @@ import { Button } from "@/components/ui/button";
 interface StepPropertyProps {
   value: {
     nom: string;
-    adresse: string;
-    ville: string;
-    quartier: string;
-    repere: string;
+    adresse: string | null;
+    ville: string | null;
+    quartier: string | null;
+    repere: string | null;
     type: TypeBien | null;
     typeLocation: TypeLocation | null;
   };
   onChange: (v: {
     nom: string;
-    adresse: string;
-    ville: string;
-    quartier: string;
-    repere: string;
+    adresse: string | null;
+    ville: string | null;
+    quartier: string | null;
+    repere: string | null;
     type: TypeBien | null;
     typeLocation: TypeLocation | null;
   }) => void;
@@ -35,7 +35,7 @@ const types: { value: TypeBien; label: string; icon: typeof House }[] = [
 export default function StepProperty({ value, onChange, onNext }: StepPropertyProps) {
   const isValid = value.nom.trim() !== "" && value.type !== null;
 
-  function handleChange(field: string, val: string) {
+  function handleChange(field: string, val: string | TypeLocation | null) {
     onChange({ ...value, [field]: val });
   }
 
@@ -105,7 +105,7 @@ export default function StepProperty({ value, onChange, onNext }: StepPropertyPr
           </label>
           <input
             type="text"
-            value={value.ville}
+            value={value.ville ?? ""}
             onChange={(e) => handleChange("ville", e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ex : Cotonou"
@@ -118,7 +118,7 @@ export default function StepProperty({ value, onChange, onNext }: StepPropertyPr
           <label className="text-sm font-medium text-neutral-700">Quartier</label>
           <input
             type="text"
-            value={value.quartier}
+            value={value.quartier ?? ""}
             onChange={(e) => handleChange("quartier", e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ex : Fidjrossè"
@@ -133,7 +133,7 @@ export default function StepProperty({ value, onChange, onNext }: StepPropertyPr
           </label>
           <input
             type="text"
-            value={value.repere}
+            value={value.repere ?? ""}
             onChange={(e) => handleChange("repere", e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ex : À côté de la pharmacie du Rond-point"
@@ -148,7 +148,7 @@ export default function StepProperty({ value, onChange, onNext }: StepPropertyPr
           </label>
           <input
             type="text"
-            value={value.adresse}
+            value={value.adresse ?? ""}
             onChange={(e) => handleChange("adresse", e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ex : 123 rue de Morès, Cotonou"

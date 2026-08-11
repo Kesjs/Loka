@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Buildings, FileText, House, List, MagnifyingGlass, Sparkle, Users } from "@phosphor-icons/react";
+import { Buildings, FileText, House, List, MagnifyingGlass, Sparkle, Users, Buildings as AgencyIcon, User as IndividualIcon, Briefcase as ManagerIcon } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 import UserMenu from "@/components/layout/UserMenu";
 import { AlertBell } from "@/components/alerts";
 import { flatNavItems } from "@/components/layout/nav-items";
+import { useOrganisationInfo } from "@/lib/hooks/useOrganisationType";
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -19,6 +20,15 @@ export default function Navbar({ onMenuClick, sidebarOpen = true }: NavbarProps)
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const { organisationType } = useOrganisationInfo();
+
+  const roleBadgeConfig = {
+    individuel: { label: "Individuel", icon: IndividualIcon, color: "bg-primary-100 text-primary-700 border-primary-200" },
+    gestionnaire: { label: "Gestionnaire", icon: ManagerIcon, color: "bg-blue-100 text-blue-700 border-blue-200" },
+    agence: { label: "Agence", icon: AgencyIcon, color: "bg-purple-100 text-purple-700 border-purple-200" },
+  };
+
+  const currentRole = roleBadgeConfig[organisationType as keyof typeof roleBadgeConfig] || roleBadgeConfig.individuel;
 
   const suggestions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -56,11 +66,15 @@ export default function Navbar({ onMenuClick, sidebarOpen = true }: NavbarProps)
           </motion.div>
         </motion.button>
 
-        {/* Page Title */}
-        <div className="hidden sm:block">
+        {/* Page Title + Role Badge */}
+        <div className="hidden sm:flex items-center gap-3">
           <h1 className="text-lg font-semibold text-neutral-900">
             Tableau de bord
           </h1>
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${currentRole.color}`}>
+            <currentRole.icon size={12} weight="fill" />
+            <span>{currentRole.label}</span>
+          </div>
         </div>
       </div>
 

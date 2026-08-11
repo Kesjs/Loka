@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import AuthTabs from "@/components/auth/AuthTabs";
+import AuthTabsMinimal from "@/components/auth/AuthTabsMinimal";
 
 export const metadata = {
   title: "Connexion ou création de compte — Loka",
@@ -8,7 +8,7 @@ export const metadata = {
 export default function AuthPage() {
   return (
     <Suspense fallback={null}>
-      <AuthTabs />
+      <AuthTabsMinimal />
     </Suspense>
   );
 }

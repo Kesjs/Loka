@@ -15,7 +15,6 @@ export interface AuthPanelCopy {
  * correspondants sont à déposer dans /public/onboarding/<clé>.jpg
  */
 export type OnboardingVisualKey =
-  | "profil"
   | "role"
   | "contexte"
   | "agence"
@@ -46,7 +45,6 @@ export const ONBOARDING_VISUALS: Record<
   OnboardingVisualKey,
   { src: string; alt: string }
 > = {
-  profil: { src: "/onboarding/img1.jpg", alt: "Bienvenue chez Loka" },
   role: { src: "/onboarding/img2.jpg", alt: "Choix du rôle" },
   contexte: { src: "/onboarding/img3.jpg", alt: "Votre contexte" },
   agence: { src: "/onboarding/img4.jpg", alt: "Votre agence" },
@@ -167,27 +165,19 @@ export function getOnboardingPanelCopy(
   switch (step) {
     case 0:
       return {
-        leftTitle: "Bienvenue chez Loka",
-        leftSubtitle: "Ces informations apparaîtront sur vos documents officiels.",
-        progressLabel: "Profil",
-        rightHint: "Nom et téléphone requis pour continuer.",
-        visualKey: "profil",
-      };
-    case 1:
-      return {
         leftTitle: "Qui êtes-vous ?",
         leftSubtitle: "Nous adaptons l'interface à votre activité.",
         progressLabel: "Rôle",
         visualKey: "role",
       };
-    case 2:
+    case 1:
       return {
         leftTitle: "Votre contexte",
         leftSubtitle: "Pour ne vous demander que l'essentiel.",
         progressLabel: "Contexte",
         visualKey: "contexte",
       };
-    case 3:
+    case 2:
       if (role === "agence") {
         return {
           leftTitle: "Votre agence",
@@ -210,7 +200,7 @@ export function getOnboardingPanelCopy(
         progressLabel: "Bien",
         visualKey: "bien",
       };
-    case 4:
+    case 3:
       if (role === "agence") {
         return {
           leftTitle: "Propriétaire géré",
@@ -226,7 +216,7 @@ export function getOnboardingPanelCopy(
         rightHint: "Vous pourrez tout modifier plus tard.",
         visualKey: "bien",
       };
-    case 5:
+    case 4:
       if (role === "agence") {
         return {
           leftTitle: "Vos biens",
@@ -244,7 +234,7 @@ export function getOnboardingPanelCopy(
           "On les nomme automatiquement — vous pourrez modifier chaque nom et loyer à l'étape suivante.",
         visualKey: "logements",
       };
-    case 6:
+    case 5:
       if (role === "agence") {
         return {
           leftTitle: "Vos logements",
@@ -270,7 +260,7 @@ export function getOnboardingPanelCopy(
         progressLabel: "Terminé",
         visualKey: "termine",
       };
-    case 7:
+    case 6:
       if (role === "agence" || role === "gestionnaire") {
         return {
           leftTitle: "État des lieux",
@@ -294,7 +284,7 @@ export function getOnboardingPanelCopy(
         progressLabel: "Terminé",
         visualKey: "termine",
       };
-    case 8:
+    case 7:
       if (role === "agence") {
         return {
           leftTitle: "Encaissement",

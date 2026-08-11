@@ -69,7 +69,7 @@ export default function StepAgenceInfo({ value, onChange, onNext }: StepAgenceIn
           </label>
           <input
             type="text"
-            value={info.ville}
+            value={info.ville ?? ""}
             onChange={(e) => onChange({ ...info, ville: e.target.value })}
             className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Ex : Cotonou"

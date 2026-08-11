@@ -55,8 +55,8 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user) {
-    if (isAuthRoute && pathname !== "/onboarding" && pathname !== "/home") {
-      return NextResponse.redirect(new URL("/home", request.url));
+    if (isAuthRoute && pathname !== "/onboarding" && pathname !== "/dashboard/home") {
+      return NextResponse.redirect(new URL("/dashboard/home", request.url));
     }
 
     // On ne connaît le statut d'onboarding qu'une fois connecté : on le
@@ -74,7 +74,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (onboardingComplete && isOnboardingRoute) {
-      return NextResponse.redirect(new URL("/home", request.url));
+      return NextResponse.redirect(new URL("/dashboard/home", request.url));
     }
   }
 

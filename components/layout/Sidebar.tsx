@@ -127,18 +127,18 @@ export default function Sidebar({ open, onToggleOpen }: SidebarProps) {
                   title={collapsed ? label : undefined}
                   className={`group relative flex items-center gap-3 rounded-md text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-gradient-to-r from-primary-500/20 to-primary-500/10 text-primary-400 shadow-lg shadow-primary-500/20"
+                      ? "bg-gradient-to-r from-primary-500/20 to-primary-500/10 text-slate-100 shadow-lg shadow-primary-500/20"
                       : "text-slate-300 hover:bg-slate-800 hover:text-slate-100"
                   } ${
-                    collapsed 
-                      ? "justify-center px-2 py-2.5 w-full" 
+                    collapsed
+                      ? "justify-center px-2 py-2.5 w-full"
                       : "px-3 py-2.5"
                   }`}
                 >
                   <motion.div
                     animate={{ scale: isActive ? 1.1 : 1 }}
                     transition={{ duration: 0.2 }}
-                    className="shrink-0"
+                    className={`shrink-0 ${isActive ? "text-primary-400" : "text-slate-400"}`}
                   >
                     <Icon
                       size={18}

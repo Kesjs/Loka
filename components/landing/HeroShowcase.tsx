@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
 import {
   Bell,
   Briefcase,
@@ -104,13 +105,51 @@ const payments = [
 
 export default function HeroShowcase() {
   const shouldReduceMotion = useReducedMotion();
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Tilt 3D léger au mouvement de la souris — desktop uniquement, jamais
+  // si l'utilisateur a demandé moins d'animation.
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [5, -5]), {
+    stiffness: 220,
+    damping: 22,
+  });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-6, 6]), {
+    stiffness: 220,
+    damping: 22,
+  });
+
+  function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    if (shouldReduceMotion || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    mouseX.set((event.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((event.clientY - rect.top) / rect.height - 0.5);
+  }
+
+  function handleMouseLeave() {
+    mouseX.set(0);
+    mouseY.set(0);
+  }
 
   return (
     <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.65, ease: "easeOut" }}
-      className="relative flex w-full overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-[0_28px_80px_rgba(30,41,59,0.14)]"
+      style={
+        shouldReduceMotion
+          ? undefined
+          : {
+              rotateX,
+              rotateY,
+              transformPerspective: 1400,
+            }
+      }
+      className="relative flex w-full overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-[0_28px_80px_rgba(30,41,59,0.14)] [transform-style:preserve-3d] will-change-transform"
     >
       {/* Sidebar — reproduction fidèle de components/layout/Sidebar.tsx (fond ardoise, pas la palette claire de la landing) */}
       <aside className="hidden w-[210px] shrink-0 flex-col bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 sm:flex">

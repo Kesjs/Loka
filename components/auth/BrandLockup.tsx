@@ -37,7 +37,7 @@ export default function BrandLockup({
       >
         <Image
           src="/logo.jpg"
-          alt="Loka"
+          alt="Lokka"
           width={dims.image}
           height={dims.image}
           className="rounded-md object-contain"
@@ -52,7 +52,7 @@ export default function BrandLockup({
             onDark ? "text-white" : "text-neutral-900"
           )}
         >
-          Loka
+          Lokka
         </span>
       )}
     </div>

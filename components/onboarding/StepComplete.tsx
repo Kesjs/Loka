@@ -100,7 +100,7 @@ export default function StepComplete({ onFinish, loading, error, data }: StepCom
               {nom ? `🎉 Bravo, ${nom.split(" ")[0]} !` : "🎉 Configuration terminée !"}
             </h2>
             <p className="text-base text-neutral-600 max-w-md">
-              Votre espace Loka est configuré et prêt à vous accompagner dans la gestion de votre patrimoine immobilier.
+              Votre espace Lokka est configuré et prêt à vous accompagner dans la gestion de votre patrimoine immobilier.
             </p>
           </div>
         </div>

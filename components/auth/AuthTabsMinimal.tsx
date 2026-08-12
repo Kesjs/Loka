@@ -38,9 +38,9 @@ export default function AuthTabsMinimal() {
   const leftContent = AUTH_MESSAGES.leftContent[contentKey];
 
   const tabVariants = {
-    enter: { opacity: 0, x: 20 },
+    enter: { opacity: 0, x: 12 },
     center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
+    exit: { opacity: 0, x: -12 },
   };
 
   return (
@@ -53,7 +53,7 @@ export default function AuthTabsMinimal() {
           <div className="text-center text-sm text-neutral-500">
             {activeTab === "signin" ? (
               <>
-                {AUTH_MESSAGES.hints.haveAccount}
+                {AUTH_MESSAGES.hints.noAccount}
                 <button
                   type="button"
                   onClick={() => setTab("signup")}
@@ -78,14 +78,14 @@ export default function AuthTabsMinimal() {
         )
       }
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={activeTab}
           variants={tabVariants}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
         >
           {activeTab === "signin" && (
             <SignInFormMinimal onForgotPassword={() => setActiveTab("forgot-password")} />

@@ -12,7 +12,7 @@ export default function TenantLayout({ children }: { children: ReactNode }) {
               <Buildings size={20} weight="duotone" />
             </div>
             <div className="leading-tight">
-              <span className="block text-base font-black text-white">Loka</span>
+              <span className="block text-base font-black text-white">Lokka</span>
               <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                 Espace Locataire
               </span>

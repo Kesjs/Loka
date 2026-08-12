@@ -10,7 +10,7 @@ export default function BlogPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 border border-primary-200 text-primary-600 font-bold">
               <Buildings size={22} weight="duotone" />
             </div>
-            <span className="text-lg font-bold text-neutral-900">Loka</span>
+            <span className="text-lg font-bold text-neutral-900">Lokka</span>
           </Link>
           <Link href="/" className="inline-flex items-center gap-2 text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
             <ArrowLeft size={14} /> Retour à l'accueil
@@ -22,7 +22,7 @@ export default function BlogPage() {
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 border border-primary-200 text-primary-600">
           <Newspaper size={26} weight="duotone" />
         </div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary-600">Le blog Loka</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary-600">Le blog Lokka</p>
         <h1 className="mt-3 text-2xl font-bold text-neutral-900 sm:text-3xl">On prépare nos premiers articles.</h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-neutral-600">
           Bientôt ici : des guides pratiques sur la gestion locative au Bénin, l'encaissement Mobile Money et les quittances conformes. Rien n'est publié pour l'instant — on préfère ne rien mettre en ligne plutôt que du contenu bâclé.

@@ -41,9 +41,9 @@ export default function AuthTabs() {
 
   // Variant d'animation pour les onglets
   const tabVariants = {
-    enter: { opacity: 0, x: 20 },
+    enter: { opacity: 0, x: 12 },
     center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
+    exit: { opacity: 0, x: -12 },
   };
 
   return (
@@ -55,14 +55,14 @@ export default function AuthTabs() {
       onTabChange={setTab}
       media={{ type: "video", src: "/auth/login.mp4", poster: "/auth/login-poster.jpg" }}
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={activeTab}
           variants={tabVariants}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
         >
           {activeTab === "signin" && (
             <SignInForm onForgotPassword={() => setActiveTab("forgot-password")} />

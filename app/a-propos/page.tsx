@@ -10,7 +10,7 @@ export default function AProposPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 border border-primary-200 text-primary-600 font-bold">
               <Buildings size={22} weight="duotone" />
             </div>
-            <span className="text-lg font-bold text-neutral-900">Loka</span>
+            <span className="text-lg font-bold text-neutral-900">Lokka</span>
           </Link>
           <Link href="/" className="inline-flex items-center gap-2 text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
             <ArrowLeft size={14} /> Retour à l'accueil
@@ -26,11 +26,11 @@ export default function AProposPage() {
 
         <div className="space-y-4">
           <p>
-            Loka a été conçue avec une conviction simple : la gestion d'un patrimoine locatif ne devrait plus reposer sur des cahiers manuscrits, des reçus volants ou des relances téléphoniques fastidieuses.
+            Lokka a été conçue avec une conviction simple : la gestion d'un patrimoine locatif ne devrait plus reposer sur des cahiers manuscrits, des reçus volants ou des relances téléphoniques fastidieuses.
           </p>
 
           <p>
-            En combinant l'automatisation administrative et les moyens de paiement locaux (MTN Mobile Money, Moov Money), Loka offre une plateforme neutre, sécurisée et moderne à tous les acteurs du secteur : propriétaires individuels, gestionnaires de biens et agences immobilières.
+            En combinant l'automatisation administrative et les moyens de paiement locaux (MTN Mobile Money, Moov Money), Lokka offre une plateforme neutre, sécurisée et moderne à tous les acteurs du secteur : propriétaires individuels, gestionnaires de biens et agences immobilières.
           </p>
         </div>
 

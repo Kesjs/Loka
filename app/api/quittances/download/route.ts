@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Récupérer l'organisation du propriétaire pour obtenir le logo
     let logoUrl: string | null = null;
-    let organisationName = "Loka";
+    let organisationName = "Lokka";
     
     try {
       const proprietaireId = locataire.contrats?.[0]?.proprietaire_id;
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           .maybeSingle();
 
         if (org) {
-          organisationName = org.nom || "Loka";
+          organisationName = org.nom || "Lokka";
           logoUrl = await getLogoUrl(supabase, org.id);
         }
       }
@@ -83,8 +83,8 @@ export async function POST(request: NextRequest) {
       format: "a4",
     });
 
-    // Couleurs marque Loka
-    const primaryColor = [79, 70, 229]; // primary-600 indigo
+    // Couleurs marque Lokka
+    const primaryColor = [14, 42, 30]; // vert Lokka
     const neutralDark = [23, 23, 23];   // neutral-950
     const neutralLight = [245, 245, 245]; // neutral-50
 
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(24);
       doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.text(organisationName || "Loka", 20, yPosition);
+      doc.text(organisationName || "Lokka", 20, yPosition);
       yPosition = 45;
     }
 
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      "Cette quittance est générée automatiquement par Loka et a valeur probante de libération de dette.",
+      "Cette quittance est générée automatiquement par Lokka et a valeur probante de libération de dette.",
       20,
       yPosition
     );
@@ -253,7 +253,7 @@ export async function GET(request: NextRequest) {
 
     // Récupérer l'organisation du propriétaire pour obtenir le logo
     let logoUrl: string | null = null;
-    let organisationName = "Loka";
+    let organisationName = "Lokka";
     
     try {
       if (paiement.proprietaire_id) {
@@ -265,7 +265,7 @@ export async function GET(request: NextRequest) {
           .maybeSingle();
 
         if (org) {
-          organisationName = org.nom || "Loka";
+          organisationName = org.nom || "Lokka";
           logoUrl = await getLogoUrl(supabase, org.id);
         }
       }
@@ -280,8 +280,8 @@ export async function GET(request: NextRequest) {
       format: "a4",
     });
 
-    // Couleurs marque Loka
-    const primaryColor = [79, 70, 229];
+    // Couleurs marque Lokka
+    const primaryColor = [14, 42, 30];
     const neutralDark = [23, 23, 23];
 
     let yPosition = 25;
@@ -371,7 +371,7 @@ export async function GET(request: NextRequest) {
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      "Cette quittance est générée automatiquement par Loka et a valeur probante de libération de dette.",
+      "Cette quittance est générée automatiquement par Lokka et a valeur probante de libération de dette.",
       20,
       270
     );

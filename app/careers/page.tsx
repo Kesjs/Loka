@@ -10,7 +10,7 @@ export default function CareersPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 border border-primary-200 text-primary-600 font-bold">
               <Buildings size={22} weight="duotone" />
             </div>
-            <span className="text-lg font-bold text-neutral-900">Loka</span>
+            <span className="text-lg font-bold text-neutral-900">Lokka</span>
           </Link>
           <Link href="/" className="inline-flex items-center gap-2 text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
             <ArrowLeft size={14} /> Retour à l'accueil
@@ -22,10 +22,10 @@ export default function CareersPage() {
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 border border-primary-200 text-primary-600">
           <UsersThree size={26} weight="duotone" />
         </div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary-600">Rejoindre Loka</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary-600">Rejoindre Lokka</p>
         <h1 className="mt-3 text-2xl font-bold text-neutral-900 sm:text-3xl">Pas de poste ouvert pour le moment.</h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-neutral-600">
-          Loka est encore un projet en construction, sans équipe salariée à ce jour. Si tu es développeur, designer ou intéressé par la gestion locative au Bénin et que tu veux échanger, écris-nous — on garde le contact pour la suite.
+          Lokka est encore un projet en construction, sans équipe salariée à ce jour. Si tu es développeur, designer ou intéressé par la gestion locative au Bénin et que tu veux échanger, écris-nous — on garde le contact pour la suite.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <Link

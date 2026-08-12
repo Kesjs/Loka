@@ -43,7 +43,7 @@ export async function sendTenantInvitationEmail({
           </div>
           <h3 style="color: #0f172a; margin-bottom: 12px;">Bonjour ${locataireNom},</h3>
           <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-            Votre gestionnaire <strong>${organisationNom}</strong> vous a ouvert l'accès à votre <strong>Portail Locataire Loka</strong>.
+            Votre gestionnaire <strong>${organisationNom}</strong> vous a ouvert l'accès à votre <strong>Portail Locataire Lokka</strong>.
           </p>
           <p style="color: #475569; font-size: 14px; line-height: 1.6;">
             Depuis cet espace sécurisé, vous pourrez consulter vos quittances de loyer, suivre votre historique et régler vos échéances directement par MTN Mobile Money, Moov Money ou carte bancaire.
@@ -52,7 +52,7 @@ export async function sendTenantInvitationEmail({
             <a href="${activationUrl}" class="btn">Activer mon Espace Locataire →</a>
           </div>
           <div class="footer">
-            <p>© 2026 Loka Technologies · Gestion locative & encaissement Mobile Money au Bénin</p>
+            <p>© 2026 Lokka Technologies · Gestion locative & encaissement Mobile Money au Bénin</p>
           </div>
         </div>
       </body>

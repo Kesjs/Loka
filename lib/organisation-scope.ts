@@ -82,7 +82,7 @@ export async function getOrganisationScope(
 
   // Collecter les IDs pour le filtre RLS
   // - user.id pour le créateur de l'org (owner)
-  // - user_id de chaque proprietaire_gere (s'il a un compte Loka)
+  // - user_id de chaque proprietaire_gere (s'il a un compte Lokka)
   const proprietaireIds = [user.id];
   const proprietairesGeresFormatted = (proprietairesGeres || []).map((pg) => ({
     id: pg.id,

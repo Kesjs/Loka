@@ -10,7 +10,7 @@ export default function CguPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 border border-primary-200 text-primary-600 font-bold">
               <Buildings size={22} weight="duotone" />
             </div>
-            <span className="text-lg font-bold text-neutral-900">Loka</span>
+            <span className="text-lg font-bold text-neutral-900">Lokka</span>
           </Link>
           <Link href="/" className="inline-flex items-center gap-2 text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
             <ArrowLeft size={14} /> Retour à l'accueil
@@ -27,21 +27,21 @@ export default function CguPage() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-neutral-900">1. Objet & Cadre Réglementaire</h2>
           <p>
-            La plateforme Loka est un service numérique édité pour la gestion locative et l'encaissement de loyers. Les présentes Conditions Générales d'Utilisation régissent l'accès et l'utilisation des services par les propriétaires, les gestionnaires mandataires, les agences immobilières et les locataires en République du Bénin, conformément aux dispositions du Code Foncier et Domanial (Loi n° 2013-01).
+            La plateforme Lokka est un service numérique édité pour la gestion locative et l'encaissement de loyers. Les présentes Conditions Générales d'Utilisation régissent l'accès et l'utilisation des services par les propriétaires, les gestionnaires mandataires, les agences immobilières et les locataires en République du Bénin, conformément aux dispositions du Code Foncier et Domanial (Loi n° 2013-01).
           </p>
         </section>
 
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-neutral-900">2. Valeur des Quittances et Baux Numériques</h2>
           <p>
-            Les quittances de loyer générées via Loka constituent des reçus dématérialisés certifiés. Elles ont valeur probante de libération de dette de loyer pour la période mentionnée. Les contrats de bail générés intègrent les clauses obligatoires conformes aux textes réglementaires du Bénin.
+            Les quittances de loyer générées via Lokka constituent des reçus dématérialisés certifiés. Elles ont valeur probante de libération de dette de loyer pour la période mentionnée. Les contrats de bail générés intègrent les clauses obligatoires conformes aux textes réglementaires du Bénin.
           </p>
         </section>
 
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-neutral-900">3. Encaissements Mobile Money & GeniusPay</h2>
           <p>
-            Les règlements effectués par Mobile Money (MTN MoMo, Moov Money) ou cartes bancaires sont traités par l'opérateur agréé GeniusPay. Loka agit en qualité d'intermédiaire technique et ne stocke pas directement les fonds des transactions.
+            Les règlements effectués par Mobile Money (MTN MoMo, Moov Money) ou cartes bancaires sont traités par l'opérateur agréé GeniusPay. Lokka agit en qualité d'intermédiaire technique et ne stocke pas directement les fonds des transactions.
           </p>
         </section>
 

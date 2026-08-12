@@ -91,7 +91,7 @@ const timelineSteps = [
   },
   {
     id: "with-loka",
-    eyebrow: "Avec Loka · Une source",
+    eyebrow: "Avec Lokka · Une source",
     title: "Voir ce qui est payé, maintenant",
     description: "Chaque paiement MTN MoMo, Moov Money ou carte rejoint votre portefeuille et alimente la quittance correspondante.",
     tone: "withLoka",
@@ -174,7 +174,7 @@ const pricingPlans: PricingPlan[] = [
     unit: "FCFA",
     description: "Pour les gestionnaires et agences.",
     features: ["Logements illimités", "Calcul des commissions", "Accès multi-utilisateurs"],
-    cta: "Parler à Loka",
+    cta: "Parler à Lokka",
     href: "/contact",
   },
 ] as const;
@@ -192,7 +192,7 @@ const faqItems: FaqItem[] = [
   },
   {
     id: "agencies",
-    question: "Loka convient-il aux agences ?",
+    question: "Lokka convient-il aux agences ?",
     answer: "Oui. Le plan Agence ajoute les logements illimités, le calcul des commissions et les accès multi-utilisateurs pour votre équipe.",
   },
   {
@@ -317,7 +317,7 @@ function StoryArtifact({ type }: { type: StoryArtifact }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-accent-600">Quittance de loyer</p>
-            <p className="mt-3 text-2xl font-black tracking-[-0.05em] text-primary-900">Loka</p>
+            <p className="mt-3 text-2xl font-black tracking-[-0.05em] text-primary-900">Lokka</p>
           </div>
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-primary-800 shadow-xs">
             <FileText size={20} aria-hidden="true" />
@@ -532,13 +532,13 @@ export default function LandingPage() {
         <div className="mx-auto flex min-h-[76px] max-w-[1240px] items-center justify-between gap-6 px-5 sm:px-6 lg:px-10">
           <Link href="#accueil" onClick={closeMobileMenu} className="flex min-h-11 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800">
             <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-white">
-              <Image src="/logo.jpg" alt="Logo Loka" width={44} height={44} className="h-full w-full object-contain" priority />
+              <Image src="/logo.jpg" alt="Logo Lokka" width={44} height={44} className="h-full w-full object-contain" priority />
             </span>
             <span className="hidden leading-tight sm:block">
-              <strong className="block text-[17px] font-extrabold tracking-[-0.04em] text-neutral-950">Loka</strong>
+              <strong className="block text-[17px] font-extrabold tracking-[-0.04em] text-neutral-950">Lokka</strong>
             </span>
             <span className="sm:hidden leading-tight">
-              <strong className="block text-[17px] font-extrabold tracking-[-0.04em] text-neutral-950">Loka</strong>
+              <strong className="block text-[17px] font-extrabold tracking-[-0.04em] text-neutral-950">Lokka</strong>
             </span>
           </Link>
 
@@ -702,7 +702,7 @@ export default function LandingPage() {
           <Reveal>
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary-800">Le changement, étape par étape</p>
             <h2 className="mt-5 max-w-xl text-4xl font-bold leading-[1.02] tracking-[-0.06em] text-neutral-950 sm:text-5xl">Moins de relances. Plus de visibilité.</h2>
-            <p className="mt-7 max-w-md text-base leading-7 text-neutral-600">Loka ne vous demande pas de changer votre métier. L'outil enlève simplement les détours qui vous prennent du temps.</p>
+            <p className="mt-7 max-w-md text-base leading-7 text-neutral-600">Lokka ne vous demande pas de changer votre métier. L'outil enlève simplement les détours qui vous prennent du temps.</p>
           </Reveal>
           <div className="relative border-l border-neutral-200 pl-7 sm:pl-10">
             {timelineSteps.map((step, index) => (
@@ -740,7 +740,7 @@ export default function LandingPage() {
                 <div>
                   <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary-100">Le temps qui revient</p>
                   <h2 id="simulator-title" className="mt-5 max-w-md text-3xl font-bold leading-[1.02] tracking-[-0.06em] sm:text-4xl">Combien d'heures pourriez-vous récupérer ?</h2>
-                  <p className="mt-6 max-w-md text-base leading-7 text-primary-100">Pour {logementsCount} logements, Loka peut vous faire gagner environ {hoursSaved} heures par mois sur les suivis et les quittances.</p>
+                  <p className="mt-6 max-w-md text-base leading-7 text-primary-100">Pour {logementsCount} logements, Lokka peut vous faire gagner environ {hoursSaved} heures par mois sur les suivis et les quittances.</p>
                   <Button asChild variant="outline" size="lg" className="mt-8 min-h-12 rounded-lg border-white/30 bg-white px-5 text-sm font-bold text-primary-900 hover:bg-primary-50">
                     <Link href="/auth?tab=signup">Tester avec mon portefeuille <ArrowRight size={17} weight="bold" aria-hidden="true" /></Link>
                   </Button>
@@ -931,7 +931,7 @@ export default function LandingPage() {
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary-800">Prêt à simplifier votre gestion ?</p>
               <h2 className="mt-3 text-2xl font-bold tracking-[-0.045em] text-neutral-950 sm:text-3xl">Votre prochain encaissement peut déjà être plus simple.</h2>
-              <p className="mt-3 text-base text-neutral-600">Créez votre espace Loka et testez le parcours pendant 14 jours, sans engagement.</p>
+              <p className="mt-3 text-base text-neutral-600">Créez votre espace Lokka et testez le parcours pendant 14 jours, sans engagement.</p>
             </div>
             <Button asChild size="lg" className="shrink-0 rounded-lg bg-primary-800 px-6 text-sm font-bold hover:bg-primary-900"><Link href="/auth?tab=signup">Commencer maintenant <ArrowRight size={17} weight="bold" aria-hidden="true" /></Link></Button>
           </Reveal>
@@ -943,8 +943,8 @@ export default function LandingPage() {
           <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1.2fr]">
             <Reveal>
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg bg-white"><Image src="/logo.jpg" alt="Logo Loka" width={44} height={44} className="h-full w-full object-contain" /></span>
-                <span className="text-[21px] font-black tracking-[-0.05em]">Loka</span>
+                <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg bg-white"><Image src="/logo.jpg" alt="Logo Lokka" width={44} height={44} className="h-full w-full object-contain" /></span>
+                <span className="text-[21px] font-black tracking-[-0.05em]">Lokka</span>
               </div>
               <p className="mt-6 max-w-sm text-base leading-7 text-neutral-400">La gestion locative qui laisse plus de place à vos biens, vos locataires et vos décisions.</p>
               <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">🇧🇯 Cotonou · Calavi · Porto-Novo</p>
@@ -968,7 +968,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="mt-16 flex flex-col justify-between gap-4 border-t border-neutral-800 pt-6 text-xs text-neutral-500 sm:flex-row">
-            <p>© 2026 Loka Technologies. La gestion locative au Bénin 🇧🇯.</p>
+            <p>© 2026 Lokka Technologies. La gestion locative au Bénin 🇧🇯.</p>
             <p>Simple à utiliser. Sérieux à gérer.</p>
           </div>
         </div>

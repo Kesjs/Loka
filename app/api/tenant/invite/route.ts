@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .maybeSingle();
 
-    const organisationNom = org?.nom_commercial || org?.nom || prop?.nom || "Loka";
+    const organisationNom = org?.nom_commercial || org?.nom || prop?.nom || "Lokka";
     const logoUrl = org?.logo_url || null;
 
     // Envoi de l'email transactionnel Brevo

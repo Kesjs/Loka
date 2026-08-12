@@ -30,7 +30,7 @@ export default function Loading() {
         >
           <Image
             src="/logo.jpg"
-            alt="Loka"
+            alt="Lokka"
             width={80}
             height={80}
             className="rounded-2xl shadow-lg"
@@ -45,7 +45,7 @@ export default function Loading() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h1 className="text-3xl font-bold text-neutral-900">Loka</h1>
+          <h1 className="text-3xl font-bold text-neutral-900">Lokka</h1>
           <p className="text-sm text-neutral-500 mt-2">
             Gestion locative simplifiée
           </p>

@@ -1,8 +1,8 @@
 import AuthTabs from "@/components/auth/AuthTabs";
 
 export const metadata = {
-  title: "Connexion — Loka",
-  description: "Accédez à votre espace de gestion locative Loka.",
+  title: "Connexion — Lokka",
+  description: "Accédez à votre espace de gestion locative Lokka.",
 };
 
 export default function LoginPage() {

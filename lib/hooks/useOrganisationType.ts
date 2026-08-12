@@ -65,7 +65,7 @@ export interface OrganisationInfo {
 export function useOrganisationInfo(): OrganisationInfo {
   const [info, setInfo] = useState<OrganisationInfo>({
     organisationType: null,
-    organisationNom: "Loka",
+    organisationNom: "Lokka",
     logoUrl: null,
     isLoading: true,
   });
@@ -99,7 +99,7 @@ export function useOrganisationInfo(): OrganisationInfo {
 
         if (mounted) {
           const orgType = (proprietaire?.profil_type || "proprietaire") as OrganisationType;
-          const nom = org?.nom_commercial || org?.nom || proprietaire?.nom || "Loka";
+          const nom = org?.nom_commercial || org?.nom || proprietaire?.nom || "Lokka";
           const logo = org?.logo_url || null;
 
           setInfo({

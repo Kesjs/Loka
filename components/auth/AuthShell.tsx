@@ -81,9 +81,9 @@ export default function AuthShell({
           {/* Texte + sous-texte — style Claude */}
           <motion.div
             className="mb-8 space-y-2"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
             key={leftTitle}
           >
             <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
@@ -118,7 +118,7 @@ export default function AuthShell({
                     <motion.div
                       layoutId="tabUnderline"
                       className="absolute bottom-0 left-1 right-1 h-1 bg-primary-600 rounded-t"
-                      transition={{ duration: 0.3 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
                     />
                   )}
                 </button>

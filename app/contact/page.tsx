@@ -62,7 +62,7 @@ export default function ContactPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 border border-primary-200 text-primary-600 font-bold">
               <Buildings size={22} weight="duotone" />
             </div>
-            <span className="text-lg font-bold text-neutral-900">Loka</span>
+            <span className="text-lg font-bold text-neutral-900">Lokka</span>
           </Link>
           <Link href="/" className="inline-flex items-center gap-2 text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
             <ArrowLeft size={14} /> Retour à l'accueil
@@ -73,7 +73,7 @@ export default function ContactPage() {
       <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="space-y-3 text-center mb-10">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary-600">Support & Assistance</p>
-          <h1 className="text-3xl font-bold text-neutral-900 sm:text-4xl">Contactez l'équipe Loka</h1>
+          <h1 className="text-3xl font-bold text-neutral-900 sm:text-4xl">Contactez l'équipe Lokka</h1>
           <p className="text-sm text-neutral-600 max-w-lg mx-auto">
             Une question sur la plateforme, besoin d'une démonstration privée pour votre agence ou assistance technique ?
           </p>
@@ -109,7 +109,7 @@ export default function ContactPage() {
                 <CheckCircle size={48} className="mx-auto text-emerald-400" weight="fill" />
                 <h3 className="text-lg font-bold text-white">Message transmis avec succès</h3>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Un conseiller Loka vous recontactera par téléphone ou email dans les plus brefs délais.
+                  Un conseiller Lokka vous recontactera par téléphone ou email dans les plus brefs délais.
                 </p>
               </div>
             ) : (

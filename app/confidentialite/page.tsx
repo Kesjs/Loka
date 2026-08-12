@@ -10,7 +10,7 @@ export default function ConfidentialitePage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 border border-primary-200 text-primary-600 font-bold">
               <Buildings size={22} weight="duotone" />
             </div>
-            <span className="text-lg font-bold text-neutral-900">Loka</span>
+            <span className="text-lg font-bold text-neutral-900">Lokka</span>
           </Link>
           <Link href="/" className="inline-flex items-center gap-2 text-xs text-neutral-600 hover:text-neutral-900 transition-colors">
             <ArrowLeft size={14} /> Retour à l'accueil
@@ -27,7 +27,7 @@ export default function ConfidentialitePage() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-neutral-900">1. Engagement de Protection des Données</h2>
           <p>
-            Loka attache une importance capitale au respect de la vie privée de ses utilisateurs. Les traitements de données à caractère personnel effectués sur la plateforme respectent la loi relative à la protection des données personnelles en République du Bénin et les directives de l'APDP.
+            Lokka attache une importance capitale au respect de la vie privée de ses utilisateurs. Les traitements de données à caractère personnel effectués sur la plateforme respectent la loi relative à la protection des données personnelles en République du Bénin et les directives de l'APDP.
           </p>
         </section>
 
@@ -41,7 +41,7 @@ export default function ConfidentialitePage() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-neutral-900">3. Non-Revente des Données</h2>
           <p>
-            Loka ne commercialise et ne loue aucune donnée personnelle ou financière à des tiers. Les informations relatives aux locataires et bailleurs restent strictement confidentielles.
+            Lokka ne commercialise et ne loue aucune donnée personnelle ou financière à des tiers. Les informations relatives aux locataires et bailleurs restent strictement confidentielles.
           </p>
         </section>
 

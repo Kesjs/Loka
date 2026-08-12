@@ -31,7 +31,7 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY
 const BREVO_API_URL = 'https://api.brevo.com/v3'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'noreply@loka.app'
-const SENDER_NAME = 'Loka'
+const SENDER_NAME = 'Lokka'
 
 /**
  * Get severity badge color
@@ -214,7 +214,7 @@ function generateAlertEmailHTML(data: AlertEmailData): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Loka</h1>
+          <h1>Lokka</h1>
           <p>Alerte Importante</p>
         </div>
         <div class="content">
@@ -252,7 +252,7 @@ function generateAlertEmailHTML(data: AlertEmailData): string {
           </p>
         </div>
         <div class="footer">
-          <p>&copy; 2026 Loka. Tous droits réservés.</p>
+          <p>&copy; 2026 Lokka. Tous droits réservés.</p>
         </div>
       </div>
     </body>
@@ -298,7 +298,7 @@ function generateDigestEmailHTML(data: DigestEmailData): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Loka</h1>
+          <h1>Lokka</h1>
           <p>📊 Résumé Quotidien des Alertes</p>
         </div>
         <div class="content">
@@ -353,7 +353,7 @@ function generateDigestEmailHTML(data: DigestEmailData): string {
           </center>
         </div>
         <div class="footer">
-          <p>&copy; 2026 Loka. Tous droits réservés.</p>
+          <p>&copy; 2026 Lokka. Tous droits réservés.</p>
           <p><a href="${APP_URL}/parametres" style="color: #1e40af; text-decoration: none;">Gérer mes préférences</a></p>
         </div>
       </div>
@@ -494,7 +494,7 @@ function generateContractEmailHTML(data: ContractEmailData): string {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Loka</h1>
+          <h1>Lokka</h1>
           <p>Notification Contrat</p>
         </div>
         <div class="content">
@@ -612,7 +612,7 @@ function generateContractEmailHTML(data: ContractEmailData): string {
           </p>
         </div>
         <div class="footer">
-          <p>&copy; 2026 Loka. Tous droits réservés.</p>
+          <p>&copy; 2026 Lokka. Tous droits réservés.</p>
         </div>
       </div>
     </body>

@@ -73,7 +73,7 @@ export function getStepContextCard(
     case 0:
       return {
         badge: "DÉMARRAGE RAPIDE",
-        title: "Bienvenue sur Loka",
+        title: "Bienvenue sur Lokka",
         description: "Vos informations officielles serviront à générer automatiquement vos quittances de loyer conformes.",
         highlightLabel: "Génération automatique",
         highlightValue: "Quittances E.164",
@@ -82,7 +82,7 @@ export function getStepContextCard(
       return {
         badge: "SUR-MESURE",
         title: "Interface adaptée à votre rôle",
-        description: "Propriétaire indépendant, gestionnaire mandataire ou agence immobilière : Loka adapte ses tableaux de bord.",
+        description: "Propriétaire indépendant, gestionnaire mandataire ou agence immobilière : Lokka adapte ses tableaux de bord.",
         highlightLabel: "Profils gérés",
         highlightValue: "Bailleurs & Agences",
       };

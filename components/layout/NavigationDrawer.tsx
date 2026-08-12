@@ -94,14 +94,14 @@ export default function NavigationDrawer({
                 <div className="relative h-10 w-10 shrink-0 rounded-md shadow-lg overflow-hidden flex-shrink-0">
                   <Image 
                     src="/logo.jpg" 
-                    alt="Logo Loka" 
+                    alt="Logo Lokka" 
                     fill 
                     className="object-cover"
                     priority
                   />
                 </div>
                 <span className="text-base font-extrabold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
-                  Loka
+                  Lokka
                 </span>
               </div>
               <motion.button

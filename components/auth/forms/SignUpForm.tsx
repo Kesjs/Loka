@@ -293,19 +293,6 @@ export default function SignUpForm({ onSwitchToSignIn }: SignUpFormProps) {
           AUTH_MESSAGES.buttons.signUp
         )}
       </Button>
-
-      {/* Lien connexion */}
-      <div className="text-center text-sm text-neutral-600">
-        {AUTH_MESSAGES.hints.haveAccount}
-        <button
-          type="button"
-          onClick={onSwitchToSignIn}
-          disabled={loading || success}
-          className="ml-1 font-medium text-primary-600 hover:text-primary-700 transition-colors disabled:opacity-50"
-        >
-          {AUTH_MESSAGES.hints.switchToSignIn}
-        </button>
-      </div>
     </form>
   );
 }

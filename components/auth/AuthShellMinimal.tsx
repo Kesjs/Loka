@@ -99,9 +99,9 @@ export default function AuthShellMinimal({
           {/* Texte + sous-texte — Minimalist style */}
           <motion.div
             className="mb-10 space-y-3"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
             key={leftTitle}
           >
             <h1 className="text-4xl font-light tracking-tight text-neutral-900 leading-tight">

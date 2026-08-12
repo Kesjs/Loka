@@ -1,12 +1,17 @@
 /**
  * components/dashboard/StatsGrid.tsx
- * 
- * Grille de statistiques principales du dashboard
+ *
+ * Grille de statistiques principales du dashboard — style inspiré du modèle
+ * "Sales Dashboard" (icône en médaillon coloré + badge de tendance), adapté
+ * à la palette claire de Loka. Adaptée par rôle :
+ * - Propriétaire : + Loyers en retard, écart revenu réel/potentiel
+ * - Gestionnaire / Agence : Immeubles / Logements de portefeuille
  */
 
 "use client";
 
-import { CurrencyCircleDollar, Percent, Buildings, Door } from "@phosphor-icons/react";
+import { CurrencyCircleDollar, Percent, Buildings, Door, WarningCircle, TrendUp } from "@phosphor-icons/react";
+import type { OrganisationType } from "@/lib/dashboard";
 
 export interface StatsGridProps {
   stats: {
@@ -14,66 +19,130 @@ export interface StatsGridProps {
     tauxOccupation: number;
     nombreImmeubles: number;
     nombreLogements: number;
+    loyersEnRetard?: number;
+    revenuPotentiel?: number;
   };
+  role?: OrganisationType;
 }
 
-export function StatsGrid({ stats }: StatsGridProps) {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "XOF",
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "XOF",
+    minimumFractionDigits: 0,
+  }).format(value);
+}
+
+interface StatCardProps {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+  trend?: { value: string; positive: boolean };
+  footnote?: string;
+}
+
+function StatCard({ label, value, icon: Icon, iconBg, iconColor, trend, footnote }: StatCardProps) {
+  return (
+    <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+      <div className="mb-3 flex items-center justify-between">
+        <span
+          className="flex h-9 w-9 items-center justify-center rounded-full"
+          style={{ backgroundColor: iconBg }}
+        >
+          <Icon size={18} weight="bold" style={{ color: iconColor }} />
+        </span>
+        {trend && (
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+              trend.positive ? "bg-success-50 text-success-600" : "bg-danger-50 text-danger-600"
+            }`}
+          >
+            {trend.value}
+          </span>
+        )}
+      </div>
+      <p className="text-2xl font-bold tracking-tight text-neutral-900">{value}</p>
+      <p className="mt-1 text-sm font-medium text-neutral-500">{label}</p>
+      {footnote && <p className="mt-2 text-xs text-neutral-400">{footnote}</p>}
+    </div>
+  );
+}
+
+export function StatsGrid({ stats, role = "individuel" }: StatsGridProps) {
+  const ecartRevenu = (stats.revenuPotentiel ?? stats.revenuMensuel) - stats.revenuMensuel;
+  const showOwnerCards = role === "individuel";
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {/* Revenu mensuel */}
-      <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-neutral-600">Revenu mensuel</span>
-          <CurrencyCircleDollar className="w-5 h-5 text-success-600" />
-        </div>
-        <p className="text-2xl font-bold text-neutral-900">
-          {formatCurrency(stats.revenuMensuel)}
-        </p>
-        <p className="text-xs text-neutral-500 mt-2">Estimation basée sur les contrats actifs</p>
-      </div>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatCard
+        label="Revenu mensuel"
+        value={formatCurrency(stats.revenuMensuel)}
+        icon={CurrencyCircleDollar}
+        iconBg="#DCFCE7"
+        iconColor="#087F5B"
+        footnote="Basé sur les contrats actifs"
+      />
 
-      {/* Taux d'occupation */}
-      <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-neutral-600">Taux d'occupation</span>
-          <Percent className="w-5 h-5 text-primary-600" />
-        </div>
-        <p className="text-2xl font-bold text-neutral-900">{stats.tauxOccupation}%</p>
-        <div className="w-full bg-neutral-200 rounded-full h-2 mt-3">
-          <div
-            className="bg-primary-600 h-2 rounded-full transition-all"
-            style={{ width: `${stats.tauxOccupation}%` }}
+      <StatCard
+        label="Taux d'occupation"
+        value={`${stats.tauxOccupation}%`}
+        icon={Percent}
+        iconBg="#DCFCE7"
+        iconColor="#087F5B"
+        trend={
+          stats.tauxOccupation >= 70
+            ? { value: "Bon niveau", positive: true }
+            : { value: "À surveiller", positive: false }
+        }
+      />
+
+      {showOwnerCards ? (
+        <>
+          <StatCard
+            label="Loyers en retard"
+            value={String(stats.loyersEnRetard ?? 0)}
+            icon={WarningCircle}
+            iconBg={(stats.loyersEnRetard ?? 0) > 0 ? "#FEF2F2" : "#F1F5F9"}
+            iconColor={(stats.loyersEnRetard ?? 0) > 0 ? "#EF4444" : "#94A3B8"}
+            footnote="Locataires concernés ce mois-ci"
           />
-        </div>
-      </div>
 
-      {/* Nombre d'immeubles */}
-      <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-neutral-600">Immeubles</span>
-          <Buildings className="w-5 h-5 text-accent-600" />
-        </div>
-        <p className="text-2xl font-bold text-neutral-900">{stats.nombreImmeubles}</p>
-        <p className="text-xs text-neutral-500 mt-2">Dans votre portefeuille</p>
-      </div>
+          <StatCard
+            label="Revenu potentiel"
+            value={formatCurrency(stats.revenuPotentiel ?? stats.revenuMensuel)}
+            icon={TrendUp}
+            iconBg="#FBF3EF"
+            iconColor="#D67A52"
+            trend={
+              ecartRevenu > 0
+                ? { value: `+${formatCurrency(ecartRevenu)}`, positive: false }
+                : { value: "Optimal", positive: true }
+            }
+          />
+        </>
+      ) : (
+        <>
+          <StatCard
+            label="Immeubles"
+            value={String(stats.nombreImmeubles)}
+            icon={Buildings}
+            iconBg="#FBF3EF"
+            iconColor="#D67A52"
+            footnote="Dans le portefeuille"
+          />
 
-      {/* Nombre de logements */}
-      <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-neutral-600">Logements</span>
-          <Door className="w-5 h-5 text-neutral-600" />
-        </div>
-        <p className="text-2xl font-bold text-neutral-900">{stats.nombreLogements}</p>
-        <p className="text-xs text-neutral-500 mt-2">Propriétés gérées</p>
-      </div>
+          <StatCard
+            label="Logements"
+            value={String(stats.nombreLogements)}
+            icon={Door}
+            iconBg="#F1F5F9"
+            iconColor="#64748B"
+            footnote="Propriétés gérées"
+          />
+        </>
+      )}
     </div>
   );
 }

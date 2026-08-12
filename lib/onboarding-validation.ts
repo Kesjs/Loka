@@ -10,7 +10,7 @@ import type { OnboardingData } from "@/components/onboarding/types";
 export interface ValidationError {
   field: string;
   message: string;
-  section: "profil" | "role" | "situation" | "bien" | "logements" | "preferences";
+  section: "profil" | "role" | "bien" | "logements" | "preferences";
 }
 
 export interface ValidationResult {
@@ -66,7 +66,7 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 2. RÔLE
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const validRoles = ["proprietaire", "gestionnaire", "agence", "autre"];
+  const validRoles = ["proprietaire", "gestionnaire", "agence"];
   if (!data.role || !validRoles.includes(data.role)) {
     errors.push({
       field: "role",
@@ -76,41 +76,26 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 3. INFORMATIONS AGENCE (si applicable)
+  // 3. PREMIER PROPRIÉTAIRE GÉRÉ (Agence uniquement — recueilli dans StepProperty)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (data.role === "agence") {
-    if (!data.agenceInfo?.nom || data.agenceInfo.nom.trim().length === 0) {
+    if (!data.proprietaireGere.nom || data.proprietaireGere.nom.trim().length === 0) {
       errors.push({
-        field: "agenceInfo.nom",
-        message: "Le nom de l'agence est obligatoire",
-        section: "situation",
+        field: "proprietaireGere.nom",
+        message: "Le nom du premier propriétaire géré est obligatoire",
+        section: "bien",
       });
-    }
-
-    if (data.agenceInfo?.nom && data.agenceInfo.nom.length < 3) {
-      errors.push({
-        field: "agenceInfo.nom",
-        message: "Le nom de l'agence doit contenir au moins 3 caractères",
-        section: "situation",
-      });
-    }
-  }
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 4. PROPRIÉTAIRE GÉRÉ (si gestionnaire/agence)
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  if ((data.role === "gestionnaire" || data.role === "agence") && data.proprietaireGere) {
-    if (data.proprietaireGere.nom && data.proprietaireGere.nom.length < 2) {
+    } else if (data.proprietaireGere.nom.length < 2) {
       errors.push({
         field: "proprietaireGere.nom",
         message: "Le nom du propriétaire doit contenir au moins 2 caractères",
-        section: "situation",
+        section: "bien",
       });
     }
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 5. BIEN IMMOBILIER
+  // 4. BIEN IMMOBILIER
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (!data.bien.nom || data.bien.nom.trim().length === 0) {
     errors.push({
@@ -128,7 +113,7 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
     });
   }
 
-  const validTypeBien = ["immeuble", "maison", "villa", "boutique", "terrain", "autre"];
+  const validTypeBien = ["immeuble", "maison", "villa", "boutique", "terrain"];
   if (data.bien.type && !validTypeBien.includes(data.bien.type)) {
     errors.push({
       field: "bien.type",
@@ -138,7 +123,7 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 6. LOGEMENTS
+  // 5. LOGEMENTS
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (!data.logements || data.logements.length === 0) {
     errors.push({
@@ -240,7 +225,7 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
   });
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 7. PRÉFÉRENCES
+  // 6. PRÉFÉRENCES
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const validDevises = ["FCFA", "EUR", "USD", "XOF", "XAF"];
   if (data.preferences.devise && !validDevises.includes(data.preferences.devise)) {
@@ -263,18 +248,6 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
         section: "preferences",
       });
     }
-  }
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 8. MOYEN DE PAIEMENT
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const validMoyensPaiement = ["especes", "mobile_money", "virement", "plusieurs", null];
-  if (data.moyenPaiement && !validMoyensPaiement.includes(data.moyenPaiement)) {
-    errors.push({
-      field: "moyenPaiement",
-      message: "Moyen de paiement invalide",
-      section: "preferences",
-    });
   }
 
   return {
@@ -309,16 +282,10 @@ export function sanitizeOnboardingData(data: OnboardingData): OnboardingData {
       locataireNom: logement.locataireNom?.trim() || null,
       locataireTelephone: logement.locataireTelephone?.trim() || null,
     })),
-    agenceInfo: data.agenceInfo ? {
-      ...data.agenceInfo,
-      nom: data.agenceInfo.nom?.trim() || "",
-      ville: data.agenceInfo.ville?.trim() || null,
-    } : undefined,
-    proprietaireGere: data.proprietaireGere ? {
-      ...data.proprietaireGere,
+    proprietaireGere: {
       nom: data.proprietaireGere.nom?.trim() || "",
       telephone: data.proprietaireGere.telephone?.trim() || "",
-    } : undefined,
+    },
   };
 }
 
@@ -344,7 +311,6 @@ export function formatValidationErrors(errors: ValidationError[]): string {
   const sectionLabels: Record<string, string> = {
     profil: "Profil",
     role: "Rôle",
-    situation: "Situation",
     bien: "Bien immobilier",
     logements: "Logements",
     preferences: "Préférences",

@@ -1,8 +1,9 @@
-import { Buildings, House, MapPin, Storefront, Mountains, Note } from "@phosphor-icons/react";
-import { TypeBien, TypeLocation } from "./types";
+import { Buildings, House, MapPin, Storefront, Mountains, Note, UserCircle, Phone } from "@phosphor-icons/react";
+import { Role, TypeBien, TypeLocation } from "./types";
 import { Button } from "@/components/ui/button";
 
 interface StepPropertyProps {
+  role: Role | null;
   value: {
     nom: string;
     adresse: string | null;
@@ -21,6 +22,9 @@ interface StepPropertyProps {
     type: TypeBien | null;
     typeLocation: TypeLocation | null;
   }) => void;
+  /** Nom + téléphone du premier propriétaire géré — utilisé seulement en mode Agence. */
+  proprietaireGere: { nom: string; telephone: string };
+  onChangeProprietaireGere: (v: { nom: string; telephone: string }) => void;
   onNext: () => void;
 }
 
@@ -32,8 +36,17 @@ const types: { value: TypeBien; label: string; icon: typeof House }[] = [
   { value: "terrain",  label: "Terrain",  icon: Mountains },
 ];
 
-export default function StepProperty({ value, onChange, onNext }: StepPropertyProps) {
-  const isValid = value.nom.trim() !== "" && value.type !== null;
+export default function StepProperty({
+  role,
+  value,
+  onChange,
+  proprietaireGere,
+  onChangeProprietaireGere,
+  onNext,
+}: StepPropertyProps) {
+  const isAgence = role === "agence";
+  const proprietaireValid = !isAgence || proprietaireGere.nom.trim() !== "";
+  const isValid = value.nom.trim() !== "" && value.type !== null && proprietaireValid;
 
   function handleChange(field: string, val: string | TypeLocation | null) {
     onChange({ ...value, [field]: val });
@@ -48,6 +61,41 @@ export default function StepProperty({ value, onChange, onNext }: StepPropertyPr
 
   return (
     <div className="space-y-5">
+      {/* Bloc conditionnel Agence — nom + téléphone du premier propriétaire géré.
+          Un seul, pas une liste complète (les autres s'ajoutent normalement dans l'app). */}
+      {isAgence && (
+        <div className="space-y-3 rounded-lg border border-primary-200 bg-primary-50/50 p-4">
+          <p className="text-sm font-medium text-primary-800">Premier propriétaire géré</p>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700">
+              <UserCircle size={15} /> Nom du propriétaire *
+            </label>
+            <input
+              type="text"
+              value={proprietaireGere.nom}
+              onChange={(e) => onChangeProprietaireGere({ ...proprietaireGere, nom: e.target.value })}
+              placeholder="Ex : Jean Kouassi"
+              className="w-full h-10 px-3 rounded-md border border-neutral-300 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-700">
+              <Phone size={15} /> Téléphone
+            </label>
+            <input
+              type="tel"
+              value={proprietaireGere.telephone}
+              onChange={(e) => onChangeProprietaireGere({ ...proprietaireGere, telephone: e.target.value })}
+              placeholder="+229 01 XX XX XX XX"
+              className="w-full h-10 px-3 rounded-md border border-neutral-300 bg-white text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+          <p className="text-xs text-primary-700/70">
+            Vous pourrez ajouter d'autres propriétaires directement depuis l'application.
+          </p>
+        </div>
+      )}
+
       <div className="space-y-3">
         {/* Nom */}
         <div className="space-y-1.5">

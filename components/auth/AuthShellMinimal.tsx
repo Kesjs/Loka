@@ -7,8 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "@phosphor-icons/react";
 import AuthProgressBar from "./AuthProgressBar";
 import { AUTH_MESSAGES } from "@/lib/auth-messages";
-import { getStepContextCard } from "@/lib/auth-copy";
-import { Role, Situation } from "@/components/onboarding/types";
+import { Role } from "@/components/onboarding/types";
 
 type AuthTab = "signin" | "signup" | "forgot-password";
 
@@ -35,7 +34,6 @@ interface AuthShellProps {
   onBack?: () => void;
   step?: number;
   role?: Role | null;
-  situation?: Situation | null;
   progress?: {
     current: number;
     total: number;
@@ -61,14 +59,14 @@ export default function AuthShellMinimal({
   onBack,
   step,
   role = null,
-  situation = null,
   progress,
   showTabs,
   activeTab,
   onTabChange,
   media = DEFAULT_MEDIA,
 }: AuthShellProps) {
-  const stepCard = step !== undefined ? getStepContextCard(step, role, situation) : null;
+  // stepCard non rendu directement — conservé pour compatibilité éventuelle.
+  const stepCard = null;
 
   return (
     <div className="flex min-h-screen bg-white md:h-screen md:flex-row md:overflow-hidden">

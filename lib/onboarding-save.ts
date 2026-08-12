@@ -45,6 +45,7 @@ export async function saveOnboarding(
         : null,
       notif_email: data.preferences.notifEmail,
       widget_priorite: data.preferences.widgetPriorite,
+      est_a_distance: data.estADistance ?? false,
       onboarding_complete: true,
     });
 
@@ -72,10 +73,7 @@ export async function saveOnboarding(
         ? "gestionnaire"
         : "individuel";
 
-    const orgNom =
-      data.role === "agence"
-        ? data.agenceInfo?.nom || data.profil.nom || "Mon Agence"
-        : data.profil.nom || "Mon Organisation";
+    const orgNom = data.profil.nom || "Mon Organisation";
 
     const { data: org, error: orgError } = await supabase
       .from("organisations")
@@ -83,8 +81,7 @@ export async function saveOnboarding(
         owner_user_id: user.id,
         nom: orgNom,
         type: orgType,
-        ville: data.bien.ville || data.agenceInfo?.ville || null,
-        taille_portefeuille: data.agenceInfo?.taillePortefeuille || null,
+        ville: data.bien.ville || null,
       })
       .select("id")
       .single();
@@ -126,10 +123,7 @@ export async function saveOnboarding(
     // 4. Table `proprietaires_geres` (gestionnaire/agence uniquement)
     //    Colonnes: organisation_id, nom, telephone, email
     // ─────────────────────────────────────────────────────────────
-    if (
-      (data.role === "gestionnaire" || data.role === "agence") &&
-      data.proprietaireGere?.nom
-    ) {
+    if (data.role === "agence" && data.proprietaireGere.nom) {
       const { error: propGereError } = await supabase
         .from("proprietaires_geres")
         .insert({
@@ -236,7 +230,9 @@ export async function saveOnboarding(
           locataire_id: locataire.id,
           logement_id: logementRow.id,
           loyer_mensuel: loyerLogement,
-          moyen_paiement_habituel: mapMoyenPaiement(data.moyenPaiement),
+          // Moyen de paiement non collecté à l'onboarding — à renseigner à la
+          // création du contrat depuis l'app, ou modifiable sur la fiche contrat.
+          moyen_paiement_habituel: null,
           depot_garantie: data.preferences.garantie
             ? parseMontant(data.preferences.montantGarantie)
             : 0,
@@ -284,20 +280,5 @@ function mapTypeBien(type: string | null): string | null {
     case "terrain":    return "terrain";
     // Types sans correspondance ENUM → null (colonne nullable)
     default:           return null;
-  }
-}
-
-/**
- * Mappe MoyenPaiement (onboarding) → ENUM moyen_paiement_type (DB).
- * Valeurs ENUM exactes: 'especes', 'mobile_money', 'virement', 'plusieurs'
- * La colonne moyen_paiement_habituel est nullable → null si inconnu.
- */
-function mapMoyenPaiement(moyen: string | null): string | null {
-  switch (moyen) {
-    case "especes":      return "especes";
-    case "mobile_money": return "mobile_money";
-    case "virement":     return "virement";
-    case "plusieurs":    return "plusieurs";
-    default:             return null;
   }
 }

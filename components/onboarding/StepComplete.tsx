@@ -246,7 +246,6 @@ export default function StepComplete({ onFinish, loading, error, data }: StepCom
               {role === "agence" && "Votre tableau de bord agence est prêt. Vous pouvez maintenant ajouter vos propriétaires mandants, gérer leur patrimoine et suivre vos commissions."}
               {role === "gestionnaire" && "Votre espace gestionnaire est opérationnel. Accédez à vos propriétaires gérés, suivez leurs loyers et gérez les paiements en toute simplicité."}
               {role === "proprietaire" && "Votre tableau de bord propriétaire est configuré. Suivez vos loyers, gérez vos locataires et consultez vos contrats en temps réel."}
-              {role === "autre" && "Votre espace est configuré et prêt à l'emploi."}
             </p>
           </div>
         </div>

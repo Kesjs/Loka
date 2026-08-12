@@ -38,16 +38,28 @@ describe("Onboarding Draft Auto-Save", () => {
   });
 
   const mockData: OnboardingData = {
-    profil: "individuel",
+    profil: { nom: "Jean Dupont", telephone: "+22900000000", email: "jean@example.com" },
     role: "proprietaire",
-    situation: null,
-    roleInterne: undefined,
-    agenceInfo: null,
-    proprietaireGere: null,
-    property: null,
-    housingCount: 0,
-    occupation: [],
-    paiement: null,
+    estADistance: false,
+    proprietaireGere: { nom: "", telephone: "" },
+    bien: {
+      nom: "",
+      adresse: null,
+      ville: null,
+      quartier: null,
+      repere: null,
+      type: null,
+      typeLocation: null,
+    },
+    nombreLogements: 1,
+    logements: [],
+    preferences: {
+      garantie: false,
+      montantGarantie: "",
+      devise: "FCFA",
+      notifEmail: true,
+      widgetPriorite: null,
+    },
   };
 
   describe("saveDraftLocally", () => {
@@ -59,7 +71,7 @@ describe("Onboarding Draft Auto-Save", () => {
 
       const parsed = JSON.parse(stored!);
       expect(parsed.step).toBe(1);
-      expect(parsed.data.profil).toBe("individuel");
+      expect(parsed.data.profil.nom).toBe("Jean Dupont");
     });
 
     it("doit mettre à jour le timestamp de dernière synchronisation", () => {

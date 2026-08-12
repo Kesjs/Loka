@@ -9,6 +9,7 @@ import { Suspense } from "react";
 import { DashboardIndividuel } from "@/components/dashboard/DashboardIndividuel";
 import { DashboardGestionnaire } from "@/components/dashboard/DashboardGestionnaire";
 import { DashboardAgence } from "@/components/dashboard/DashboardAgence";
+import { OnboardingIncompleteAlert } from "@/components/dashboard/OnboardingIncompleteAlert";
 
 async function DashboardContent() {
   const dashboard = await getDashboardData();
@@ -86,6 +87,15 @@ async function DashboardContent() {
           {profile === "agence" && "Tableau de bord de votre agence"}
         </p>
       </div>
+
+      {/* Rappel non bloquant : logo manquant (Agence uniquement) */}
+      {profile === "agence" && (
+        <OnboardingIncompleteAlert
+          show={!dashboard.organisationLogoUrl}
+          profile={profile}
+          variant="logo"
+        />
+      )}
 
       {/* Rendu conditionnel du dashboard approprié */}
       {profile === "individuel" && (

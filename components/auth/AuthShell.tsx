@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Sparkle } from "@phosphor-icons/react";
 import AuthProgressBar from "./AuthProgressBar";
 import { AUTH_MESSAGES } from "@/lib/auth-messages";
-import { getStepContextCard } from "@/lib/auth-copy";
-import { Role, Situation } from "@/components/onboarding/types";
+import { Role } from "@/components/onboarding/types";
+import StepRail, { StepRailItem } from "@/components/onboarding/StepRail";
 
 type AuthTab = "signin" | "signup" | "forgot-password";
 
@@ -38,7 +38,6 @@ interface AuthShellProps {
   onBack?: () => void;
   step?: number;
   role?: Role | null;
-  situation?: Situation | null;
   progress?: {
     current: number;
     total: number;
@@ -49,6 +48,16 @@ interface AuthShellProps {
   activeTab?: AuthTab;
   onTabChange?: (tab: AuthTab) => void;
   media?: AuthShellMedia;
+  /**
+   * Rail d'étapes de l'onboarding. Quand fourni, remplace le média vidéo/image
+   * du panneau droit par un rail vertical sur fond vert transparent (desktop),
+   * et affiche un rail horizontal compact en haut du formulaire (mobile).
+   */
+  stepRail?: {
+    items: StepRailItem[];
+    currentIndex: number;
+    onNavigate?: (index: number) => void;
+  };
 }
 
 export default function AuthShell({
@@ -64,19 +73,32 @@ export default function AuthShell({
   onBack,
   step,
   role = null,
-  situation = null,
   progress,
   showTabs,
   activeTab,
   onTabChange,
   media = DEFAULT_MEDIA,
+  stepRail,
 }: AuthShellProps) {
-  const stepCard = step !== undefined ? getStepContextCard(step, role, situation) : null;
+  // stepCard (getStepContextCard) est conservé pour compatibilité mais n'est plus
+  // rendu directement ici — OnboardingLayout fournit désormais leftTitle/leftSubtitle
+  // via getStepCopy, seule source de vérité pour l'onboarding.
 
   return (
     <div className="flex min-h-screen bg-white md:h-screen md:flex-row md:overflow-hidden">
       {/* Colonne gauche — formulaire 40% */}
       <div className="flex flex-col px-6 py-8 md:h-screen md:overflow-y-auto w-full md:w-[40%] md:px-8 md:py-10 lg:px-10">
+        {/* Rail compact — mobile uniquement, en haut du formulaire */}
+        {stepRail && (
+          <div className="mb-6 -mx-1 md:hidden">
+            <StepRail
+              items={stepRail.items}
+              currentIndex={stepRail.currentIndex}
+              onNavigate={stepRail.onNavigate}
+              orientation="horizontal"
+            />
+          </div>
+        )}
         <div className="w-full mx-auto md:mx-0 my-auto">
           {/* Texte + sous-texte — style Claude */}
           <motion.div
@@ -149,28 +171,50 @@ export default function AuthShell({
         </div>
       </div>
 
-      {/* Colonne droite — 60% vidéo/image */}
-      <div className="relative hidden md:block md:w-[60%] md:h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
-        {media.type === "video" ? (
-          <video
-            src={media.src}
-            poster={media.poster}
-            className="absolute inset-0 h-full w-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
+      {/* Colonne droite — 60% */}
+      {stepRail ? (
+        <div className="relative hidden md:flex md:w-[60%] md:h-screen flex-col justify-center overflow-hidden bg-neutral-900 px-12 lg:px-16">
+          {/* Overlay vert très transparent, jamais un aplat saturé */}
+          <div className="pointer-events-none absolute inset-0 bg-primary-500/[0.18]" />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-40"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20% 20%, rgba(8,127,91,0.25), transparent 55%)",
+            }}
           />
-        ) : (
-          <Image
-            src={media.src}
-            alt={media.alt ?? ""}
-            fill
-            className="object-cover"
-            priority
-          />
-        )}
-      </div>
+          <div className="relative z-10 max-w-sm">
+            <StepRail
+              items={stepRail.items}
+              currentIndex={stepRail.currentIndex}
+              onNavigate={stepRail.onNavigate}
+              orientation="vertical"
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="relative hidden md:block md:w-[60%] md:h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
+          {media.type === "video" ? (
+            <video
+              src={media.src}
+              poster={media.poster}
+              className="absolute inset-0 h-full w-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+          ) : (
+            <Image
+              src={media.src}
+              alt={media.alt ?? ""}
+              fill
+              className="object-cover"
+              priority
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

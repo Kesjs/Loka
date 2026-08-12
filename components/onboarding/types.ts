@@ -1,20 +1,6 @@
-import { ReactNode } from "react";
+export type Role = "proprietaire" | "gestionnaire" | "agence";
 
-export type Role = "proprietaire" | "gestionnaire" | "agence" | "autre";
-
-export type Situation =
-  | "premier_bien"
-  | "commence_louer"
-  | "possede_deja"
-  | "gere_deja"
-  | "famille"
-  | "particuliers"
-  | "plusieurs_proprietaires"
-  | "demarre_agence"
-  | "portefeuille_existant"
-  | "migre_autre_outil";
-
-export type RoleInterne = "admin" | "gestionnaire" | "mandataire" | "consultant" | "administrateur" | "autre";
+export type RoleInterne = "admin" | "gestionnaire" | "mandataire" | "consultant" | "administrateur";
 
 export type TypeBien =
   | "immeuble"
@@ -24,8 +10,6 @@ export type TypeBien =
   | "terrain";
 
 export type TypeLocation = "longue_duree" | "courte_duree";
-
-export type MoyenPaiement = "especes" | "mobile_money" | "virement" | "plusieurs";
 
 export interface LogementData {
   nom: string;
@@ -39,19 +23,9 @@ export interface LogementData {
 
 export type LogementOccupation = LogementData;
 
-export interface AgenceInfo {
-  nom: string;
-  telephone?: string;
-  email?: string;
-  ville?: string | null;
-  taillePortefeuille?: string;
-  logoUrl?: string; // Logo de l'agence (C.6)
-}
-
 export interface ProprietaireGere {
   nom: string;
   telephone: string;
-  commissionPct: number;
 }
 
 export interface OnboardingData {
@@ -62,11 +36,12 @@ export interface OnboardingData {
   };
 
   role: Role | null;
-  situation: Situation | null;
   roleInterne?: RoleInterne;
+  /** Signal "gestion à distance" (diaspora) — ajuste l'affichage, ce n'est pas un rôle. */
+  estADistance?: boolean;
 
-  agenceInfo?: AgenceInfo;
-  proprietaireGere?: ProprietaireGere;
+  /** Premier propriétaire géré — utilisé uniquement en mode Agence. */
+  proprietaireGere: ProprietaireGere;
 
   bien: {
     nom: string;
@@ -81,8 +56,6 @@ export interface OnboardingData {
   nombreLogements: number;
   logements: LogementData[];
 
-  moyenPaiement: MoyenPaiement | null;
-
   preferences: {
     garantie: boolean;
     montantGarantie: string;
@@ -95,7 +68,8 @@ export interface OnboardingData {
 export const initialOnboardingData: OnboardingData = {
   profil: { nom: "", telephone: "", email: "" },
   role: null,
-  situation: null,
+  estADistance: false,
+  proprietaireGere: { nom: "", telephone: "" },
   bien: {
     nom: "",
     adresse: null,
@@ -107,7 +81,6 @@ export const initialOnboardingData: OnboardingData = {
   },
   nombreLogements: 1,
   logements: [],
-  moyenPaiement: "especes",
   preferences: {
     garantie: false,
     montantGarantie: "",
@@ -117,67 +90,21 @@ export const initialOnboardingData: OnboardingData = {
   },
 };
 
-export type StepType =
-  | "welcome"
-  | "role"
-  | "situation"
-  | "agence_info"
-  | "proprietaire_gere"
-  | "property"
-  | "housing_count"
-  | "occupation"
-  | "paiement"
-  | "complete";
-
 /**
- * Retourne la séquence exacte d'étapes actives selon le rôle et le contexte
+ * Séquence fixe, retenue par le récap final : 3 écrans + transition, quel
+ * que soit le rôle. Le formulaire "property" varie légèrement en contenu
+ * (bloc propriétaire géré pour Agence) mais reste une seule et même étape —
+ * plus de branchement par situation/rôle qui allongeait ou raccourcissait
+ * la séquence (source du bug de saut d'étape).
  */
-export function getStepSequence(
-  role: Role | null,
-  situation: Situation | null
-): StepType[] {
-  const steps: StepType[] = ["role", "situation"];
+export type StepType = "role" | "property" | "housing_count" | "complete";
 
-  if (!role || !situation) return steps;
+const FIXED_SEQUENCE: StepType[] = ["role", "property", "housing_count", "complete"];
 
-  if (role === "agence") {
-    steps.push("agence_info", "proprietaire_gere");
-  } else if (role === "gestionnaire") {
-    steps.push("proprietaire_gere");
-  }
-
-  steps.push("property", "housing_count");
-
-  const isDebutant =
-    role === "proprietaire" &&
-    (situation === "premier_bien" || situation === "commence_louer");
-
-  if (!isDebutant) {
-    steps.push("occupation");
-  }
-
-  if ((role === "proprietaire" && !isDebutant) || role === "agence") {
-    steps.push("paiement");
-  }
-
-  steps.push("complete");
-
-  return steps;
+export function getStepSequence(_role?: Role | null): StepType[] {
+  return FIXED_SEQUENCE;
 }
 
-export function calculateTotalSteps(
-  role: Role | null,
-  situation: Situation | null
-): number {
-  return getStepSequence(role, situation).length;
-}
-
-export function isProprietaireDebutant(
-  role: Role | null,
-  situation: Situation | null
-): boolean {
-  return (
-    role === "proprietaire" &&
-    (situation === "premier_bien" || situation === "commence_louer")
-  );
+export function calculateTotalSteps(): number {
+  return FIXED_SEQUENCE.length;
 }

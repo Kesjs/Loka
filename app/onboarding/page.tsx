@@ -5,13 +5,8 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import OnboardingLayout from "@/components/onboarding/OnboardingLayout";
 import StepRole from "@/components/onboarding/StepRole";
-import StepSituation from "@/components/onboarding/StepSituation";
-import StepAgenceInfo from "@/components/onboarding/StepAgenceInfo";
-import StepProprietaireGere from "@/components/onboarding/StepProprietaireGere";
 import StepProperty from "@/components/onboarding/StepProperty";
 import StepHousingCount from "@/components/onboarding/StepHousingCount";
-import StepOccupation from "@/components/onboarding/StepOccupation";
-import StepPaiement from "@/components/onboarding/StepPaiement";
 import StepComplete from "@/components/onboarding/StepComplete";
 import {
   OnboardingData,
@@ -43,15 +38,10 @@ export default function OnboardingPage() {
   const autoSaveFunctionRef = useRef<((step: number, data: OnboardingData) => Promise<void>) | null>(null);
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
-  const stepSequence = getStepSequence(data.role, data.situation);
+  // Séquence fixe (role → property → housing_count → complete), identique
+  // pour tous les rôles — seul le contenu de l'étape "property" varie.
+  const stepSequence = getStepSequence(data.role);
   const totalSteps = stepSequence.length;
-
-  // Ajuster l'étape courante si la séquence rétrécit suite à un changement de rôle
-  useEffect(() => {
-    if (step >= totalSteps) {
-      setStep(Math.max(totalSteps - 1, 0));
-    }
-  }, [totalSteps, step]);
 
   // Charger le brouillon au montage — on ne l'applique jamais silencieusement,
   // on demande toujours à l'utilisateur s'il veut reprendre ou repartir de zéro.
@@ -117,6 +107,12 @@ export default function OnboardingPage() {
 
   function prev() {
     setStep((s) => Math.max(s - 1, 0));
+  }
+
+  // Navigation directe depuis le rail — uniquement vers une étape déjà complétée
+  // (StepRail ne rend cliquables que les étapes avec state === "done").
+  function goToStep(index: number) {
+    setStep((s) => (index < s ? index : s));
   }
 
   async function handleFinish() {
@@ -210,38 +206,9 @@ export default function OnboardingPage() {
         return (
           <StepRole
             value={data.role}
-            onChange={(v) => setData((d) => ({ ...d, role: v, situation: null, roleInterne: undefined }))}
-            onNext={next}
-          />
-        );
-
-      case "situation":
-        return (
-          <StepSituation
-            role={data.role}
-            situation={data.situation}
-            roleInterne={data.roleInterne}
-            onChange={(sit, roleInt) =>
-              setData((d) => ({ ...d, situation: sit, roleInterne: roleInt }))
-            }
-            onNext={next}
-          />
-        );
-
-      case "agence_info":
-        return (
-          <StepAgenceInfo
-            value={data.agenceInfo}
-            onChange={(v) => setData((d) => ({ ...d, agenceInfo: v }))}
-            onNext={next}
-          />
-        );
-
-      case "proprietaire_gere":
-        return (
-          <StepProprietaireGere
-            value={data.proprietaireGere}
-            onChange={(v) => setData((d) => ({ ...d, proprietaireGere: v }))}
+            onChange={(v) => setData((d) => ({ ...d, role: v }))}
+            estADistance={!!data.estADistance}
+            onChangeADistance={(v) => setData((d) => ({ ...d, estADistance: v }))}
             onNext={next}
           />
         );
@@ -249,8 +216,11 @@ export default function OnboardingPage() {
       case "property":
         return (
           <StepProperty
+            role={data.role}
             value={data.bien}
             onChange={(v) => setData((d) => ({ ...d, bien: v }))}
+            proprietaireGere={data.proprietaireGere}
+            onChangeProprietaireGere={(v) => setData((d) => ({ ...d, proprietaireGere: v }))}
             onNext={next}
           />
         );
@@ -263,38 +233,6 @@ export default function OnboardingPage() {
             bienType={data.bien.type}
             onChange={(n) => setData((d) => ({ ...d, nombreLogements: n }))}
             onGenerate={(logements) => setData((d) => ({ ...d, logements }))}
-            onNext={next}
-          />
-        );
-
-      case "occupation":
-        return (
-          <StepOccupation
-            logements={data.logements}
-            onChange={(logements) => setData((d) => ({ ...d, logements }))}
-            onNext={next}
-          />
-        );
-
-      case "paiement":
-        return (
-          <StepPaiement
-            moyenPaiement={data.moyenPaiement}
-            garantie={data.preferences.garantie}
-            montantGarantie={data.preferences.montantGarantie}
-            onChangeMoyen={(v) => setData((d) => ({ ...d, moyenPaiement: v }))}
-            onChangeGarantie={(v) =>
-              setData((d) => ({
-                ...d,
-                preferences: { ...d.preferences, garantie: v },
-              }))
-            }
-            onChangeMontant={(v) =>
-              setData((d) => ({
-                ...d,
-                preferences: { ...d.preferences, montantGarantie: v },
-              }))
-            }
             onNext={next}
           />
         );
@@ -319,8 +257,8 @@ export default function OnboardingPage() {
       step={step}
       totalSteps={totalSteps}
       role={data.role}
-      situation={data.situation}
       onPrev={prev}
+      onNavigateToStep={goToStep}
     >
       <AnimatePresence mode="wait">
         <motion.div

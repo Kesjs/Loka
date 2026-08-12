@@ -1,8 +1,9 @@
 /**
  * components/dashboard/DashboardIndividuel.tsx
- * 
+ *
  * Dashboard pour un propriétaire individuel (profil: "proprietaire")
- * Affiche : stats personnelles, paiements récents, contrats expirants
+ * Affiche : stats personnelles (dont loyers en retard, écart revenu),
+ * paiements récents, contrats expirants.
  */
 
 "use client";
@@ -12,6 +13,9 @@ import { DashboardHeader } from "./DashboardHeader";
 import { StatsGrid } from "./StatsGrid";
 import { RecentPayments } from "./RecentPayments";
 import { ExpiringContracts } from "./ExpiringContracts";
+import { RevenueBarChart } from "./RevenueBarChart";
+import { OccupancyRingChart } from "./OccupancyRingChart";
+import { CollectionGaugeChart } from "./CollectionGaugeChart";
 
 export interface DashboardIndividuelProps {
   dashboard: DashboardData;
@@ -26,11 +30,24 @@ export function DashboardIndividuel({ dashboard }: DashboardIndividuelProps) {
         greeting="Bienvenue dans votre espace de gestion immobilière"
       />
 
-      {/* Statistiques principales */}
-      <StatsGrid stats={dashboard.stats} />
+      {/* Statistiques principales, adaptées au rôle Propriétaire */}
+      <StatsGrid stats={dashboard.stats} role="individuel" />
+
+      {/* Graphiques — revenus, occupation, recouvrement (3 cartes égales, comme le modèle) */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <CollectionGaugeChart
+          aJour={dashboard.stats.loyersAJour}
+          enRetard={dashboard.stats.loyersEnRetard}
+        />
+        <RevenueBarChart data={dashboard.revenueHistory} />
+        <OccupancyRingChart
+          occupes={dashboard.stats.logementsOccupes}
+          vacants={dashboard.stats.logementsVacants}
+        />
+      </div>
 
       {/* Section Finances */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Paiements récents */}
         <RecentPayments payments={dashboard.recentPayments} />
 
@@ -39,21 +56,21 @@ export function DashboardIndividuel({ dashboard }: DashboardIndividuelProps) {
       </div>
 
       {/* Section CTA */}
-      <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6 text-center">
-        <p className="text-neutral-600 mb-4">
+      <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-center">
+        <p className="mb-4 text-neutral-600">
           Vous gérez {dashboard.stats.nombreImmeubles} immeuble{dashboard.stats.nombreImmeubles > 1 ? "s" : ""} avec{" "}
           {dashboard.stats.nombreLogements} logement{dashboard.stats.nombreLogements > 1 ? "s" : ""}
         </p>
-        <div className="flex gap-3 justify-center">
+        <div className="flex justify-center gap-3">
           <a
             href="/immeubles/new"
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+            className="rounded-lg bg-primary-600 px-4 py-2 text-white transition hover:bg-primary-700"
           >
             Ajouter un immeuble
           </a>
           <a
             href="/logements/new"
-            className="px-4 py-2 bg-neutral-200 text-neutral-900 rounded-lg hover:bg-neutral-300 transition"
+            className="rounded-lg bg-neutral-200 px-4 py-2 text-neutral-900 transition hover:bg-neutral-300"
           >
             Ajouter un logement
           </a>

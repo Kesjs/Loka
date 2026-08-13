@@ -27,11 +27,22 @@ export default async function TenantDashboardPage() {
   const { data: contrat } = await supabase
     .from("contrats")
     .select(
-      "id, loyer_mensuel, date_debut, date_fin, statut, logement:logements(nom, type, immeuble:immeubles(nom, ville))"
+      "id, loyer_mensuel, date_debut, date_fin, statut, logement:logements!inner(nom, type, immeuble:immeubles(nom, ville))"
     )
     .eq("locataire_id", locataire.id)
     .eq("statut", "actif")
     .maybeSingle();
+
+  // Transformer le tableau logement en objet unique (Supabase retourne toujours un tableau pour les relations)
+  const logementData = contrat?.logement && Array.isArray(contrat.logement) && contrat.logement.length > 0
+    ? {
+        nom: contrat.logement[0].nom,
+        type: contrat.logement[0].type,
+        immeuble: contrat.logement[0].immeuble && Array.isArray(contrat.logement[0].immeuble) && contrat.logement[0].immeuble.length > 0
+          ? contrat.logement[0].immeuble[0]
+          : null
+      }
+    : null;
 
   const { data: paiements } = contrat
     ? await supabase
@@ -47,7 +58,7 @@ export default async function TenantDashboardPage() {
       locataireNom={locataire.nom}
       contratId={contrat?.id ?? null}
       loyerMensuel={contrat?.loyer_mensuel ?? null}
-      logement={contrat?.logement ?? null}
+      logement={logementData}
       paiements={paiements ?? []}
     />
   );

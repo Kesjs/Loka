@@ -258,7 +258,14 @@ export async function getDashboardData(): Promise<DashboardData | null> {
         .in("proprietaire_gere_id", proprietaireGereIds)
         .order("mois", { ascending: false });
 
-      const dernierParProprietaire = new Map<string, (typeof reversements)[number]>();
+      const dernierParProprietaire = new Map<string, {
+        proprietaire_gere_id: string;
+        montant_commission: number;
+        montant_verse: number;
+        statut: string;
+        date_versement: string;
+        mois: string;
+      }>();
       (reversements || []).forEach((r) => {
         if (!dernierParProprietaire.has(r.proprietaire_gere_id)) {
           dernierParProprietaire.set(r.proprietaire_gere_id, r);

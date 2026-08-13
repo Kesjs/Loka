@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import type { ElementType } from "react";
 
 interface EmptyStateProps {
-  icon: ElementType;
+  icon: React.ComponentType<any>;
   title: string;
   description: string;
   actionLabel?: string;

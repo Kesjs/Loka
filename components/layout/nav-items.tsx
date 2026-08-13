@@ -19,12 +19,11 @@ import {
   ArrowsLeftRight,
 } from "@phosphor-icons/react";
 import type { OrganisationType } from "@/lib/dashboard";
-import type { ElementType } from "react";
 
 export interface NavItem {
   label: string;
   href: string;
-  icon: ElementType;
+  icon: React.ComponentType<any>;
   group?: string;
   conditionalShow?: OrganisationType | "gestionnaire"; // "gestionnaire" means shown for both gestionnaire and agence
   divider?: boolean;

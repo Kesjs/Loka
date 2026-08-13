@@ -857,7 +857,7 @@ export default function LandingPage() {
               { icon: UsersThree, label: "Locataires", desc: "Historique et contacts centralisés" },
               { icon: FileText, label: "Contrats", desc: "Échéances suivies automatiquement" },
               { icon: House, label: "Occupation", desc: "Qui occupe quoi, en un coup d'œil" },
-            ].map((item) => (
+            ].map((item: { icon: React.ComponentType<any>; label: string; desc: string }) => (
               <div
                 key={item.label}
                 className="flex flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-5 py-6 text-center shadow-[0_10px_30px_rgba(30,41,59,0.05)] transition-transform hover:-translate-y-1"

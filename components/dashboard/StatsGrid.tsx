@@ -36,7 +36,7 @@ function formatCurrency(value: number) {
 interface StatCardProps {
   label: string;
   value: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<any>;
   iconBg: string;
   iconColor: string;
   trend?: { value: string; positive: boolean };

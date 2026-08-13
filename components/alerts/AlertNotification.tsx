@@ -44,7 +44,7 @@ export function AlertNotification({ alert, onClose }: AlertNotificationProps) {
     },
   }
 
-  const typeConfig: Record<string, { icon: React.ElementType; label: string }> = {
+  const typeConfig: Record<string, { icon: React.ComponentType<any>; label: string }> = {
     missing_payment: { icon: Warning, label: 'Paiement manquant' },
     expiring_contract: { icon: Info, label: 'Contrat expirant' },
     deposit_to_return: { icon: CheckCircle, label: 'Dépôt à restituer' },

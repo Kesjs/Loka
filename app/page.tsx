@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -32,6 +32,7 @@ import {
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import HeroBuildingsBackdrop from "@/components/landing/HeroBuildingsBackdrop";
 
 type RevealDirection = "up" | "left" | "right";
 type StoryArtifact = "payment" | "receipt" | "agency" | "tenant";
@@ -525,6 +526,30 @@ export default function LandingPage() {
     return pathname === href;
   }
 
+  // Indicateur de nav unique (mesuré) — évite le "double underline" que provoquait
+  // le layoutId partagé entre spans montés/démontés conditionnellement au survol rapide.
+  const navRef = useRef<HTMLElement | null>(null);
+  const navLinkRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
+  const [navIndicator, setNavIndicator] = useState({ left: 0, width: 0, visible: false });
+  const activeNavHref = navItems.find((item) => isNavItemActive(item.href))?.href ?? null;
+  const targetNavHref = hoveredNavHref ?? activeNavHref;
+
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    const target = targetNavHref ? navLinkRefs.current.get(targetNavHref) : null;
+    if (!nav || !target) {
+      setNavIndicator((prev) => ({ ...prev, visible: false }));
+      return;
+    }
+    const navRect = nav.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    setNavIndicator({
+      left: targetRect.left - navRect.left + 12,
+      width: targetRect.width - 24,
+      visible: true,
+    });
+  }, [targetNavHref, navScrolled]);
+
   // Scroll-spy : suit la section visible pour illuminer le bon item de nav.
   useEffect(() => {
     const sectionIds = ["fonctionnalites", "tarifs"];
@@ -599,18 +624,22 @@ export default function LandingPage() {
           </Link>
 
           <nav
+            ref={navRef}
             aria-label="Navigation principale"
             onMouseLeave={() => setHoveredNavHref(null)}
-            className="hidden items-center gap-1 text-[13px] font-semibold text-neutral-600 lg:flex"
+            className="relative hidden items-center gap-1 text-[13px] font-semibold text-neutral-600 lg:flex"
           >
             {navItems.map((item) => {
               const active = isNavItemActive(item.href);
-              const showUnderline = hoveredNavHref ? hoveredNavHref === item.href : active;
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  ref={(el) => {
+                    if (el) navLinkRefs.current.set(item.href, el);
+                    else navLinkRefs.current.delete(item.href);
+                  }}
                   onMouseEnter={() => setHoveredNavHref(item.href)}
                   aria-current={active ? "page" : undefined}
                   className={`relative min-h-11 rounded-lg px-3 py-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 ${
@@ -618,16 +647,19 @@ export default function LandingPage() {
                   }`}
                 >
                   {item.label}
-                  {showUnderline && (
-                    <motion.span
-                      layoutId="nav-underline"
-                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                      className="absolute inset-x-3 -bottom-0.5 h-[2px] rounded-full bg-accent-500"
-                    />
-                  )}
                 </Link>
               );
             })}
+            <motion.span
+              aria-hidden="true"
+              animate={{
+                x: navIndicator.left,
+                width: navIndicator.width,
+                opacity: navIndicator.visible ? 1 : 0,
+              }}
+              transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              className="pointer-events-none absolute -bottom-0.5 left-0 h-[2px] rounded-full bg-accent-500"
+            />
           </nav>
 
 
@@ -724,8 +756,9 @@ export default function LandingPage() {
         <section aria-labelledby="hero-title" className="relative mx-auto max-w-[1240px] scroll-mt-24 px-5 pb-20 pt-20 text-center sm:px-6 lg:px-10 lg:pb-28 lg:pt-32">
           <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[560px] w-[min(100%,1040px)] -translate-x-1/2 rounded-full bg-primary-50/70 blur-3xl" aria-hidden="true" />
           <div className="pointer-events-none absolute left-1/2 top-52 -z-10 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-accent-50/50 blur-3xl" aria-hidden="true" />
+          <HeroBuildingsBackdrop />
 
-          <div className="mx-auto flex max-w-[760px] flex-col items-center">
+          <div className="relative mx-auto flex max-w-[760px] flex-col items-center">
             <motion.p
               initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
               animate={{ opacity: 1, y: 0 }}
@@ -749,7 +782,7 @@ export default function LandingPage() {
 >
   Sachez toujours
   <br />
-  <span className="whitespace-nowrap">
+  <span className="whitespace-normal lg:whitespace-nowrap">
     <span className="relative text-accent-600">
       où en est
       <svg

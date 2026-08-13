@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -9,7 +10,6 @@ import {
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
-  useTransform,
 } from "framer-motion";
 import {
   ArrowRight,
@@ -32,7 +32,6 @@ import {
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import HeroShowcase from "@/components/landing/HeroShowcase";
 
 type RevealDirection = "up" | "left" | "right";
 type StoryArtifact = "payment" | "receipt" | "agency" | "tenant";
@@ -44,6 +43,7 @@ type FeatureStory = {
   body: string;
   cta?: string;
   href?: string;
+  note?: string;
   artifact: StoryArtifact;
   reverse?: boolean;
 };
@@ -57,6 +57,7 @@ type FaqItem = {
 type PricingPlan = {
   id: "starter" | "pro" | "agency";
   name: string;
+  pourQui: string;
   priceMonthly: string;
   priceAnnual: string;
   unit?: string;
@@ -108,9 +109,9 @@ const timelineSteps = [
 const featureStories: FeatureStory[] = [
   {
     id: "payment",
-    eyebrow: "Le parcours locataire",
-    title: "Le locataire paie où qu'il soit.",
-    body: "Depuis son portail, il choisit MTN MoMo, Moov Money ou la carte bancaire. Vous recevez la confirmation sans appeler, vérifier ou recopier.",
+    eyebrow: "Le suivi des règlements",
+    title: "Chaque règlement, retrouvé en un instant.",
+    body: "MTN MoMo, Moov Money, espèces ou virement : vous enregistrez le règlement en quelques secondes, et il rejoint aussitôt l'historique du locataire.",
     // Pas de CTA — c'est déjà cette section affichée (D.4 fix)
     artifact: "payment",
   },
@@ -120,7 +121,8 @@ const featureStories: FeatureStory[] = [
     title: "Vos documents restent accessibles, même après le paiement.",
     body: "La quittance est disponible dans le portail, sous votre identité, avec le montant, la date et l'historique utiles au locataire.",
     cta: "Tester le portail",
-    href: "#portail-locataire",
+    href: "/tenant/login",
+    note: "Accès envoyé par vous — aucune inscription libre.",
     artifact: "receipt",
     reverse: true,
   },
@@ -137,7 +139,8 @@ const featureStories: FeatureStory[] = [
     title: "Un espace qui répond avant de relancer.",
     body: "Quittance, historique des paiements et demandes : le portail locataire rend chaque étape visible, même quand votre journée est pleine.",
     cta: "Découvrir le portail",
-    href: "#portail-locataire",
+    href: "/tenant/login",
+    note: "Vos locataires reçoivent leurs identifiants directement de vous — ils n'ont plus qu'à se connecter.",
     artifact: "tenant",
     reverse: true,
   },
@@ -147,6 +150,7 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "starter",
     name: "Starter",
+    pourQui: "Vous débutez avec 1 à 3 logements",
     priceMonthly: "Gratuit",
     priceAnnual: "Gratuit",
     description: "Pour débuter avec 1 à 3 logements.",
@@ -157,6 +161,7 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "pro",
     name: "Pro",
+    pourQui: "Vous gérez votre propre portefeuille",
     priceMonthly: "9.900",
     priceAnnual: "79.200",
     unit: "FCFA",
@@ -169,6 +174,7 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "agency",
     name: "Agence",
+    pourQui: "Vous gérez pour plusieurs propriétaires",
     priceMonthly: "29.900",
     priceAnnual: "239.200",
     unit: "FCFA",
@@ -182,8 +188,8 @@ const pricingPlans: PricingPlan[] = [
 const faqItems: FaqItem[] = [
   {
     id: "payment",
-    question: "Comment le locataire règle-t-il son loyer ?",
-    answer: "Il reçoit une invitation sécurisée vers son portail, puis règle par MTN Mobile Money, Moov Money ou carte. Une fois le paiement validé, la quittance est générée.",
+    question: "Comment j'enregistre le règlement d'un locataire ?",
+    answer: "Vous enregistrez le règlement (MTN Mobile Money, Moov Money, espèces ou virement) en quelques secondes depuis votre espace. La quittance correspondante est générée automatiquement.",
   },
   {
     id: "receipts",
@@ -198,7 +204,17 @@ const faqItems: FaqItem[] = [
   {
     id: "branding",
     question: "Puis-je utiliser mon propre logo ?",
-    answer: "C'est prévu dans notre feuille de route proche. En attendant, vos quittances portent déjà votre nom et vos coordonnées.",
+    answer: "Oui, dès aujourd'hui. Ajoutez votre logo depuis les paramètres de votre espace — il apparaît ensuite sur vos quittances et votre portail.",
+  },
+  {
+    id: "language",
+    question: "Le support est-il disponible en français ?",
+    answer: "Oui, entièrement. L'application, les documents générés et notre équipe support sont en français, basés au Bénin.",
+  },
+  {
+    id: "data",
+    question: "Que deviennent mes données si j'arrête d'utiliser Lokka ?",
+    answer: "Vous pouvez exporter l'ensemble de vos données (biens, locataires, historique de règlements) en PDF ou CSV à tout moment, sans condition.",
   },
 ];
 
@@ -435,6 +451,9 @@ function StoryRow({ story }: { story: FeatureStory }) {
             <ArrowUpRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
           </Link>
         ) : null}
+        {story.note ? (
+          <p className="mt-3 text-xs font-medium text-neutral-500">{story.note}</p>
+        ) : null}
       </div>
       <motion.div
         whileHover={shouldReduceMotion ? undefined : { y: -5 }}
@@ -490,9 +509,46 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedPlanComparison, setSelectedPlanComparison] = useState<string | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [hoveredNavHref, setHoveredNavHref] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  const navItems = [
+    { label: "Fonctionnalités", href: "#fonctionnalites" },
+    { label: "Tarifs", href: "#tarifs" },
+    { label: "À propos", href: "/a-propos" },
+    { label: "Contact", href: "/contact" },
+  ];
+
+  function isNavItemActive(href: string) {
+    if (href.startsWith("#")) return activeSection === href.slice(1);
+    return pathname === href;
+  }
+
+  // Scroll-spy : suit la section visible pour illuminer le bon item de nav.
+  useEffect(() => {
+    const sectionIds = ["fonctionnalites", "tarifs"];
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveSection(visible.target.id);
+      },
+      { rootMargin: "-30% 0px -55% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
   const { scrollY, scrollYProgress } = useScroll();
   const shouldReduceMotion = useReducedMotion();
-  const heroParallax = useTransform(scrollY, [0, 900], [0, shouldReduceMotion ? 0 : -48]);
   const hoursSaved = Math.round(logementsCount * 0.8);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -526,7 +582,7 @@ export default function LandingPage() {
 
       <header
         className={`fixed inset-x-0 top-0 z-60 border-b bg-white/90 backdrop-blur-xl transition-all ${
-          navScrolled ? "border-neutral-200 shadow-[0_16px_40px_-24px_rgba(15,23,42,0.65)]" : "border-transparent"
+          navScrolled ? "border-neutral-200" : "border-transparent"
         }`}
       >
         <div className={`mx-auto flex max-w-[1240px] items-center justify-between gap-6 px-5 transition-all sm:px-6 lg:px-10 ${navScrolled ? "min-h-[64px]" : "min-h-[76px]"}`}>
@@ -542,18 +598,38 @@ export default function LandingPage() {
             </span>
           </Link>
 
-          <nav aria-label="Navigation principale" className="hidden items-center gap-7 text-[13px] font-semibold text-neutral-600 lg:flex">
-            {[
-              ["Fonctionnalités", "#fonctionnalites"],
-              ["Tarifs", "#tarifs"],
-              ["À propos", "/a-propos"],
-              ["Contact", "/contact"],
-            ].map(([label, href]) => (
-              <Link key={href} href={href} className="min-h-11 rounded-lg px-2 py-3 transition-colors hover:text-primary-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800">
-                {label}
-              </Link>
-            ))}
+          <nav
+            aria-label="Navigation principale"
+            onMouseLeave={() => setHoveredNavHref(null)}
+            className="hidden items-center gap-1 text-[13px] font-semibold text-neutral-600 lg:flex"
+          >
+            {navItems.map((item) => {
+              const active = isNavItemActive(item.href);
+              const showUnderline = hoveredNavHref ? hoveredNavHref === item.href : active;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onMouseEnter={() => setHoveredNavHref(item.href)}
+                  aria-current={active ? "page" : undefined}
+                  className={`relative min-h-11 rounded-lg px-3 py-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 ${
+                    active ? "text-primary-800" : "text-neutral-600 hover:text-primary-800"
+                  }`}
+                >
+                  {item.label}
+                  {showUnderline && (
+                    <motion.span
+                      layoutId="nav-underline"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      className="absolute inset-x-3 -bottom-0.5 h-[2px] rounded-full bg-accent-500"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
+
 
           <div className="flex items-center gap-2.5">
             <Button asChild variant="ghost" size="sm" className="hidden min-h-11 rounded-lg px-3 py-3 text-[13px] font-semibold text-neutral-600 transition-colors hover:text-primary-800 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800 sm:inline-flex">
@@ -603,23 +679,28 @@ export default function LandingPage() {
                 transition={{ delay: 0.1, duration: 0.2 }}
                 className="mx-auto flex max-w-[1240px] flex-col gap-1 px-5 py-4 sm:px-6"
               >
-                {[
-                  ["Fonctionnalités", "#fonctionnalites"],
-                  ["Tarifs", "#tarifs"],
-                  ["À propos", "/a-propos"],
-                  ["Contact", "/contact"],
-                ].map(([label, href]) => (
-                  <motion.div
-                    key={href}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Link href={href} onClick={closeMobileMenu} className="flex min-h-11 items-center rounded-xl px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800">
-                      {label}
-                    </Link>
-                  </motion.div>
-                ))}
+                {navItems.map((item) => {
+                  const active = isNavItemActive(item.href);
+                  return (
+                    <motion.div
+                      key={item.href}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Link
+                        href={item.href}
+                        onClick={closeMobileMenu}
+                        aria-current={active ? "page" : undefined}
+                        className={`flex min-h-11 items-center rounded-xl px-3 py-3 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-800 ${
+                          active ? "bg-accent-50 text-accent-600" : "text-neutral-700 hover:bg-primary-50 hover:text-primary-800"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -640,77 +721,124 @@ export default function LandingPage() {
       </header>
 
       <main id="accueil" className="pt-[76px]">
-        <section aria-labelledby="hero-title" className="relative mx-auto max-w-[1240px] scroll-mt-24 px-5 pb-20 pt-20 sm:px-6 lg:px-10 lg:pb-32 lg:pt-32">
+        <section aria-labelledby="hero-title" className="relative mx-auto max-w-[1240px] scroll-mt-24 px-5 pb-20 pt-20 text-center sm:px-6 lg:px-10 lg:pb-28 lg:pt-32">
           <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[560px] w-[min(100%,1040px)] -translate-x-1/2 rounded-full bg-primary-50/70 blur-3xl" aria-hidden="true" />
-          <div className="pointer-events-none absolute right-0 top-40 -z-10 h-[320px] w-[320px] rounded-full bg-accent-50/50 blur-3xl" aria-hidden="true" />
-          <div className="grid items-center gap-14 lg:grid-cols-[5fr_7fr] lg:gap-10">
-            <div className="max-w-[560px]">
-              <motion.p
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="mb-7 inline-flex items-center gap-2 rounded-full border border-accent-200 bg-accent-50 px-3.5 py-2 text-[11px] font-extrabold uppercase tracking-[0.15em] text-accent-600"
-              >
-                <span className="h-2 w-2 rounded-full bg-accent-500" aria-hidden="true" />
-                Pour propriétaires & agences au Bénin 🇧🇯
-              </motion.p>
-              <motion.h1
-                id="hero-title"
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: shouldReduceMotion ? 0 : 0.08, ease: "easeOut" }}
-                className="max-w-[600px] text-[clamp(2.6rem,5.6vw,4.4rem)] font-bold leading-[1.0] tracking-[-0.06em] text-neutral-950"
-              >
-                Ce qui vivait dans un <span className="relative whitespace-nowrap text-accent-600">cahier<svg aria-hidden="true" viewBox="0 0 200 12" className="absolute -bottom-1 left-0 w-full text-accent-300"><path d="M2 9C40 2 160 2 198 9" stroke="currentColor" strokeWidth="4" strokeLinecap="round" fill="none" /></svg></span> vit maintenant dans une seule vue.
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : 0.18, ease: "easeOut" }}
-                className="mt-8 max-w-[520px] text-lg leading-8 text-neutral-600"
-              >
-                Encaissez par MTN MoMo, Moov Money ou carte, puis envoyez des quittances conformes et personnalisées — à Cotonou, Calavi comme à Porto-Novo.
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : 0.28, ease: "easeOut" }}
-                className="mt-9 flex flex-col gap-3 sm:flex-row"
-              >
-                <Button asChild size="lg" className="min-h-12 rounded-lg bg-primary-800 px-6 text-sm font-bold shadow-lg shadow-primary-800/20 hover:bg-primary-900">
-                  <Link href="/auth?tab=signup">
-                    Créer mon compte
-                    <ArrowRight size={17} weight="bold" aria-hidden="true" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="min-h-12 rounded-lg border-neutral-300 bg-white px-6 text-sm font-bold text-neutral-800 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800">
-                  <a href="#portail-locataire">
-                    Voir le portail locataire
-                    <ArrowUpRight size={17} weight="bold" aria-hidden="true" />
-                  </a>
-                </Button>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : 0.36, ease: "easeOut" }}
-                className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 text-xs font-semibold text-neutral-500"
-              >
-                <span className="inline-flex items-center gap-2"><CheckCircle size={17} className="text-primary-800" aria-hidden="true" />3 minutes pour démarrer</span>
-                <span className="inline-flex items-center gap-2"><MapPin size={17} className="text-primary-800" aria-hidden="true" />🇧🇯 Bénin · Cotonou · Calavi · Porto-Novo</span>
-              </motion.div>
-            </div>
+          <div className="pointer-events-none absolute left-1/2 top-52 -z-10 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-accent-50/50 blur-3xl" aria-hidden="true" />
+
+          <div className="mx-auto flex max-w-[760px] flex-col items-center">
+            <motion.p
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="mb-7 inline-flex items-center gap-2 rounded-full border border-accent-200 bg-accent-50 px-3.5 py-2 text-[11px] font-extrabold uppercase tracking-[0.15em] text-accent-600"
+            >
+              <span className="h-2 w-2 rounded-full bg-accent-500" aria-hidden="true" />
+              Pour propriétaires & agences au Bénin 🇧🇯
+            </motion.p>
+
+           <motion.h1
+  id="hero-title"
+  initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 18 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{
+    duration: 0.6,
+    delay: shouldReduceMotion ? 0 : 0.08,
+    ease: "easeOut",
+  }}
+  className="text-[clamp(2.6rem,6vw,4.6rem)] font-bold leading-[1.04] tracking-[-0.06em] text-neutral-950"
+>
+  Sachez toujours
+  <br />
+  <span className="whitespace-nowrap">
+    <span className="relative text-accent-600">
+      où en est
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 220 12"
+        className="absolute -bottom-1 left-0 w-full text-accent-300"
+      >
+        <path
+          d="M2 9C44 2 176 2 218 9"
+          stroke="currentColor"
+          strokeWidth="4"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+    </span>{" "}
+    chaque{" "}
+    <span className="text-accent-600">logement.</span>
+  </span>
+</motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : 0.18, ease: "easeOut" }}
+              className="mt-7 max-w-[560px] text-lg leading-8 text-neutral-600"
+            >
+              Occupation, contrats qui expirent, quittances à envoyer : Lokka réunit tout votre patrimoine locatif dans un tableau de bord clair.
+            </motion.p>
 
             <motion.div
-              style={{ y: heroParallax }}
-              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 24 }}
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: shouldReduceMotion ? 0 : 0.2, ease: "easeOut" }}
-              className="min-w-0 [perspective:1600px] lg:pt-3"
+              transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : 0.28, ease: "easeOut" }}
+              className="mt-9 flex flex-col gap-3 sm:flex-row"
             >
-              <HeroShowcase />
+              <Button asChild size="lg" className="min-h-12 rounded-lg bg-primary-800 px-6 text-sm font-bold shadow-lg shadow-primary-800/20 hover:bg-primary-900">
+                <Link href="/auth?tab=signup">
+                  Créer mon compte
+                  <ArrowRight size={17} weight="bold" aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="min-h-12 rounded-lg border-neutral-300 bg-white px-6 text-sm font-bold text-neutral-800 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-800">
+                <a href="#fonctionnalites">
+                  Comment ça marche
+                  <ArrowUpRight size={17} weight="bold" aria-hidden="true" />
+                </a>
+              </Button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : 0.36, ease: "easeOut" }}
+              className="mt-8 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs font-semibold text-neutral-500"
+            >
+              <span className="inline-flex items-center gap-2"><CheckCircle size={17} className="text-primary-800" aria-hidden="true" />3 minutes pour démarrer</span>
+              <span className="inline-flex items-center gap-2"><MapPin size={17} className="text-primary-800" aria-hidden="true" />🇧🇯 Bénin · Cotonou · Calavi · Porto-Novo</span>
             </motion.div>
           </div>
+
+          {/* Rangée de bénéfices — ancrage visuel sans dépendre d'une capture produit */}
+          <motion.div
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6, delay: shouldReduceMotion ? 0 : 0.44, ease: "easeOut" }}
+            className="mx-auto mt-16 grid max-w-[920px] gap-4 sm:grid-cols-2 lg:mt-20 lg:grid-cols-4"
+          >
+            {[
+              { icon: Buildings, label: "Immeubles & logements", desc: "Toute votre structure, organisée" },
+              { icon: UsersThree, label: "Locataires", desc: "Historique et contacts centralisés" },
+              { icon: FileText, label: "Contrats", desc: "Échéances suivies automatiquement" },
+              { icon: House, label: "Occupation", desc: "Qui occupe quoi, en un coup d'œil" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-5 py-6 text-center shadow-[0_10px_30px_rgba(30,41,59,0.05)] transition-transform hover:-translate-y-1"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-50">
+                  <item.icon size={20} weight="duotone" className="text-primary-800" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-neutral-900">{item.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-neutral-500">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
         </section>
 
         <section id="preuve" aria-labelledby="proof-title" className="scroll-mt-24 border-y border-primary-100 bg-neutral-50">
@@ -740,7 +868,10 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Badges moyens de paiement — preuve visuelle plutôt que texte seul */}
+            {/* Badges moyens de paiement — désactivés tant que les encaissements
+                ne sont pas réellement en production. À réactiver dès que le
+                premier paiement Mobile Money passe en prod (retirer ce commentaire). */}
+            {/*
             <Reveal delay={0.1} className="mt-8 flex flex-wrap items-center gap-3 border-t border-neutral-200 pt-6">
               <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-400">Encaissements acceptés</span>
               {["MTN Mobile Money", "Moov Money", "Carte bancaire"].map((method) => (
@@ -753,6 +884,7 @@ export default function LandingPage() {
                 </span>
               ))}
             </Reveal>
+            */}
           </div>
         </section>
 
@@ -882,11 +1014,12 @@ export default function LandingPage() {
                     viewport={{ once: true, amount: 0.15 }}
                     transition={{ duration: 0.55, delay: shouldReduceMotion ? 0 : index * 0.07, ease: "easeOut" }}
                     whileHover={shouldReduceMotion ? undefined : { y: -5 }}
-                    className={`relative flex flex-col rounded-[24px] border bg-white p-6 shadow-[0_18px_50px_rgba(30,41,59,0.08)] transition-all sm:p-7 ${plan.highlighted ? "border-2 border-primary-600 shadow-[0_24px_60px_rgba(79,70,229,0.16)] lg:-mt-4 lg:mb-4" : "border-neutral-200"}`}
+                    className={`relative flex flex-col rounded-[24px] border bg-white p-6 shadow-[0_18px_50px_rgba(30,41,59,0.08)] transition-all sm:p-7 ${plan.highlighted ? "border-2 border-accent-400 shadow-[0_24px_60px_rgba(198,84,45,0.18)] lg:-mt-4 lg:mb-4" : "border-neutral-200"}`}
                   >
-                    {plan.highlighted ? <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white">Recommandé</span> : null}
-                    <span className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-extrabold ${plan.highlighted ? "bg-primary-50 text-primary-800" : "bg-neutral-100 text-neutral-600"}`}>{plan.name}</span>
-                    <div className="mt-6">
+                    {plan.highlighted ? <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent-500 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white">Recommandé</span> : null}
+                    <span className={`inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-extrabold ${plan.highlighted ? "bg-accent-50 text-accent-600" : "bg-neutral-100 text-neutral-600"}`}>{plan.name}</span>
+                    <p className="mt-3 text-sm font-bold text-neutral-800">{plan.pourQui}</p>
+                    <div className="mt-4">
                       <div className="flex items-baseline gap-1">
                         <p className="text-3xl font-bold tracking-[-0.05em] text-neutral-950 sm:text-4xl">{price}</p>
                         {price !== "Gratuit" && <span className="text-xs font-semibold text-neutral-500">{plan.unit}</span>}
@@ -895,9 +1028,9 @@ export default function LandingPage() {
                       <p className="mt-2 text-sm leading-6 text-neutral-500">{plan.description}</p>
                     </div>
                     <ul className="mt-6 flex-1 space-y-3 border-t border-neutral-200 pt-6 text-sm text-neutral-700">
-                      {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2.5"><CheckCircle size={17} className="mt-0.5 shrink-0 text-primary-700" aria-hidden="true" />{feature}</li>)}
+                      {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2.5"><CheckCircle size={17} className={`mt-0.5 shrink-0 ${plan.highlighted ? "text-accent-500" : "text-primary-700"}`} aria-hidden="true" />{feature}</li>)}
                     </ul>
-                    <Button asChild size="lg" className={`mt-8 min-h-12 w-full rounded-lg text-sm font-bold ${plan.highlighted ? "bg-primary-600 text-white hover:bg-primary-700" : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"}`}>
+                    <Button asChild size="lg" className={`mt-8 min-h-12 w-full rounded-lg text-sm font-bold ${plan.highlighted ? "bg-accent-500 text-white hover:bg-accent-600" : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"}`}>
                       <Link href={plan.href}>{plan.cta}{plan.highlighted ? <ArrowRight size={17} weight="bold" aria-hidden="true" /> : null}</Link>
                     </Button>
                   </motion.div>
@@ -979,7 +1112,13 @@ export default function LandingPage() {
               </div>
             </Reveal>
             <Reveal className="mt-8 text-center">
-              <Link href="/contact" className="group inline-flex min-h-11 items-center gap-2 text-sm font-extrabold text-primary-800 underline decoration-primary-200 decoration-2 underline-offset-4 hover:text-primary-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800">Contacter l'équipe <ArrowUpRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" /></Link>
+              <Link href="/contact" className="group relative inline-flex min-h-11 items-center gap-2 text-sm font-extrabold text-primary-800 hover:text-primary-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-800">
+                <span className="relative">
+                  Contacter l&apos;équipe
+                  <span className="absolute inset-x-0 -bottom-0.5 h-[2px] origin-left scale-x-0 rounded-full bg-accent-500 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+                </span>
+                <ArrowUpRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+              </Link>
             </Reveal>
           </div>
         </section>

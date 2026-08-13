@@ -130,8 +130,16 @@ button:disabled {
   cursor: not-allowed;
 }
 
-a:hover {
-  text-decoration: underline;
+/* Dans un @layer base : les classes Tailwind (hover:no-underline, etc.)
+   restent prioritaires et peuvent désactiver ce soulignement natif.
+   Sans @layer, cette règle passait "au-dessus" de toutes les utilities
+   Tailwind (les styles hors @layer ont toujours la priorité dans l'ordre
+   des cascade layers) et créait un double soulignement sur les liens qui
+   ont déjà leur propre soulignement animé (ex: "Retour à l'accueil"). */
+@layer base {
+  a:hover {
+    text-decoration: underline;
+  }
 }
 
 /* Page transition animations */

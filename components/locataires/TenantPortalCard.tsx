@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CircleNotch, PaperPlaneRight, CheckCircle, EnvelopeSimple } from "@phosphor-icons/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
 
 interface TenantPortalCardProps {
   locataireId?: string;
@@ -28,41 +27,33 @@ export function TenantPortalCard({
 
   async function handleInvite() {
     if (!locataireId) return;
+    if (!locataireEmail) {
+      setErrorMsg("Ajoutez un email au locataire avant de l'inviter.");
+      return;
+    }
     setSending(true);
     setErrorMsg("");
 
     try {
-      const supabase = createClient();
-      // Générer token unique
-      const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
-
-      // Mettre à jour en base
-      const { error: dbError } = await supabase
-        .from("locataires")
-        .update({ activation_token: token })
-        .eq("id", locataireId);
-
-      if (dbError) {
-        setErrorMsg("Impossible de générer le lien d'invitation.");
-        setSending(false);
-        return;
-      }
-
-      // Appeler la route API d'envoi Brevo
+      // La route API crée le compte du locataire côté serveur (mot de passe
+      // temporaire généré, jamais exposé ici) et lui envoie ses identifiants
+      // par email avec le lien vers /tenant/login.
       const res = await fetch("/api/tenant/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           locataireId,
           locataireNom: locataireName,
-          email: locataireEmail || "locataire@exemple.bj",
-          token,
+          email: locataireEmail,
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        // Mode simulation si pas de clé Brevo configurée
-        console.log("Invitation simulée avec le token:", token);
+        setErrorMsg(data.error || "Une erreur est survenue lors de l'envoi.");
+        setSending(false);
+        return;
       }
 
       setSent(true);
@@ -160,7 +151,7 @@ export function TenantPortalCard({
             )}
 
             <p className="text-[11px] text-neutral-500 text-center">
-              Le locataire recevra un lien d'activation sécurisé par email/WhatsApp pour accéder à ses quittances et payer par Mobile Money.
+              Le locataire recevra ses identifiants de connexion par email pour accéder à ses quittances et payer par Mobile Money.
             </p>
           </div>
         )}

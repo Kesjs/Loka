@@ -1,7 +1,7 @@
 "use client";
 
-import { House, UsersThree, Buildings, Airplane } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import { House, UsersThree, Buildings, Airplane, CheckCircle } from "@phosphor-icons/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Role } from "./types";
 
 interface StepRoleProps {
@@ -9,7 +9,6 @@ interface StepRoleProps {
   onChange: (role: Role) => void;
   estADistance: boolean;
   onChangeADistance: (v: boolean) => void;
-  onNext: () => void;
 }
 
 const roles = [
@@ -42,7 +41,6 @@ export default function StepRole({
   onChange,
   estADistance,
   onChangeADistance,
-  onNext,
 }: StepRoleProps) {
   const showDistanceOption = value !== null && DISTANCE_ELIGIBLE_ROLES.includes(value);
 
@@ -67,12 +65,25 @@ export default function StepRole({
               type="button"
               onClick={() => handleSelectRole(role.id)}
               aria-pressed={isSelected}
-              className={`rounded-xl border-2 p-4 text-left transition-all ${
+              className={`relative rounded-xl border-2 p-4 text-left transition-all ${
                 isSelected
                   ? "border-primary-500 bg-primary-50"
                   : "border-neutral-200 bg-white hover:border-neutral-300"
               }`}
             >
+              <AnimatePresence>
+                {isSelected && (
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-white shadow-sm"
+                  >
+                    <CheckCircle size={13} weight="fill" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
               <div className="flex items-start gap-3">
                 <Icon
                   size={24}
@@ -129,10 +140,6 @@ export default function StepRole({
           </span>
         </label>
       </div>
-
-      <Button onClick={onNext} disabled={!value} className="w-full">
-        Continuer
-      </Button>
     </div>
   );
 }

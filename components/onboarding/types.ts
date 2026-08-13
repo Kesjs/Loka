@@ -1,21 +1,6 @@
-export type Role = "proprietaire" | "gestionnaire" | "agence" | "autre";
+export type Role = "proprietaire" | "gestionnaire" | "agence";
 
-export type Situation = 
-  // Proprietaire situations
-  | "possede_deja"
-  | "premier_bien"
-  | "commence_louer"
-  | "gere_deja"
-  // Gestionnaire situations
-  | "famille"
-  | "particuliers"
-  | "plusieurs_proprietaires"
-  // Agence situations
-  | "demarre_agence"
-  | "portefeuille_existant"
-  | "migre_autre_outil";
-
-export type RoleInterne = "admin" | "gestionnaire" | "mandataire" | "consultant" | "administrateur" | "autre";
+export type RoleInterne = "admin" | "gestionnaire" | "mandataire" | "consultant" | "administrateur";
 
 export type TypeBien =
   | "immeuble"
@@ -38,17 +23,9 @@ export interface LogementData {
 
 export type LogementOccupation = LogementData;
 
-export interface AgenceInfo {
-  nom: string;
-  ville: string;
-  taillePortefeuille?: "1-10" | "10-50" | "50+";
-  logoUrl?: string;
-}
-
 export interface ProprietaireGere {
   nom: string;
   telephone: string;
-  commissionPct?: number;
 }
 
 export interface OnboardingData {
@@ -130,11 +107,4 @@ export function getStepSequence(_role?: Role | null): StepType[] {
 
 export function calculateTotalSteps(): number {
   return FIXED_SEQUENCE.length;
-}
-
-export type MoyenPaiement = "especes" | "mobile_money" | "virement" | "plusieurs";
-
-export function isProprietaireDebutant(role: Role | null, situation: Situation | null): boolean {
-  if (role !== "proprietaire") return false;
-  return situation === "premier_bien" || situation === "commence_louer";
 }

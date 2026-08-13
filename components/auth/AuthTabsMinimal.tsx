@@ -47,7 +47,6 @@ export default function AuthTabsMinimal() {
     <AuthShellMinimal
       leftTitle={leftContent.title}
       leftSubtitle={leftContent.subtitle}
-      media={{ type: "video", src: "/auth/login.mp4", poster: "/auth/login-poster.jpg" }}
       footer={
         activeTab === "forgot-password" ? undefined : (
           <div className="text-center text-sm text-neutral-500">

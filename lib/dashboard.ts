@@ -258,16 +258,8 @@ export async function getDashboardData(): Promise<DashboardData | null> {
         .in("proprietaire_gere_id", proprietaireGereIds)
         .order("mois", { ascending: false });
 
-      type Reversement = {
-        proprietaire_gere_id: string;
-        montant_commission: number | null;
-        montant_verse: number | null;
-        statut: string | null;
-        date_versement: string | null;
-        mois: string | null;
-      };
-      const dernierParProprietaire = new Map<string, Reversement>();
-      (reversements || []).forEach((r: Reversement) => {
+      const dernierParProprietaire = new Map<string, (typeof reversements)[number]>();
+      (reversements || []).forEach((r) => {
         if (!dernierParProprietaire.has(r.proprietaire_gere_id)) {
           dernierParProprietaire.set(r.proprietaire_gere_id, r);
         }

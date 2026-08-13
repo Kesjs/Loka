@@ -3,7 +3,7 @@
  * 
  * Route API qui génère et retourne une quittance PDF.
  * Utilisée par:
- * - app/(tenant)/dashboard/page.tsx — bouton "Télécharger la Quittance PDF"
+ * - app/tenant/(portal)/dashboard/page.tsx — bouton "Télécharger la Quittance PDF"
  * - app/(dashboard)/logements — historique des quittances
  * 
  * Implémentation E.5 — Bouton quittance branché avec vraie génération PDF
@@ -28,10 +28,10 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Récupérer les données du locataire et du dernier paiement
+    // Récupérer les données du locataire et de ses contrats
     const { data: locataire, error: locataireError } = await supabase
       .from("locataires")
-      .select("id, nom, email, telephone, contrats(proprietaire_id)")
+      .select("id, nom, email, telephone, contrats(id, proprietaire_id)")
       .eq("id", locataireId)
       .maybeSingle();
 
@@ -42,13 +42,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Récupérer le dernier paiement
-    const { data: paiements } = await supabase
-      .from("paiements")
-      .select("id, montant, date_paiement, mode")
-      .eq("locataire_id", locataireId)
-      .order("date_paiement", { ascending: false })
-      .limit(1);
+    // paiements n'a pas de colonne locataire_id : on passe par les contrats
+    // du locataire pour retrouver son dernier règlement.
+    const contratIds = (locataire.contrats ?? []).map((c: { id: string }) => c.id);
+
+    const { data: paiements } = contratIds.length
+      ? await supabase
+          .from("paiements")
+          .select("id, montant, date_paiement, mode")
+          .in("contrat_id", contratIds)
+          .order("date_paiement", { ascending: false })
+          .limit(1)
+      : { data: [] };
 
     const lastPayment = paiements?.[0];
 
@@ -233,7 +238,7 @@ export async function GET(request: NextRequest) {
     // Récupérer le paiement par référence
     const { data: paiement, error } = await supabase
       .from("paiements")
-      .select("id, montant, date_paiement, mode, locataire_id, proprietaire_id")
+      .select("id, montant, date_paiement, mode, contrat_id, proprietaire_id")
       .eq("id", refId)
       .maybeSingle();
 
@@ -244,12 +249,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Récupérer les infos locataire
-    const { data: locataire } = await supabase
-      .from("locataires")
-      .select("id, nom, email, telephone")
-      .eq("id", paiement.locataire_id)
+    // paiements n'a pas de colonne locataire_id : on remonte au locataire
+    // via le contrat lié.
+    const { data: contratLie } = await supabase
+      .from("contrats")
+      .select("locataire_id")
+      .eq("id", paiement.contrat_id)
       .maybeSingle();
+
+    const { data: locataire } = contratLie
+      ? await supabase
+          .from("locataires")
+          .select("id, nom, email, telephone")
+          .eq("id", contratLie.locataire_id)
+          .maybeSingle()
+      : { data: null };
 
     // Récupérer l'organisation du propriétaire pour obtenir le logo
     let logoUrl: string | null = null;

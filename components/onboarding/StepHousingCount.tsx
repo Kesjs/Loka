@@ -1,5 +1,6 @@
+"use client";
+
 import { Minus, Plus } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
 import { LogementOccupation, TypeBien } from "./types";
 
 interface StepHousingCountProps {
@@ -7,11 +8,10 @@ interface StepHousingCountProps {
   bienNom: string;
   bienType: TypeBien | null;
   onChange: (n: number) => void;
-  onGenerate: (logements: LogementOccupation[]) => void;
-  onNext: () => void;
 }
 
-function generateLogements(count: number, bienType: TypeBien | null): LogementOccupation[] {
+/** Pure — appelée par page.tsx au clic sur "Continuer" (barre d'action commune). */
+export function generateLogements(count: number, bienType: TypeBien | null): LogementOccupation[] {
   const label = bienType === "immeuble" ? "Appartement" : "Logement";
   return Array.from({ length: count }).map((_, i) => ({
     nom: count === 1 ? bienType === "immeuble" ? "Appartement 1" : "Logement principal" : `${label} ${i + 1}`,
@@ -23,14 +23,7 @@ export default function StepHousingCount({
   value,
   bienType,
   onChange,
-  onGenerate,
-  onNext,
 }: StepHousingCountProps) {
-  function handleNext() {
-    onGenerate(generateLogements(value, bienType));
-    onNext();
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-center gap-6">
@@ -55,10 +48,6 @@ export default function StepHousingCount({
           <Plus size={18} />
         </button>
       </div>
-
-      <Button onClick={handleNext} className="w-full">
-        Continuer
-      </Button>
     </div>
   );
 }

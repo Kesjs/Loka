@@ -1,6 +1,5 @@
 import { Buildings, House, MapPin, Storefront, Mountains, Note, UserCircle, Phone } from "@phosphor-icons/react";
 import { Role, TypeBien, TypeLocation } from "./types";
-import { Button } from "@/components/ui/button";
 
 interface StepPropertyProps {
   role: Role | null;
@@ -25,7 +24,6 @@ interface StepPropertyProps {
   /** Nom + téléphone du premier propriétaire géré — utilisé seulement en mode Agence. */
   proprietaireGere: { nom: string; telephone: string };
   onChangeProprietaireGere: (v: { nom: string; telephone: string }) => void;
-  onNext: () => void;
 }
 
 const types: { value: TypeBien; label: string; icon: typeof House }[] = [
@@ -42,7 +40,6 @@ export default function StepProperty({
   onChange,
   proprietaireGere,
   onChangeProprietaireGere,
-  onNext,
 }: StepPropertyProps) {
   const isAgence = role === "agence";
   const proprietaireValid = !isAgence || proprietaireGere.nom.trim() !== "";
@@ -52,12 +49,6 @@ export default function StepProperty({
     onChange({ ...value, [field]: val });
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && isValid && (e.target as HTMLElement).tagName === "INPUT") {
-      e.preventDefault();
-      onNext();
-    }
-  };
 
   return (
     <div className="space-y-5">
@@ -104,7 +95,7 @@ export default function StepProperty({
             type="text"
             value={value.nom}
             onChange={(e) => handleChange("nom", e.target.value)}
-            onKeyDown={handleKeyDown}
+
             placeholder="Ex : Résidence Les Cocotiers"
             className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
@@ -155,7 +146,7 @@ export default function StepProperty({
             type="text"
             value={value.ville ?? ""}
             onChange={(e) => handleChange("ville", e.target.value)}
-            onKeyDown={handleKeyDown}
+
             placeholder="Ex : Cotonou"
             className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
@@ -168,7 +159,7 @@ export default function StepProperty({
             type="text"
             value={value.quartier ?? ""}
             onChange={(e) => handleChange("quartier", e.target.value)}
-            onKeyDown={handleKeyDown}
+
             placeholder="Ex : Fidjrossè"
             className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
@@ -183,7 +174,7 @@ export default function StepProperty({
             type="text"
             value={value.repere ?? ""}
             onChange={(e) => handleChange("repere", e.target.value)}
-            onKeyDown={handleKeyDown}
+
             placeholder="Ex : À côté de la pharmacie du Rond-point"
             className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
@@ -198,7 +189,7 @@ export default function StepProperty({
             type="text"
             value={value.adresse ?? ""}
             onChange={(e) => handleChange("adresse", e.target.value)}
-            onKeyDown={handleKeyDown}
+
             placeholder="Ex : 123 rue de Morès, Cotonou"
             className="w-full h-10 px-3 rounded-md border border-neutral-300 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
@@ -252,10 +243,6 @@ export default function StepProperty({
           )}
         </div>
       </div>
-
-      <Button onClick={onNext} disabled={!isValid} className="w-full">
-        Continuer
-      </Button>
     </div>
   );
 }

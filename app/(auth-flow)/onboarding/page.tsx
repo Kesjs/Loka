@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import OnboardingLayout from "@/components/onboarding/OnboardingLayout";
+import OnboardingActionBar from "@/components/onboarding/OnboardingActionBar";
 import StepRole from "@/components/onboarding/StepRole";
 import StepProperty from "@/components/onboarding/StepProperty";
-import StepHousingCount from "@/components/onboarding/StepHousingCount";
+import StepHousingCount, { generateLogements } from "@/components/onboarding/StepHousingCount";
 import StepComplete from "@/components/onboarding/StepComplete";
 import {
   OnboardingData,
@@ -42,6 +42,7 @@ export default function OnboardingPage() {
   // pour tous les rôles — seul le contenu de l'étape "property" varie.
   const stepSequence = getStepSequence(data.role);
   const totalSteps = stepSequence.length;
+  const currentStepType: StepType = stepSequence[step] || "role";
 
   // Charger le brouillon au montage — on ne l'applique jamais silencieusement,
   // on demande toujours à l'utilisateur s'il veut reprendre ou repartir de zéro.
@@ -102,6 +103,11 @@ export default function OnboardingPage() {
   }, [step, data, isLoading, pendingDraft]);
 
   function next() {
+    // L'étape "housing_count" génère les fiches logement au moment de
+    // passer à la suite (logique pure, déplacée depuis le composant).
+    if (currentStepType === "housing_count") {
+      setData((d) => ({ ...d, logements: generateLogements(d.nombreLogements, d.bien.type) }));
+    }
     setStep((s) => Math.min(s + 1, totalSteps - 1));
   }
 
@@ -109,10 +115,34 @@ export default function OnboardingPage() {
     setStep((s) => Math.max(s - 1, 0));
   }
 
-  // Navigation directe depuis le rail — uniquement vers une étape déjà complétée
-  // (StepRail ne rend cliquables que les étapes avec state === "done").
+  // Navigation directe depuis le stepper — uniquement vers une étape déjà complétée.
   function goToStep(index: number) {
     setStep((s) => (index < s ? index : s));
+  }
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth");
+    router.refresh();
+  }
+
+  // Validité centralisée par type d'étape — page.tsx possède déjà toutes
+  // les données nécessaires, pas besoin de callbacks remontés par chaque Step.
+  function isCurrentStepValid(): boolean {
+    switch (currentStepType) {
+      case "role":
+        return data.role !== null;
+      case "property": {
+        const isAgence = data.role === "agence";
+        const proprietaireValid = !isAgence || data.proprietaireGere.nom.trim() !== "";
+        return data.bien.nom.trim() !== "" && data.bien.type !== null && proprietaireValid;
+      }
+      case "housing_count":
+        return data.nombreLogements >= 1;
+      default:
+        return true;
+    }
   }
 
   async function handleFinish() {
@@ -121,14 +151,11 @@ export default function OnboardingPage() {
 
     // 1. Validation côté client avant soumission
     const validationResult = validateOnboardingData(data);
-    
+
     if (!validationResult.valid) {
       const errorMessage = formatValidationErrors(validationResult.errors);
       setFinishError(errorMessage);
       setFinishing(false);
-      
-      // Scroll vers le haut pour voir l'erreur
-      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -142,9 +169,6 @@ export default function OnboardingPage() {
     if (error) {
       setFinishError(error);
       setFinishing(false);
-      
-      // Scroll vers le haut pour voir l'erreur
-      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -158,10 +182,10 @@ export default function OnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-full items-center justify-center px-6 py-10">
         <div className="space-y-4 text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-neutral-200 border-t-primary-600 mx-auto" />
-          <p className="text-neutral-600">Chargement de votre onboarding...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-neutral-200 border-t-primary-600 mx-auto" />
+          <p className="text-sm text-neutral-500">Chargement de votre configuration...</p>
         </div>
       </div>
     );
@@ -169,7 +193,7 @@ export default function OnboardingPage() {
 
   if (pendingDraft) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-5">
+      <div className="flex min-h-full items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm space-y-6 text-center">
           <div className="space-y-2">
             <h1 className="text-xl font-bold text-neutral-900">Reprendre où vous en étiez ?</h1>
@@ -181,7 +205,7 @@ export default function OnboardingPage() {
             <button
               type="button"
               onClick={resumeDraft}
-              className="w-full rounded-xl bg-primary-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-700"
+              className="w-full rounded-xl bg-primary-800 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-900"
             >
               Continuer où j&apos;en étais
             </button>
@@ -198,8 +222,6 @@ export default function OnboardingPage() {
     );
   }
 
-  const currentStepType: StepType = stepSequence[step] || "role";
-
   function renderStep() {
     switch (currentStepType) {
       case "role":
@@ -209,7 +231,6 @@ export default function OnboardingPage() {
             onChange={(v) => setData((d) => ({ ...d, role: v }))}
             estADistance={!!data.estADistance}
             onChangeADistance={(v) => setData((d) => ({ ...d, estADistance: v }))}
-            onNext={next}
           />
         );
 
@@ -221,7 +242,6 @@ export default function OnboardingPage() {
             onChange={(v) => setData((d) => ({ ...d, bien: v }))}
             proprietaireGere={data.proprietaireGere}
             onChangeProprietaireGere={(v) => setData((d) => ({ ...d, proprietaireGere: v }))}
-            onNext={next}
           />
         );
 
@@ -232,8 +252,6 @@ export default function OnboardingPage() {
             bienNom={data.bien.nom}
             bienType={data.bien.type}
             onChange={(n) => setData((d) => ({ ...d, nombreLogements: n }))}
-            onGenerate={(logements) => setData((d) => ({ ...d, logements }))}
-            onNext={next}
           />
         );
 
@@ -252,25 +270,27 @@ export default function OnboardingPage() {
     }
   }
 
+  const isCompleteStep = currentStepType === "complete";
+
   return (
     <OnboardingLayout
       step={step}
       totalSteps={totalSteps}
       role={data.role}
-      onPrev={prev}
       onNavigateToStep={goToStep}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`${step}-${currentStepType}`}
-          initial={{ opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -24 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-        >
-          {renderStep()}
-        </motion.div>
-      </AnimatePresence>
+      {renderStep()}
+
+      {/* Barre Retour/Suivant/Déconnexion — jamais sur l'écran final, qui a son propre CTA. */}
+      {!isCompleteStep && (
+        <OnboardingActionBar
+          isFirstStep={step === 0}
+          onBack={prev}
+          onLogout={handleLogout}
+          onNext={next}
+          nextDisabled={!isCurrentStepValid()}
+        />
+      )}
     </OnboardingLayout>
   );
 }

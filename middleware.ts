@@ -4,6 +4,15 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // Le portail locataire (/tenant/*) a sa propre logique d'auth et de
+  // redirection (voir app/tenant/(portal)/layout.tsx) : un locataire connecté
+  // n'a pas de ligne dans la table "proprietaire", donc le reste de ce
+  // middleware (onboarding propriétaire) le renverrait à tort vers
+  // /onboarding. On laisse ces routes de côté ici.
+  if (request.nextUrl.pathname.startsWith("/tenant")) {
+    return response;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

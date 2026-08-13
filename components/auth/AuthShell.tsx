@@ -3,8 +3,9 @@
 import { ReactNode } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Sparkle } from "@phosphor-icons/react";
+import { Sparkle } from "@phosphor-icons/react";
 import AuthProgressBar from "./AuthProgressBar";
+import BackToHomeLink from "./BackToHomeLink";
 import { AUTH_MESSAGES } from "@/lib/auth-messages";
 import { Role } from "@/components/onboarding/types";
 import StepRail, { StepRailItem } from "@/components/onboarding/StepRail";
@@ -88,6 +89,9 @@ export default function AuthShell({
     <div className="flex min-h-screen bg-white md:h-screen md:flex-row md:overflow-hidden">
       {/* Colonne gauche — formulaire 40% */}
       <div className="flex flex-col px-6 py-8 md:h-screen md:overflow-y-auto w-full md:w-[40%] md:px-8 md:py-10 lg:px-10">
+        {/* Retour à l'accueil — même composant/animation que la page /auth */}
+        <BackToHomeLink />
+
         {/* Rail compact — mobile uniquement, en haut du formulaire */}
         {stepRail && (
           <div className="mb-6 -mx-1 md:hidden">

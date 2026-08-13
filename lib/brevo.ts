@@ -1,27 +1,30 @@
 /**
  * lib/brevo.ts
- * 
- * Helper pour l'envoi d'emails transactionnels d'invitation au Portail Locataire via Brevo API.
+ *
+ * Helper pour l'envoi d'emails transactionnels du Portail Locataire via
+ * Brevo API. Le locataire reçoit directement ses identifiants de connexion
+ * (email + mot de passe temporaire) et le lien vers /tenant/login — pas de
+ * lien d'activation à part : c'est le propriétaire qui donne l'accès.
  */
 
-interface SendTenantInvitationParams {
+interface SendTenantCredentialsParams {
   email: string;
   locataireNom: string;
   organisationNom: string;
-  activationToken: string;
+  tempPassword: string;
   logoUrl?: string | null;
 }
 
-export async function sendTenantInvitationEmail({
+export async function sendTenantCredentialsEmail({
   email,
   locataireNom,
   organisationNom,
-  activationToken,
+  tempPassword,
   logoUrl,
-}: SendTenantInvitationParams): Promise<{ success: boolean; error?: string }> {
+}: SendTenantCredentialsParams): Promise<{ success: boolean; error?: string }> {
   const brevoApiKey = process.env.BREVO_API_KEY;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://loka.bj";
-  const activationUrl = `${baseUrl}/tenant/activate?token=${activationToken}`;
+  const loginUrl = `${baseUrl}/tenant/login`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -32,7 +35,10 @@ export async function sendTenantInvitationEmail({
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; }
           .card { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 32px; }
           .header { text-align: center; margin-bottom: 24px; }
-          .btn { display: inline-block; background-color: #059669; color: #ffffff !important; font-weight: 700; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 14px; margin-top: 20px; }
+          .credentials { background-color: #f1f5f9; border-radius: 12px; padding: 16px 20px; margin: 20px 0; }
+          .credentials p { margin: 4px 0; font-size: 14px; color: #0f172a; }
+          .credentials strong { color: #059669; }
+          .btn { display: inline-block; background-color: #059669; color: #ffffff !important; font-weight: 700; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-size: 14px; margin-top: 12px; }
           .footer { font-size: 11px; color: #64748b; text-align: center; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px; }
         </style>
       </head>
@@ -43,13 +49,17 @@ export async function sendTenantInvitationEmail({
           </div>
           <h3 style="color: #0f172a; margin-bottom: 12px;">Bonjour ${locataireNom},</h3>
           <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-            Votre gestionnaire <strong>${organisationNom}</strong> vous a ouvert l'accès à votre <strong>Portail Locataire Lokka</strong>.
+            Votre bailleur <strong>${organisationNom}</strong> vous a ouvert un accès à votre <strong>Espace Locataire</strong>. Depuis cet espace, vous pouvez consulter vos quittances, suivre l'historique de vos paiements et régler votre loyer par Mobile Money.
           </p>
+          <div class="credentials">
+            <p>Email de connexion : <strong>${email}</strong></p>
+            <p>Mot de passe temporaire : <strong>${tempPassword}</strong></p>
+          </div>
           <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-            Depuis cet espace sécurisé, vous pourrez consulter vos quittances de loyer, suivre votre historique et régler vos échéances directement par MTN Mobile Money, Moov Money ou carte bancaire.
+            Gardez ces informations en lieu sûr.
           </p>
           <div style="text-align: center; margin: 28px 0;">
-            <a href="${activationUrl}" class="btn">Activer mon Espace Locataire →</a>
+            <a href="${loginUrl}" class="btn">Me connecter à mon espace →</a>
           </div>
           <div class="footer">
             <p>© 2026 Lokka Technologies · Gestion locative & encaissement Mobile Money au Bénin</p>
@@ -60,7 +70,7 @@ export async function sendTenantInvitationEmail({
   `;
 
   if (!brevoApiKey) {
-    console.log("ℹ️ [Brevo Simulation] Email invitation généré pour:", email, "Lien:", activationUrl);
+    console.log("ℹ️ [Brevo Simulation] Identifiants envoyés à:", email, "Mot de passe:", tempPassword, "Lien:", loginUrl);
     return { success: true };
   }
 
@@ -74,7 +84,7 @@ export async function sendTenantInvitationEmail({
       body: JSON.stringify({
         sender: { name: organisationNom, email: "noreply@loka.bj" },
         to: [{ email, name: locataireNom }],
-        subject: `[${organisationNom}] Activation de votre Espace Locataire`,
+        subject: `[${organisationNom}] Vos accès à votre Espace Locataire`,
         htmlContent,
       }),
     });
@@ -86,7 +96,7 @@ export async function sendTenantInvitationEmail({
 
     return { success: true };
   } catch (err) {
-    console.error("Erreur sendTenantInvitationEmail:", err);
+    console.error("Erreur sendTenantCredentialsEmail:", err);
     return { success: false, error: "Impossible de joindre le serveur Brevo." };
   }
 }

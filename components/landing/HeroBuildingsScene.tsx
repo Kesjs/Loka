@@ -149,9 +149,28 @@ export default function HeroBuildingsScene() {
   return (
     <Canvas
       dpr={[1, 1.6]}
-      gl={{ antialias: true, alpha: true }}
+      gl={{
+        antialias: true,
+        alpha: true,
+        // Sur GPU faible / rendu logiciel, ces deux options évitent que le
+        // navigateur refuse ou tue le contexte au lieu de basculer proprement.
+        powerPreference: "default",
+        failIfMajorPerformanceCaveat: false,
+      }}
       camera={{ position: [0, 2.4, 8.5], fov: 32 }}
       style={{ pointerEvents: "none" }}
+      onCreated={({ gl }) => {
+        // Tentative de récupération automatique si le contexte est perdu
+        // en cours de route (au lieu de rester sur un canvas figé/vide).
+        const canvas = gl.domElement;
+        canvas.addEventListener("webglcontextlost", (e) => {
+          e.preventDefault();
+          console.warn("[HeroBuildingsScene] Contexte WebGL perdu — tentative de restauration…");
+        });
+        canvas.addEventListener("webglcontextrestored", () => {
+          console.info("[HeroBuildingsScene] Contexte WebGL restauré.");
+        });
+      }}
     >
       <ambientLight intensity={0.65} />
       <directionalLight position={[4, 6, 4]} intensity={0.9} color="#fff7ef" />

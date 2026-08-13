@@ -32,7 +32,7 @@ import {
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import HeroBuildingsBackdrop from "@/components/landing/HeroBuildingsBackdrop";
+import HeroVideoBackdrop from "@/components/landing/HeroVideoBackdrop";
 
 type RevealDirection = "up" | "left" | "right";
 type StoryArtifact = "payment" | "receipt" | "agency" | "tenant";
@@ -756,7 +756,7 @@ export default function LandingPage() {
         <section aria-labelledby="hero-title" className="relative mx-auto max-w-[1240px] scroll-mt-24 px-5 pb-20 pt-20 text-center sm:px-6 lg:px-10 lg:pb-28 lg:pt-32">
           <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[560px] w-[min(100%,1040px)] -translate-x-1/2 rounded-full bg-primary-50/70 blur-3xl" aria-hidden="true" />
           <div className="pointer-events-none absolute left-1/2 top-52 -z-10 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-accent-50/50 blur-3xl" aria-hidden="true" />
-          <HeroBuildingsBackdrop />
+          <HeroVideoBackdrop />
 
           <div className="relative mx-auto flex max-w-[760px] flex-col items-center">
             <motion.p

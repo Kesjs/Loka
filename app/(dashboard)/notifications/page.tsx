@@ -229,7 +229,7 @@ export default function NotificationsPage() {
 interface StatCardProps {
   label: string
   value: number
-  icon: React.ElementType
+  icon: React.ElementType<any>
   color: string
   iconColor: string
   isActive: boolean
